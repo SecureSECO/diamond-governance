@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@aragon/osx": "^1.0.1",
+    "@openzeppelin/contracts": "^4.8.2",
+    "@openzeppelin/contracts-upgradeable": "^4.8.2",
+    "solc": "0.8.17"
+  }
+}
