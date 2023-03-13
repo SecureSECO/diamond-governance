@@ -94,7 +94,7 @@ import {IPartialVoting} from "./IPartialVoting.sol";
 ///
 /// Accordingly, early execution is possible when the vote is open, the modified support criterion, and the particicpation criterion are met.
 /// @dev This contract implements the `IMajorityVoting` interface.
-abstract contract MajorityVotingBase is
+abstract contract PartialVotingBase is
     IPartialVoting,
     Initializable,
     ERC165Upgradeable,
