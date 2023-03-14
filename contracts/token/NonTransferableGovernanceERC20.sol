@@ -5,11 +5,13 @@ pragma solidity 0.8.17;
 import {GovernanceERC20} from "@aragon/osx/token/ERC20/governance/GovernanceERC20.sol";
 import {IDAO} from "@aragon/osx/core/dao/IDAO.sol";
 
+import {IERC20Burnable} from "./IERC20Burnable.sol";
+
 /// @title NonTransferableGovernanceERC20
 /// @author Utrecht University - 2023
 /// @notice An [OpenZepplin `Votes`](https://docs.openzeppelin.com/contracts/4.x/api/governance#Votes) compatible [ERC-20](https://eips.ethereum.org/EIPS/eip-20) token that can be used for voting and is managed by a DAO.
 /// @notice Cannot be transfered or delegated to other addresses
-contract NonTransferableGovernanceERC20 is GovernanceERC20
+contract NonTransferableGovernanceERC20 is GovernanceERC20, IERC20Burnable
 {
     /// @notice The permission identifier to transfer tokens (from any wallet)
     bytes32 public constant TRANSFER_PERMISSION_ID = keccak256("TRANSFER_PERMISSION");
@@ -55,7 +57,7 @@ contract NonTransferableGovernanceERC20 is GovernanceERC20
         return true;
     }
 
-    function burnFrom(address from, uint256 amount) public virtual auth(BURN_PERMISSION_ID) returns (bool) {
+    function burnFrom(address from, uint256 amount) public virtual override auth(BURN_PERMISSION_ID) returns (bool) {
         _burn(from, amount);
         return true;
     } 

@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import {IVotesUpgradeable} from "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
 import {SafeCastUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 
 import {IMembership} from "@aragon/osx/core/plugin/membership/IMembership.sol";
 import {IDAO} from "@aragon/osx/core/dao/IDAO.sol";
-import {RATIO_BASE, _applyRatioCeiled} from "../utils/Ratio.sol";
+import {RATIO_BASE, _applyRatioCeiled} from "../../utils/Ratio.sol";
 import {PartialVotingBase} from "../PartialVotingBase.sol";
 import {IPartialVoting} from "../IPartialVoting.sol";
+import {IERC20BurnableVotesUpgradeable} from "../../token/IERC20BurnableVotesUpgradeable.sol";
 
 /// @title PartialTokenBurnVoting
 /// @author Utrecht University - 2023
@@ -22,8 +22,8 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     bytes4 internal constant TOKEN_VOTING_INTERFACE_ID =
         this.initialize.selector ^ this.getVotingToken.selector;
 
-    /// @notice An [OpenZepplin `Votes`](https://docs.openzeppelin.com/contracts/4.x/api/governance#Votes) compatible contract referencing the token being used for voting.
-    IVotesUpgradeable private votingToken;
+    /// @notice An [OpenZepplin `Votes`](https://docs.openzeppelin.com/contracts/4.x/api/governance#Votes) compatible contract referencing the token being used for voting and burning.
+    IERC20BurnableVotesUpgradeable private votingToken;
 
     /// @notice Thrown if the voting power is zero
     error NoVotingPower();
@@ -36,7 +36,7 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     function initialize(
         IDAO _dao,
         VotingSettings calldata _votingSettings,
-        IVotesUpgradeable _token
+        IERC20BurnableVotesUpgradeable _token
     ) external initializer {
         __PartialVotingBase_init(_dao, _votingSettings);
 
@@ -133,36 +133,32 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
 
     /// @inheritdoc IMembership
     function isMember(address _account) external view returns (bool) {
-        /// whatever condition
+        /// TODO Add integration with GitHub and KYC checker contract
         return votingToken.getVotes(_account) > 0;
     }
 
     /// @inheritdoc PartialVotingBase
     function _vote(
         uint256 _proposalId,
-        PartialVote _voteData,
+        PartialVote calldata _voteData,
         address _voter,
         bool _tryEarlyExecution
     ) internal override {
         Proposal storage proposal_ = proposals[_proposalId];
 
-        // This could re-enter, though we can assume the governance token is not malicious
-        uint256 votingPower = votingToken.getPastVotes(_voter, proposal_.parameters.snapshotBlock);
-
         // Write the new vote for the voter.
         if (_voteData.option == VoteOption.Yes) {
-            proposal_.tally.yes = proposal_.tally.yes + _voteData.amount);
+            proposal_.tally.yes = proposal_.tally.yes + _voteData.amount;
         } else if (_voteData.option  == VoteOption.No) {
-            proposal_.tally.no = proposal_.tally.no + _voteData.amount);
+            proposal_.tally.no = proposal_.tally.no + _voteData.amount;
         } else if (_voteData.option  == VoteOption.Abstain) {
-            proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount);
+            proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount;
         }
 
         proposal_.voters[_voter].push(_voteData);
         
         if (proposal_.parameters.votingMode.burnTokens) {
-            // TODO, lock up token here to be burned
-            // It is assumed this will also update votingToken.getPastVotes(_account, proposal_.parameters.snapshotBlock)
+            votingToken.burnFrom(_voter, _voteData.amount);
         }
 
         emit VoteCast({
@@ -180,7 +176,7 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     function _canVote(
         uint256 _proposalId,
         address _account,
-        PartialVote _voteData
+        PartialVote calldata _voteData
     ) internal view override returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -220,6 +216,13 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
             proposal_.parameters.votingMode.partialVotingSettings == PartialVotingSettings.SingleVote
         ) {
             return false;
+        }
+
+        // Trying to vote with more tokens than they have currently
+        if (proposal_.parameters.votingMode.burnTokens &&
+            _voteData.amount > votingToken.getVotes(_account)
+        ) {
+            return false;  
         }
 
         return true;
