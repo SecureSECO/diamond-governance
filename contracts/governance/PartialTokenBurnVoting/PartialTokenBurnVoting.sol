@@ -58,7 +58,7 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     /// @notice getter function for the voting token.
     /// @dev public function also useful for registering interfaceId and for distinguishing from majority voting interface.
     /// @return The token used for voting.
-    function getVotingToken() public view returns (IVotesUpgradeable) {
+    function getVotingToken() public view returns (IERC20BurnableVotesUpgradeable) {
         return votingToken;
     }
 

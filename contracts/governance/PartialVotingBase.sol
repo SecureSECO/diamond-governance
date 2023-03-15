@@ -10,7 +10,7 @@ import {IProposal} from "@aragon/osx/core/plugin/proposal/IProposal.sol";
 import {ProposalUpgradeable} from "@aragon/osx/core/plugin/proposal/ProposalUpgradeable.sol";
 import {PluginUUPSUpgradeable} from "@aragon/osx/core/plugin/PluginUUPSUpgradeable.sol";
 import {IDAO} from "@aragon/osx/core/dao/IDAO.sol";
-import {RATIO_BASE, RatioOutOfBounds} from "./utils/Ratio.sol";
+import {RATIO_BASE, RatioOutOfBounds} from "../utils/Ratio.sol";
 import {IPartialVoting} from "./IPartialVoting.sol";
 
 /// @title PartialVotingBase

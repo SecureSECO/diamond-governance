@@ -74,13 +74,11 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
                 (PartialVotingBase.VotingSettings, TokenSettings, GovernanceERC20.MintSettings)
             );
 
-        address token = tokenSettings.addr;
-
         // Prepare helpers.
         address[] memory helpers = new address[](1);
 
         // Clone a `GovernanceERC20`.
-        token = governanceERC20Base.clone();
+        address token = governanceERC20Base.clone();
         NonTransferableGovernanceERC20(token).initialize(
             IDAO(_dao),
             tokenSettings.name,
@@ -93,7 +91,7 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
         // Prepare and deploy plugin proxy.
         plugin = createERC1967Proxy(
             address(partialTokenBurnVotingBase),
-            abi.encodeWithSelector(TokenVoting.initialize.selector, _dao, votingSettings, token)
+            abi.encodeWithSelector(PartialTokenBurnVoting.initialize.selector, _dao, votingSettings, token)
         );
 
         // Prepare permissions
@@ -187,5 +185,10 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
             PermissionLib.NO_CONDITION,
             NonTransferableGovernanceERC20(token).MINT_PERMISSION_ID()
         );
+    }
+
+    /// @inheritdoc IPluginSetup
+    function implementation() external view virtual override returns (address) {
+        return address(partialTokenBurnVotingBase);
     }
 }
