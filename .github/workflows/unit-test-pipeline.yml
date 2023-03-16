@@ -24,12 +24,17 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - run: npm ci
+    - uses: actions/checkout@v3
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+    - run: npm ci
+    - name: Performing unit tests using the solidity testing environment
       if: ${{ inputs.sol == true }} || env.sol == true
-      - run: echo "Performing unit tests using the solidity testing environment"
-      - run: npm run test-sol
+      run: npm run test-sol
+    - name: Performing unit tests using the js testing environment
       if: ${{ inputs.js == true }} || env.js == true
-      - run: echo "Performing unit tests using the js testing environment"
-      - run: npm run test-js
+      run: npm run test-js
 
   
