@@ -29,12 +29,12 @@ jobs:
         with:
           node-version: 14.x
       - run: npm ci
-      - run: npm run print-version
   test-sol:
     needs: init
     if: ${{ inputs.sol == true }} || env.sol == true
     runs-on: ubuntu-latest
     steps:
+      - run: npm run print-version
       - run: echo "Performing unit tests using the solidity testing environment"
       - run: npm run test-sol
   test-js:
@@ -42,6 +42,7 @@ jobs:
     if: ${{ inputs.js == true }} || env.js == true
     runs-on: ubuntu-latest
     steps:
+      - run: npm run print-version
       - run: echo "Performing unit tests using the js testing environment"
       - run: npm run test-js
     
