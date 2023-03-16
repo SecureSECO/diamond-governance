@@ -2,7 +2,7 @@ module.exports = {
   networks: {
     local_etherium: {
       network_id: "*",
-      port: 6969,
+      port: 8545,
       host: "127.0.0.1"
     }
   },
