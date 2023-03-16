@@ -34,14 +34,14 @@ jobs:
       - run: npm ci
   test-sol:
     needs: init
-    if: ${{ inputs.sol }}
+    if: env.sol || ${{ inputs.sol }}
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the solidity testing environment
       - run: truffle test --test_directory=./test/sol
   tets-js:
     needs: init
-    if: ${{ inputs.js }}
+    if: env.js || ${{ inputs.js }}
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the js testing environment
