@@ -21,23 +21,23 @@ jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-    - run: npm ci
+      - run: npm ci
   test-sol:
     runs-on: ubuntu-latest
     steps:
-    - if: inputs.sol
-    - run: echo "Performing unit tests using the solidity testing environment
-    - run: truffle test --test_directory=./test/sol
-    - if: ${{!inputs.sol}}
-    - run: echo "Skipping solidity tests"
+      - if: ${{ inputs.sol }}
+      - run: echo "Performing unit tests using the solidity testing environment
+      - run: truffle test --test_directory=./test/sol
+      - if: ${{ !inputs.sol }}
+      - run: echo "Skipping solidity tests"
   tets-js:
     runs-on: ubuntu-latest
     steps:
-    - if: inputs.js
-    - run: echo "Performing unit tests using the js testing environment
-    - run: truffle test --test_directory=./test/js
-    - if: ${{!inputs.js}}
-    - run: echo "Skipping js tests"
+      - if: ${{ inputs.js }}
+      - run: echo "Performing unit tests using the js testing environment
+      - run: truffle test --test_directory=./test/js
+      - if: ${{ !inputs.js }}
+      - run: echo "Skipping js tests"
     
 
   
