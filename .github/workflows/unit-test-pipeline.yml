@@ -1,0 +1,43 @@
+name: Unit test
+
+on:
+  workflow_dispatch:
+    inputs:
+      sol:
+        description: "Test using solidity unit tests"
+        default: false
+        required: false
+      js:
+        description: "Test using js unit tests"
+        default: true
+        required: false
+
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+    - run: npm ci
+  test-sol:
+    runs-on: ubuntu-latest
+    steps:
+    - if: inputs.sol
+    - run: echo "Performing unit tests using the solidity testing environment
+    - run: truffle test --test_directory=./test/sol
+    - if: ${{!inputs.sol}}
+    - run: echo "Skipping solidity tests"
+  tets-js:
+    runs-on: ubuntu-latest
+    steps:
+    - if: inputs.js
+    - run: echo "Performing unit tests using the js testing environment
+    - run: truffle test --test_directory=./test/js
+    - if: ${{!inputs.js}}
+    - run: echo "Skipping js tests"
+    
+
+  
