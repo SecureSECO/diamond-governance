@@ -7,5 +7,10 @@
   },
   "devDependencies": {
     "truffle": "^5.8.0"
+  },
+  "scripts": {
+    "test-js": "truffle test --test_directory=./test/js",
+    "test-sol": "truffle test --test_directory=./test/sol",
+    "print-version": "truffle -v"
   }
 }

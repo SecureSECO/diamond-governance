@@ -29,22 +29,21 @@ jobs:
         with:
           node-version: 14.x
       - run: npm ci
-      - run: truffle -v
+      - run: npm run print-version
   test-sol:
     needs: init
     if: ${{ inputs.sol == true }} || env.sol == true
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the solidity testing environment"
-      - run: npm i truffle
-      - run: truffle test --test_directory=./test/sol
+      - run: npm run test-sol
   test-js:
     needs: init
     if: ${{ inputs.js == true }} || env.js == true
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the js testing environment"
-      - run: truffle test --test_directory=./test/js
+      - run: npm run test-js
     
 
   
