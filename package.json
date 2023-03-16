@@ -4,5 +4,8 @@
     "@openzeppelin/contracts": "^4.8.2",
     "@openzeppelin/contracts-upgradeable": "^4.8.2",
     "solc": "0.8.17"
+  },
+  "devDependencies": {
+    "truffle": "^5.8.0"
   }
 }
