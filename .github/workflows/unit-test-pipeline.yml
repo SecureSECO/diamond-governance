@@ -5,10 +5,12 @@ on:
     inputs:
       sol:
         description: "Test using solidity unit tests"
+        type: boolean
         default: false
         required: false
       js:
         description: "Test using js unit tests"
+        type: boolean
         default: true
         required: false
 
@@ -25,8 +27,6 @@ jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "$sol - ${{ inputs.sol }}"
-      - run: echo "$js - ${{ inputs.js }}"
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
@@ -34,17 +34,17 @@ jobs:
       - run: npm ci
   test-sol:
     needs: init
-    if: env.sol || ${{ inputs.sol }}
+    if: $sol || ${{ inputs.sol }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Performing unit tests using the solidity testing environment
+      - run: echo "Performing unit tests using the solidity testing environment"
       - run: truffle test --test_directory=./test/sol
-  tets-js:
+  test-js:
     needs: init
-    if: env.js || ${{ inputs.js }}
+    if: $js || ${{ inputs.js }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Performing unit tests using the js testing environment
+      - run: echo "Performing unit tests using the js testing environment"
       - run: truffle test --test_directory=./test/js
     
 
