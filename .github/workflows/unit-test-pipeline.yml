@@ -21,30 +21,15 @@ on:
 
 
 jobs:
-  init:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.x
       - run: npm ci
-  test-sol:
-    needs: init
-    if: ${{ inputs.sol == true }} || env.sol == true
-    runs-on: ubuntu-latest
-    steps:
-      - run: npm run print-version
+      if: ${{ inputs.sol == true }} || env.sol == true
       - run: echo "Performing unit tests using the solidity testing environment"
       - run: npm run test-sol
-  test-js:
-    needs: init
-    if: ${{ inputs.js == true }} || env.js == true
-    runs-on: ubuntu-latest
-    steps:
-      - run: npm run print-version
+      if: ${{ inputs.js == true }} || env.js == true
       - run: echo "Performing unit tests using the js testing environment"
       - run: npm run test-js
-    
 
   
