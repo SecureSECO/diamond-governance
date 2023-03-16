@@ -19,9 +19,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  sol: false
-  js: true
 
 jobs:
   init:
@@ -32,16 +29,18 @@ jobs:
         with:
           node-version: 14.x
       - run: npm ci
+      - run: truffle -v
   test-sol:
     needs: init
-    if: ($sol == true) || (${{ inputs.sol }} == true)
+    if: ${{ inputs.sol == true }} || env.sol == true
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the solidity testing environment"
+      - run: npm i truffle
       - run: truffle test --test_directory=./test/sol
   test-js:
     needs: init
-    if: ($js == true) || (${{ inputs.js }} == true)
+    if: ${{ inputs.js == true }} || env.js == true
     runs-on: ubuntu-latest
     steps:
       - run: echo "Performing unit tests using the js testing environment"
