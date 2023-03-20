@@ -43,15 +43,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: install-dependencies
     steps:
-    - name: Performing unit tests using the solidity testing environment
-      if: env.SOL_TESTS == 'true'
-      run: npm run test-sol
+      - name: Performing unit tests using the solidity testing environment
+        if: env.SOL_TESTS == 'true'
+        run: npm run test-sol
     
   js-unit-tests:
     runs-on: ubuntu-latest
     needs: install-dependencies
     steps:
-    - name: Performing unit tests using the js testing environment
+      - name: Performing unit tests using the js testing environment
       if: env.js-tests == 'true'
       - run: ls
       - run: npm run test-js
