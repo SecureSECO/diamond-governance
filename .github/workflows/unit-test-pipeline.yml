@@ -21,7 +21,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./partial-token-burn-voting
+    working-directory: ~/partial-token-burn-voting
 
 env:
   NODE_VERSION: 14.x
