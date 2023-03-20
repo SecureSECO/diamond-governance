@@ -42,10 +42,11 @@ jobs:
         uses: actions/cache@v3
         id: cache-node-modules
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            **/node_modules
+          key: steps.restore-node_modules.outputs.cache-hit != 'true'
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node_modules-
 
 
   solidity-unit-tests:
@@ -56,11 +57,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: Restore cache
         uses: actions/cache@v3
-        id: restore-node-modules
+        id: restore-node_modules
         with:
-          path: ~/.npm
+          path: |
+            **/node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
+        if: steps.restore-node_modules.outputs.cache-hit != 'true'
         run: npm install
       - name: Performing unit tests using the solidity testing environment
         if: env.SOL_TESTS == 'true'
@@ -73,11 +76,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: Restore cache
         uses: actions/cache@v3
-        id: restore-node-modules
+        id: restore-node_modules
         with:
-          path: ~/.npm
+          path: |
+            **/node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
+        if: steps.restore-node_modules.outputs.cache-hit != 'true'
         run: npm install
       - name: Performing unit tests using the js testing environment
         run: npm run test-js
