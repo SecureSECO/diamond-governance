@@ -21,7 +21,7 @@ on:
 
 defaults:
   run:
-    working-directory: ../
+    working-directory: ./
 
 env:
   NODE_VERSION: 14.x
@@ -37,7 +37,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: ls
       - run: npm ci
 
   solidity-unit-tests:
@@ -54,6 +53,7 @@ jobs:
     steps:
     - name: Performing unit tests using the js testing environment
       if: env.js-tests == 'true'
-      run: npm run test-js
+      - run: ls
+      - run: npm run test-js
 
   
