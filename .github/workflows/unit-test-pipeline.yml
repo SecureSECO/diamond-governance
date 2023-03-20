@@ -19,6 +19,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+defaults:
+  run:
+    working-directory: ./partial-token-burn-voting
+
 env:
   NODE_VERSION: 14.x
   js-tests: ${{ github.event.inputs.js || true }}
