@@ -37,7 +37,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: npm ci
+      - run: npm ci --no-optional
+      - run: npm i -g truffle
 
   solidity-unit-tests:
     runs-on: ubuntu-latest
@@ -45,7 +46,7 @@ jobs:
     steps:
       - name: Performing unit tests using the solidity testing environment
         if: env.SOL_TESTS == 'true'
-        run: npm run test-sol
+        run: truffle test --test_directory=./test/sol
     
   js-unit-tests:
     runs-on: ubuntu-latest
@@ -54,7 +55,6 @@ jobs:
       - name: Performing unit tests using the js testing environment
         if: env.js-tests == 'true'
         run: | 
-          ls
-          npm run test-js
+          truffle test --test_directory=./test/js
 
   
