@@ -38,13 +38,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - run: ls
       - name: Cache node modules
         uses: actions/cache@v3
         with:
           path: |
             **/node_modules
-          key: steps.restore-node_modules.outputs.cache-hit != 'true'
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node_modules-
 
