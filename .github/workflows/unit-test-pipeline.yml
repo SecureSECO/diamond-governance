@@ -45,7 +45,7 @@ jobs:
             **/node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node_modules-
+            ${{ runner.os }}-build-
 
 
   solidity-unit-tests:
