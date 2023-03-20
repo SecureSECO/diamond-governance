@@ -64,7 +64,7 @@ jobs:
         run: npm install
       - name: Performing unit tests using the solidity testing environment
         if: env.SOL_TESTS == 'true'
-        run: truffle test --test_directory=./test/sol
+        run: npm run test-sol
 
     
   js-unit-tests:
@@ -81,8 +81,6 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Performing unit tests using the js testing environment
-        
-        run: | 
-          truffle test --test_directory=./test/js
+        run: npm run test-sol
 
   
