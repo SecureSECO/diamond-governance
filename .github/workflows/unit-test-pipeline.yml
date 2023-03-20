@@ -52,8 +52,9 @@ jobs:
     needs: install-dependencies
     steps:
       - name: Performing unit tests using the js testing environment
-      if: env.js-tests == 'true'
-      - run: ls
-      - run: npm run test-js
+        if: env.js-tests == 'true'
+        run: | 
+          ls
+          npm run test-js
 
   
