@@ -6,15 +6,15 @@ import {SafeCastUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 
 import {IMembership} from "@aragon/osx/core/plugin/membership/IMembership.sol";
 import {IDAO} from "@aragon/osx/core/dao/IDAO.sol";
-import {RATIO_BASE, _applyRatioCeiled} from "../../utils/Ratio.sol";
+import {_applyRatioCeiled} from "../../utils/Ratio.sol";
 import {PartialVotingBase} from "../PartialVotingBase.sol";
-import {IPartialVoting} from "../IPartialVoting.sol";
 import {IERC20BurnableVotesUpgradeable} from "../../token/IERC20BurnableVotesUpgradeable.sol";
 
 /// @title PartialTokenBurnVoting
 /// @author Utrecht University - 2023
 /// @notice The partial token voting with burning implementation using an [OpenZepplin `Votes`](https://docs.openzeppelin.com/contracts/4.x/api/governance#Votes) compatible governance token.
 /// @dev This contract inherits from `PartialVotingBase` and implements the `IMajorityVoting` interface.
+/// @dev This contract is based on TokenVoting from Aragon
 contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     using SafeCastUpgradeable for uint256;
 
@@ -144,32 +144,32 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
         address _voter,
         bool _tryEarlyExecution
     ) internal override {
-        Proposal storage proposal_ = proposals[_proposalId];
+        // Proposal storage proposal_ = proposals[_proposalId];
 
-        // Write the new vote for the voter.
-        if (_voteData.option == VoteOption.Yes) {
-            proposal_.tally.yes = proposal_.tally.yes + _voteData.amount;
-        } else if (_voteData.option  == VoteOption.No) {
-            proposal_.tally.no = proposal_.tally.no + _voteData.amount;
-        } else if (_voteData.option  == VoteOption.Abstain) {
-            proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount;
-        }
+        // // Write the new vote for the voter.
+        // if (_voteData.option == VoteOption.Yes) {
+        //     proposal_.tally.yes = proposal_.tally.yes + _voteData.amount;
+        // } else if (_voteData.option  == VoteOption.No) {
+        //     proposal_.tally.no = proposal_.tally.no + _voteData.amount;
+        // } else if (_voteData.option  == VoteOption.Abstain) {
+        //     proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount;
+        // }
 
-        proposal_.voters[_voter].push(_voteData);
+        // proposal_.voters[_voter].push(_voteData);
         
-        if (proposal_.parameters.votingMode.burnTokens) {
-            votingToken.burnFrom(_voter, _voteData.amount);
-        }
+        // if (proposal_.parameters.votingMode.burnTokens) {
+        //     votingToken.burnFrom(_voter, _voteData.amount);
+        // }
 
-        emit VoteCast({
-            proposalId: _proposalId,
-            voter: _voter,
-            voteData: _voteData
-        });
+        // emit VoteCast({
+        //     proposalId: _proposalId,
+        //     voter: _voter,
+        //     voteData: _voteData
+        // });
 
-        if (_tryEarlyExecution && _canExecute(_proposalId)) {
-            _execute(_proposalId);
-        }
+        // if (_tryEarlyExecution && _canExecute(_proposalId)) {
+        //     _execute(_proposalId);
+        // }
     }
 
     /// @inheritdoc PartialVotingBase

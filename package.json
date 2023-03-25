@@ -1,16 +1,32 @@
 {
+  "name": "partial-token-burn-voting",
+  "version": "1.0.0",
+  "description": "Partial Token Burn Voting Aragon OSx Plugin",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test --typecheck",
+    "deploy": "npx hardhat run deployments/deploy.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SecureSECODAO/partial-token-burn-voting.git"
+  },
+  "author": "Utrecht University - SecureSECO DAO",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/SecureSECODAO/partial-token-burn-voting/issues"
+  },
+  "homepage": "https://github.com/SecureSECODAO/partial-token-burn-voting#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "hardhat": "^2.13.0"
+  },
   "dependencies": {
     "@aragon/osx": "^1.0.1",
+    "@ensdomains/ens-contracts": "^0.0.20",
     "@openzeppelin/contracts": "^4.8.2",
-    "@openzeppelin/contracts-upgradeable": "^4.8.2",
-    "solc": "0.8.17"
-  },
-  "devDependencies": {
-    "truffle": "^5.8.0"
-  },
-  "scripts": {
-    "test-js": "truffle test --test_directory=./test/js",
-    "test-sol": "truffle test --test_directory=./test/sol",
-    "print-version": "truffle -v"
+    "@openzeppelin/contracts-upgradeable": "^4.8.2"
   }
 }
