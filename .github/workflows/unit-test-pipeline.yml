@@ -9,7 +9,7 @@ on:
         default: true
         required: false
 
-  push:a
+  push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
