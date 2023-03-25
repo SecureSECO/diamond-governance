@@ -56,6 +56,8 @@ jobs:
       - name: Install dependencies
         if: steps.restore-node_modules.outputs.cache-hit != 'true'
         run: npm install
+      - name: Compile project
+        run: npm run compile
       - name: Performing unit tests
         run: npm test
 
