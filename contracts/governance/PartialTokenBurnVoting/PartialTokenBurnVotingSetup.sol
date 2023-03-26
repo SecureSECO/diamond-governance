@@ -96,7 +96,7 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
 
         // Prepare permissions
         PermissionLib.MultiTargetPermission[]
-            memory permissions = new PermissionLib.MultiTargetPermission[](4);
+            memory permissions = new PermissionLib.MultiTargetPermission[](6);
 
         // Set plugin permissions to be granted.
         // Grant the list of prmissions of the plugin to the DAO.
@@ -125,13 +125,28 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
             DAO(payable(_dao)).EXECUTE_PERMISSION_ID()
         );
 
-        bytes32 tokenMintPermission = NonTransferableGovernanceERC20(token).MINT_PERMISSION_ID();
         permissions[3] = PermissionLib.MultiTargetPermission(
             PermissionLib.Operation.Grant,
             token,
-            _dao,
+            plugin,
             PermissionLib.NO_CONDITION,
-            tokenMintPermission
+            NonTransferableGovernanceERC20(token).MINT_PERMISSION_ID()
+        );
+
+        permissions[4] = PermissionLib.MultiTargetPermission(
+            PermissionLib.Operation.Grant,
+            token,
+            plugin,
+            PermissionLib.NO_CONDITION,
+            NonTransferableGovernanceERC20(token).TRANSFER_PERMISSION_ID()
+        );
+
+        permissions[5] = PermissionLib.MultiTargetPermission(
+            PermissionLib.Operation.Grant,
+            token,
+            plugin,
+            PermissionLib.NO_CONDITION,
+            NonTransferableGovernanceERC20(token).BURN_PERMISSION_ID()
         );
 
         preparedSetupData.helpers = helpers;
@@ -151,7 +166,7 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
 
         address token = _payload.currentHelpers[0];
 
-        permissions = new PermissionLib.MultiTargetPermission[](4);
+        permissions = new PermissionLib.MultiTargetPermission[](6);
 
         // Set permissions to be Revoked.
         permissions[0] = PermissionLib.MultiTargetPermission(
@@ -181,9 +196,25 @@ contract PartialTokenBurnVotingSetup is PluginSetup {
         permissions[3] = PermissionLib.MultiTargetPermission(
             PermissionLib.Operation.Revoke,
             token,
-            _dao,
+            _payload.plugin,
             PermissionLib.NO_CONDITION,
             NonTransferableGovernanceERC20(token).MINT_PERMISSION_ID()
+        );
+        
+        permissions[4] = PermissionLib.MultiTargetPermission(
+            PermissionLib.Operation.Revoke,
+            token,
+            _payload.plugin,
+            PermissionLib.NO_CONDITION,
+            NonTransferableGovernanceERC20(token).TRANSFER_PERMISSION_ID()
+        );
+        
+        permissions[5] = PermissionLib.MultiTargetPermission(
+            PermissionLib.Operation.Revoke,
+            token,
+            _payload.plugin,
+            PermissionLib.NO_CONDITION,
+            NonTransferableGovernanceERC20(token).BURN_PERMISSION_ID()
         );
     }
 

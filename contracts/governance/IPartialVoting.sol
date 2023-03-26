@@ -10,12 +10,10 @@ import {IDAO} from "@aragon/osx/core/dao/IDAO.sol";
 /// @dev This contract implements the `IPartialVoting` interface.
 interface IPartialVoting {
     /// @notice Vote options that a voter can chose from.
-    /// @param None The default option state of a voter indicating the absence of from the vote. This option neither influences support nor participation.
     /// @param Abstain This option does not influence the support but counts towards participation.
     /// @param Yes This option increases the support and counts towards participation.
     /// @param No This option decreases the support and counts towards participation.
     enum VoteOption {
-        None,
         Abstain,
         Yes,
         No

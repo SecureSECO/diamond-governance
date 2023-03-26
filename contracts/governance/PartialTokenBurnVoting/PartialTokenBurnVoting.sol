@@ -19,14 +19,16 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     using SafeCastUpgradeable for uint256;
 
     /// @notice The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
-    bytes4 internal constant TOKEN_VOTING_INTERFACE_ID =
-        this.initialize.selector ^ this.getVotingToken.selector;
+    // TEMP
+    // bytes4 internal constant TOKEN_VOTING_INTERFACE_ID =
+    //     this.initialize.selector ^ this.getVotingToken.selector;
 
     /// @notice An [OpenZepplin `Votes`](https://docs.openzeppelin.com/contracts/4.x/api/governance#Votes) compatible contract referencing the token being used for voting and burning.
     IERC20BurnableVotesUpgradeable private votingToken;
 
     /// @notice Thrown if the voting power is zero
-    error NoVotingPower();
+    // TEMP
+    // error NoVotingPower();
 
     /// @notice Initializes the component.
     /// @dev This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
@@ -42,18 +44,20 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
 
         votingToken = _token;
 
-        emit MembershipContractAnnounced({definingContract: address(_token)});
+        // TEMP
+        // emit MembershipContractAnnounced({definingContract: address(_token)});
     }
 
     /// @notice Checks if this or the parent contract supports an interface by its ID.
     /// @param _interfaceId The ID of the interface.
     /// @return Returns `true` if the interface is supported.
-    function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
-        return
-            _interfaceId == TOKEN_VOTING_INTERFACE_ID ||
-            _interfaceId == type(IMembership).interfaceId ||
-            super.supportsInterface(_interfaceId);
-    }
+    // TEMP
+    // function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
+    //     return
+    //         _interfaceId == TOKEN_VOTING_INTERFACE_ID ||
+    //         _interfaceId == type(IMembership).interfaceId ||
+    //         super.supportsInterface(_interfaceId);
+    // }
 
     /// @notice getter function for the voting token.
     /// @dev public function also useful for registering interfaceId and for distinguishing from majority voting interface.
@@ -84,13 +88,14 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
 
         uint256 totalVotingPower_ = totalVotingPower(snapshotBlock);
 
-        if (totalVotingPower_ == 0) {
-            revert NoVotingPower();
-        }
+        // TEMP
+        // if (totalVotingPower_ == 0) {
+        //     revert NoVotingPower();
+        // }
 
-        if (votingToken.getPastVotes(_msgSender(), snapshotBlock) < minProposerVotingPower()) {
-            revert ProposalCreationForbidden(_msgSender());
-        }
+        // if (votingToken.getPastVotes(_msgSender(), snapshotBlock) < minProposerVotingPower()) {
+        //     revert ProposalCreationForbidden(_msgSender());
+        // }
 
         proposalId = _createProposal({
             _creator: _msgSender(),
@@ -134,7 +139,7 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     /// @inheritdoc IMembership
     function isMember(address _account) external view returns (bool) {
         /// TODO Add integration with GitHub and KYC checker contract
-        return votingToken.getVotes(_account) > 0;
+        return true;
     }
 
     /// @inheritdoc PartialVotingBase
@@ -144,29 +149,30 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
         address _voter,
         bool _tryEarlyExecution
     ) internal override {
-        // Proposal storage proposal_ = proposals[_proposalId];
+        Proposal storage proposal_ = proposals[_proposalId];
 
-        // // Write the new vote for the voter.
-        // if (_voteData.option == VoteOption.Yes) {
-        //     proposal_.tally.yes = proposal_.tally.yes + _voteData.amount;
-        // } else if (_voteData.option  == VoteOption.No) {
-        //     proposal_.tally.no = proposal_.tally.no + _voteData.amount;
-        // } else if (_voteData.option  == VoteOption.Abstain) {
-        //     proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount;
-        // }
+        // Write the new vote for the voter.
+        if (_voteData.option == VoteOption.Yes) {
+            proposal_.tally.yes = proposal_.tally.yes + _voteData.amount;
+        } else if (_voteData.option  == VoteOption.No) {
+            proposal_.tally.no = proposal_.tally.no + _voteData.amount;
+        } else if (_voteData.option  == VoteOption.Abstain) {
+            proposal_.tally.abstain = proposal_.tally.abstain + _voteData.amount;
+        }
 
-        // proposal_.voters[_voter].push(_voteData);
+        proposal_.voters[_voter].push(_voteData);
         
-        // if (proposal_.parameters.votingMode.burnTokens) {
-        //     votingToken.burnFrom(_voter, _voteData.amount);
-        // }
+        if (proposal_.parameters.votingMode.burnTokens) {
+            votingToken.burnFrom(_voter, _voteData.amount);
+        }
 
-        // emit VoteCast({
-        //     proposalId: _proposalId,
-        //     voter: _voter,
-        //     voteData: _voteData
-        // });
+        emit VoteCast({
+            proposalId: _proposalId,
+            voter: _voter,
+            voteData: _voteData
+        });
 
+        // TEMP
         // if (_tryEarlyExecution && _canExecute(_proposalId)) {
         //     _execute(_proposalId);
         // }
@@ -185,11 +191,6 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
             return false;
         }
 
-        // The voter votes `None` which is not allowed.
-        if (_voteData.option == VoteOption.None) {
-            return false;
-        }
-
         // The voter has already voted and the proposal only allows a single vote
         if (
             proposal_.voters[_account].length > 0 &&
@@ -201,8 +202,8 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
 
         uint256 votingPower = votingToken.getPastVotes(_account, proposal_.parameters.snapshotBlock);
 
-        // The voter has no voting power.
-        if (votingPower == 0) {
+        // The voter tries to vote with no voting power.
+        if (_voteData.amount <= 0) {
             return false;
         }
 
@@ -231,5 +232,6 @@ contract PartialTokenBurnVoting is IMembership, PartialVotingBase {
     /// @dev This empty reserved space is put in place to allow future versions to add new
     /// variables without shifting down storage in the inheritance chain.
     /// https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-    uint256[49] private __gap;
+    // TEMP
+    // uint256[49] private __gap;
 }

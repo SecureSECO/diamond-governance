@@ -57,6 +57,7 @@ contract NonTransferableGovernanceERC20 is GovernanceERC20, IERC20Burnable
         return true;
     }
 
+    /// @inheritdoc IERC20Burnable
     function burnFrom(address from, uint256 amount) public virtual override auth(BURN_PERMISSION_ID) returns (bool) {
         _burn(from, amount);
         return true;

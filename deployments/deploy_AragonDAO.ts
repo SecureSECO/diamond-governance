@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 
 // Utils
 import { resolveENS } from "../utils/ensHelper";
-import { toBytes } from "../utils/utils";
+import { toBytes, getEvents } from "../utils/utils";
 
 // Types
 
@@ -22,12 +22,22 @@ async function deployAragonDAO() {
     const DAOSettings = await GetDaoCreationParams();
 
     // Create DAO
-    await DAOFactory.createDao(DAOSettings, [PartialTokenBurnVotingSettings]);
-    const DAOAddress = await resolveENS(daoResolver, "dao", "my-dao");
+    const tx = await DAOFactory.createDao(DAOSettings, [PartialTokenBurnVotingSettings]);
+    const receipt = await tx.wait();
+    
+    // Retrieve plugin address from DAO creation log
+    const PluginSetupProcessorContract = await ethers.getContractFactory("PluginSetupProcessor");
+    const pluginAddresses = getEvents(PluginSetupProcessorContract, "InstallationApplied", receipt).map((log : any) => log.args.plugin);
 
+    // Retrieve DAO address with ENS
+    const DAOAddress = await resolveENS(daoResolver, "dao", "my-dao");
     const DAOConctract = await ethers.getContractFactory("DAO");
     const DAO = await DAOConctract.attach(DAOAddress);
-    return DAO;
+
+    // Link plugin addresses to Contracts
+    const PartialTokenBurnVotingContract = await ethers.getContractFactory("PartialTokenBurnVoting");
+    const PartialTokenBurnVoting = await PartialTokenBurnVotingContract.attach(pluginAddresses[0]);
+    return { DAO, PartialTokenBurnVoting };
 }
 
 async function GetDaoCreationParams() {
