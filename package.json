@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "npx hardhat test --typecheck",
-    "deploy": "npx hardhat run deployments/deploy.ts"
+    "test": "npm run compile && npx hardhat test --typecheck",
+    "deploy": "npm run compile && npx hardhat run deployments/deploy.ts"
   },
   "repository": {
     "type": "git",
