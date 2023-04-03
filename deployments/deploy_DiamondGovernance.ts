@@ -8,7 +8,7 @@ import { resolveENS } from "../utils/ensHelper";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20ClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
+import { DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20ClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
 
 // Other
 
@@ -22,6 +22,7 @@ interface DiamondDeployedContracts {
     GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
     GovernanceERC20Burnable: GovernanceERC20BurnableFacet;
     ERC20Claimable: ERC20ClaimableFacet;
+    Verification: VerificationFacet;
   }
 }
 
@@ -31,7 +32,7 @@ interface DiamondDeployedContracts {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver) {
+async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver, verificationContractAddress: string) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDiamondGovernance();
@@ -87,6 +88,11 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20Claimable).get(["tokensClaimable(address)", "claim()"])
   });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.Verification.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.Verification).get(["getStampsAt(address, uint)"])
+  });
 
   enum VotingMode { SingleVote, SinglePartialVote, MultiplePartialVote };
   const votingSettings = {
@@ -99,7 +105,7 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
   const constructionArgs = {
     _diamondCut: cut,
     _init: diamondGovernanceContracts.DiamondInit.address,
-    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [ethers.constants.AddressZero, votingSettings])
+    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [verificationContractAddress, votingSettings])
   };
   const constructionFormat = JSON.parse(buildMetadata).pluginSetupABI.prepareInstallation;
   const pluginConstructionBytes = ethers.utils.defaultAbiCoder.encode(
@@ -162,6 +168,10 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const ERC20ClaimableFacetContract = await ethers.getContractFactory("ERC20ClaimableFacet");
   const ERC20ClaimableFacet = await ERC20ClaimableFacetContract.deploy();
   console.log(`ERC20ClaimableFacet deployed at ${ERC20ClaimableFacet.address}`);
+
+  const VerificationContract = await ethers.getContractFactory("VerificationFacet");
+  const VerificationFacet = await VerificationContract.deploy();
+  console.log(`VerificationFacet deployed at ${VerificationFacet.address}`);
   
   return {
     DiamondGovernanceSetup: DiamondGovernanceSetup,
@@ -172,7 +182,8 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       PartialBurnVoting: PartialBurnVotingFacet,
       GovernanceERC20Disabled: GovernanceERC20DisabledFacet,
       GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
-      ERC20Claimable: ERC20ClaimableFacet
+      ERC20Claimable: ERC20ClaimableFacet,
+      Verification: VerificationFacet,
     }
   };
 }

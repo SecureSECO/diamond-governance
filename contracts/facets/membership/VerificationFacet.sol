@@ -13,16 +13,13 @@ library SharedStructs {
 }
 
 interface VerificationInterface {
-    function getStamps(
-        address _toCheck
+    function getStampsAt(
+        address _toCheck,
+        uint _timestamp
     ) external view returns (SharedStructs.Stamp[] memory);
 }
 
 contract VerificationFacet {
-    // TODO: specify address
-    // VerificationInterface verificationContract =
-    //     VerificationInterface(verificationContractAddress);
-
     function whitelist(address _address) internal {
         LibVerificationStorage.verificationStorage().whitelistTimestamps[_address] = block.timestamp;
     }
@@ -44,13 +41,15 @@ contract VerificationFacet {
         else return bytes1(uint8(b) + 0x57);
     }
 
-    function getStamps(
-        address _address
-    ) internal view returns (SharedStructs.Stamp[] memory) {
+    function getStampsAt(
+        address _address,
+        uint _timestamp
+    ) external view returns (SharedStructs.Stamp[] memory) {
         LibVerificationStorage.VerificationStorage storage ds = LibVerificationStorage.verificationStorage();
         VerificationInterface verificationContract = VerificationInterface(ds.verificationContractAddress);
-        SharedStructs.Stamp[] memory stamps = verificationContract.getStamps(
-            _address
+        SharedStructs.Stamp[] memory stamps = verificationContract.getStampsAt(
+            _address,
+            _timestamp
         );
 
         uint whitelistTimestamp = ds.whitelistTimestamps[_address];
