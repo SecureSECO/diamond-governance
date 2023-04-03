@@ -10,16 +10,16 @@ on:
         required: false
 
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 defaults:
   run:
     working-directory: ./
 
 env:
-  NODE_VERSION: 14.x
+  NODE_VERSION: 18.x
   unit-tests: ${{ github.event.inputs.js || true }}
 
 jobs:
