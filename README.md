@@ -1,18 +1,21 @@
-# PartialTokenBurnVoting
-PartialTokenBurnVoting is a modified version of the Aragon plugin TokenVoting. It is also a majority-voting governance plugin, however it burns all the tokens used to vote. It also gives the option to only use a part of your voting tokens and vote multiple times.
+# Diamond Governance
+Diamond Governance is a very flexible plugin for AragonOSx. It acts as a bridge between the Aragon framework and ERC-2535 facets (https://eips.ethereum.org/EIPS/eip-2535). Multiple facets to customize the plugin are included in the project.  
 
 # Setup
 ## Dependencies
-NodeJS (>=14.x.x)
-npm (>=6.x.x)
+NodeJS (>=14.x.x)  
+npm (>=6.x.x)  
 
 ## Build process
-npm i
-npm compile
+npm i  
+npm run compile  
 
 # Commands available
-## npm deploy 
-Deploys the plugin to the network setup in hardhat
+## npm run compile
+Compiles all the smart contracts and generates the typescript types.  
+
+## npm run deploy
+Deploys the plugin to the network setup in hardhat.  
 
 ## npm test
-Runs the unit tests
+Runs the unit tests.  
