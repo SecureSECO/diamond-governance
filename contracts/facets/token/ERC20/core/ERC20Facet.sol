@@ -44,7 +44,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
      * construction.
      */
     constructor(string memory name_, string memory symbol_) {
-        LibERC20Storage.ERC20Storage storage s = LibERC20Storage.erc20Storage();
+        LibERC20Storage.Storage storage s = LibERC20Storage.getStorage();
         s.name = name_;
         s.symbol = symbol_;
     }
@@ -53,7 +53,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return LibERC20Storage.erc20Storage().name;
+        return LibERC20Storage.getStorage().name;
     }
 
     
@@ -62,7 +62,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return LibERC20Storage.erc20Storage().symbol;
+        return LibERC20Storage.getStorage().symbol;
     }
 
     /**
@@ -86,14 +86,14 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
      * @dev See {IERC20-totalSupply}.
      */
     function totalSupply() public view virtual override returns (uint256) {
-        return LibERC20Storage.erc20Storage().totalSupply;
+        return LibERC20Storage.getStorage().totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) {
-        return LibERC20Storage.erc20Storage().balances[account];
+        return LibERC20Storage.getStorage().balances[account];
     }
 
     /**
@@ -114,7 +114,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return LibERC20Storage.erc20Storage().allowances[owner][spender];
+        return LibERC20Storage.getStorage().allowances[owner][spender];
     }
 
     /**
@@ -219,7 +219,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(from, to, amount);
 
-        LibERC20Storage.ERC20Storage storage s = LibERC20Storage.erc20Storage();
+        LibERC20Storage.Storage storage s = LibERC20Storage.getStorage();
         uint256 fromBalance = s.balances[from];
         require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
         unchecked {
@@ -248,7 +248,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(address(0), account, amount);
 
-        LibERC20Storage.ERC20Storage storage s = LibERC20Storage.erc20Storage();
+        LibERC20Storage.Storage storage s = LibERC20Storage.getStorage();
         s.totalSupply += amount;
         unchecked {
             // Overflow not possible: balance + amount is at most totalSupply + amount, which is checked above.
@@ -275,7 +275,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        LibERC20Storage.ERC20Storage storage s = LibERC20Storage.erc20Storage();
+        LibERC20Storage.Storage storage s = LibERC20Storage.getStorage();
         uint256 accountBalance = s.balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
@@ -306,7 +306,7 @@ contract ERC20Facet is Context, IERC20, IERC20Metadata {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        LibERC20Storage.erc20Storage().allowances[owner][spender] = amount;
+        LibERC20Storage.getStorage().allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 

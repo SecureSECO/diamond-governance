@@ -18,13 +18,23 @@ interface VerificationInterface {
     ) external view returns (SharedStructs.Stamp[] memory);
 }
 
+library VerificationFacetInit {
+    struct InitParams {
+        address verificationContractAddress;
+    }
+
+    function init(InitParams calldata _params) external {
+        LibVerificationStorage.getStorage().verificationContractAddress = _params.verificationContractAddress;
+    }
+}
+
 contract VerificationFacet {
     // TODO: specify address
     // VerificationInterface verificationContract =
     //     VerificationInterface(verificationContractAddress);
 
     function whitelist(address _address) internal {
-        LibVerificationStorage.verificationStorage().whitelistTimestamps[_address] = block.timestamp;
+        LibVerificationStorage.getStorage().whitelistTimestamps[_address] = block.timestamp;
     }
 
     function toAsciiString(address x) internal pure returns (string memory) {
@@ -47,7 +57,7 @@ contract VerificationFacet {
     function getStamps(
         address _address
     ) internal view returns (SharedStructs.Stamp[] memory) {
-        LibVerificationStorage.VerificationStorage storage ds = LibVerificationStorage.verificationStorage();
+        LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
         VerificationInterface verificationContract = VerificationInterface(ds.verificationContractAddress);
         SharedStructs.Stamp[] memory stamps = verificationContract.getStamps(
             _address

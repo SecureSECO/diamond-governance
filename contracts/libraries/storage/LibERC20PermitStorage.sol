@@ -7,13 +7,13 @@ library LibERC20PermitStorage {
     using Counters for Counters.Counter;
     
     bytes32 constant ERC20_PERMIT_STORAGE_POSITION =
-        keccak256("erc20.permit.diamond.storage.position");
+        keccak256("permit.erc20.diamond.storage.position");
 
-    struct ERC20PermitStorage {
+    struct Storage {
         mapping(address => Counters.Counter) nonces;
     }
 
-    function erc20PermitStorage() internal pure returns (ERC20PermitStorage storage ds) {
+    function getStorage() internal pure returns (Storage storage ds) {
         bytes32 position = ERC20_PERMIT_STORAGE_POSITION;
         assembly {
             ds.slot := position

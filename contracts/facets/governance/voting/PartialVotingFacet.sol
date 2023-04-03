@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import { IPartialVotingFacet } from "./IPartialVotingFacet.sol";
 import { IPartialVotingProposalFacet } from "../proposal/IPartialVotingProposalFacet.sol";
-import { IGovernanceStructure } from "../structure/IGovernanceStructure.sol";
+import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
 import { AragonAuth } from "../../../utils/AragonAuth.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
@@ -32,7 +32,7 @@ contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
         PartialVote calldata _voteData
     ) public virtual {
         address account = msg.sender;
-        IPartialVotingProposalFacet.ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        IPartialVotingProposalFacet.ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         if (!_canVote(_proposalId, proposal_, account, _voteData, IGovernanceStructure(address(this)))) {
             revert VoteCastForbidden({
@@ -56,7 +56,7 @@ contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
         address _voter,
         PartialVote calldata _voteData
     ) public view virtual returns (bool) {
-        return _canVote(_proposalId, LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId], _voter, _voteData, IGovernanceStructure(address(this)));
+        return _canVote(_proposalId, LibPartialVotingProposalStorage.getStorage().proposals[_proposalId], _voter, _voteData, IGovernanceStructure(address(this)));
     }
 
     /// @notice Internal function to cast a vote. It assumes the queried vote exists.

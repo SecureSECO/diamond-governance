@@ -19,9 +19,7 @@ enum VoteOption { Abstain, Yes, No }
 async function getVotingPower(amount : number) {
   const { DiamondGovernance } = await loadFixture(deployAragonDAO);
   const ERC20ClaimableFacet = await ethers.getContractAt("ERC20ClaimableFacet", DiamondGovernance.address);
-  for (let i = 0; i < amount; i++) {
-    await ERC20ClaimableFacet.claim();
-  }
+  await ERC20ClaimableFacet.claim();
 }
 
 async function createProposal() {
@@ -65,7 +63,7 @@ async function voteOnProposal(PartialVotingFacet : PartialVotingFacet, PartialVo
   return proposalAfterVote;
 }
 
-describe("PartialVoting contract", function () {
+describe("PartialVoting", function () {
   // Allowed simple
   it("should increase yes with the right amount when voting yes on proposal", async function () {
     const { DiamondGovernance, proposalId, proposal } = await loadFixture(createProposal);

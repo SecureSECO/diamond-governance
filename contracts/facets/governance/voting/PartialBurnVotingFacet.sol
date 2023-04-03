@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { PartialVotingFacet, IPartialVotingProposalFacet, IGovernanceStructure, LibDiamond } from "./PartialVotingFacet.sol";
-import { IBurnableGovernanceStructure } from "../structure/IBurnableGovernanceStructure.sol";
+import { IBurnableGovernanceStructure } from "../structure/voting-power/IBurnableGovernanceStructure.sol";
 import "../shared/IPartialBurnVotingShared.sol";
 
 contract PartialBurnVotingFacet is PartialVotingFacet {

@@ -71,7 +71,7 @@ contract ERC20PermitFacet is ERC20Facet, IERC20Permit, EIP712 {
      * @dev See {IERC20Permit-nonces}.
      */
     function nonces(address owner) public view virtual override returns (uint256) {
-        return LibERC20PermitStorage.erc20PermitStorage().nonces[owner].current();
+        return LibERC20PermitStorage.getStorage().nonces[owner].current();
     }
 
     /**
@@ -88,7 +88,7 @@ contract ERC20PermitFacet is ERC20Facet, IERC20Permit, EIP712 {
      * _Available since v4.1._
      */
     function _useNonce(address owner) internal virtual returns (uint256 current) {
-        Counters.Counter storage nonce = LibERC20PermitStorage.erc20PermitStorage().nonces[owner];
+        Counters.Counter storage nonce = LibERC20PermitStorage.getStorage().nonces[owner];
         current = nonce.current();
         nonce.increment();
     }

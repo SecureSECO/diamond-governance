@@ -58,28 +58,28 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
      * @dev Get the `pos`-th checkpoint for `account`.
      */
     function checkpoints(address account, uint32 pos) public view virtual returns (Checkpoint memory) {
-        return LibERC20VotesStorage.erc20VotesStorage().checkpoints[account][pos];
+        return LibERC20VotesStorage.getStorage().checkpoints[account][pos];
     }
 
     /**
      * @dev Get number of checkpoints for `account`.
      */
     function numCheckpoints(address account) public view virtual returns (uint32) {
-        return SafeCast.toUint32(LibERC20VotesStorage.erc20VotesStorage().checkpoints[account].length);
+        return SafeCast.toUint32(LibERC20VotesStorage.getStorage().checkpoints[account].length);
     }
 
     /**
      * @dev Get the address `account` is currently delegating to.
      */
     function delegates(address account) public view virtual override returns (address) {
-        return LibERC20VotesStorage.erc20VotesStorage().delegates[account];
+        return LibERC20VotesStorage.getStorage().delegates[account];
     }
 
     /**
      * @dev Gets the current votes balance for `account`
      */
     function getVotes(address account) public view virtual override returns (uint256) {
-        LibERC20VotesStorage.ERC20VotesStorage storage s = LibERC20VotesStorage.erc20VotesStorage();
+        LibERC20VotesStorage.Storage storage s = LibERC20VotesStorage.getStorage();
         uint256 pos = s.checkpoints[account].length;
         unchecked {
             return pos == 0 ? 0 : s.checkpoints[account][pos - 1].votes;
@@ -95,7 +95,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
      */
     function getPastVotes(address account, uint256 timepoint) public view virtual override returns (uint256) {
         require(timepoint < clock(), "ERC20Votes: future lookup");
-        return _checkpointsLookup(LibERC20VotesStorage.erc20VotesStorage().checkpoints[account], timepoint);
+        return _checkpointsLookup(LibERC20VotesStorage.getStorage().checkpoints[account], timepoint);
     }
 
     /**
@@ -108,7 +108,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
      */
     function getPastTotalSupply(uint256 timepoint) public view virtual override returns (uint256) {
         require(timepoint < clock(), "ERC20Votes: future lookup");
-        return _checkpointsLookup(LibERC20VotesStorage.erc20VotesStorage().totalSupplyCheckpoints, timepoint);
+        return _checkpointsLookup(LibERC20VotesStorage.getStorage().totalSupplyCheckpoints, timepoint);
     }
 
     /**
@@ -198,7 +198,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
         super._mint(account, amount);
         require(totalSupply() <= _maxSupply(), "ERC20Votes: total supply risks overflowing votes");
 
-        _writeCheckpoint(LibERC20VotesStorage.erc20VotesStorage().totalSupplyCheckpoints, _add, amount);
+        _writeCheckpoint(LibERC20VotesStorage.getStorage().totalSupplyCheckpoints, _add, amount);
     }
 
     /**
@@ -207,7 +207,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
     function _burn(address account, uint256 amount) internal virtual override {
         super._burn(account, amount);
 
-        _writeCheckpoint(LibERC20VotesStorage.erc20VotesStorage().totalSupplyCheckpoints, _subtract, amount);
+        _writeCheckpoint(LibERC20VotesStorage.getStorage().totalSupplyCheckpoints, _subtract, amount);
     }
 
     /**
@@ -229,7 +229,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
     function _delegate(address delegator, address delegatee) internal virtual {
         address currentDelegate = delegates(delegator);
         uint256 delegatorBalance = balanceOf(delegator);
-        LibERC20VotesStorage.erc20VotesStorage().delegates[delegator] = delegatee;
+        LibERC20VotesStorage.getStorage().delegates[delegator] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
 
@@ -237,7 +237,7 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
     }
 
     function _moveVotingPower(address src, address dst, uint256 amount) private {
-        LibERC20VotesStorage.ERC20VotesStorage storage s = LibERC20VotesStorage.erc20VotesStorage();
+        LibERC20VotesStorage.Storage storage s = LibERC20VotesStorage.getStorage();
         
         if (src != dst && amount > 0) {
             if (src != address(0)) {
