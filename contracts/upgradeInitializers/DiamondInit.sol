@@ -26,7 +26,7 @@ import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingF
 
 import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
 import { PartialVotingProposalFacetInit } from "../facets/governance/proposal/PartialVotingProposalFacet.sol";
-import { ERC20TimeClaimableFacetInit } from "../facets/token/ERC20/claiming/ERC20TimeClaimableFacet.sol";
+import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/ERC20TieredTimeClaimableFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { LibVerificationStorage } from "../libraries/storage/LibVerificationStorage.sol";
@@ -42,7 +42,7 @@ contract DiamondInit {
     function init(
         VerificationFacetInit.InitParams memory _verificationSettings, 
         PartialVotingProposalFacetInit.InitParams memory _votingSettings, 
-        ERC20TimeClaimableFacetInit.InitParams memory _claimSettings
+        ERC20TieredTimeClaimableFacetInit.InitParams memory _claimSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -71,6 +71,6 @@ contract DiamondInit {
 
         VerificationFacetInit.init(_verificationSettings);
         PartialVotingProposalFacetInit.init(_votingSettings);
-        ERC20TimeClaimableFacetInit.init(_claimSettings);
+        ERC20TieredTimeClaimableFacetInit.init(_claimSettings);
     }
 }

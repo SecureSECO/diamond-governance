@@ -13,21 +13,11 @@ import { LibERC20TimeClaimableStorage } from "../../../../libraries/storage/LibE
 
 library ERC20TimeClaimableFacetInit {
     struct InitParams {
-        uint256[] tiers;
-        uint256[] rewards;
         uint256 timeTillReward;
         uint256 maxTimeRewarded;
     }
 
     function init(InitParams calldata _params) external {
-        require (_params.tiers.length == _params.rewards.length, "Tiers and rewards should be same length");
-
-        for (uint i; i < _params.tiers.length; ) {
-            LibERC20TimeClaimableStorage.getStorage().rewardForTier[_params.tiers[i]] = _params.rewards[i];
-            unchecked {
-                i++;
-            }
-        }
         LibERC20TimeClaimableStorage.getStorage().timeTillReward = _params.timeTillReward;
         LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded = _params.maxTimeRewarded;
     }
@@ -44,14 +34,6 @@ contract ERC20TimeClaimableFacet is ERC20ClaimableFacet, AragonAuth {
 
     function _afterClaim(address _claimer) internal virtual override {
         LibERC20TimeClaimableStorage.getStorage().lastClaim[_claimer] = block.timestamp;
-    }
-
-    function setClaimReward(uint256 _tier, uint256 _reward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        _setClaimReward(_tier, _reward);
-    }
-
-    function _setClaimReward(uint256 _tier, uint256 _reward) internal virtual {
-        LibERC20TimeClaimableStorage.getStorage().rewardForTier[_tier] = _reward;
     }
 
     function setClaimPeriodInterval(uint256 _timeTillReward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
@@ -74,8 +56,7 @@ contract ERC20TimeClaimableFacet is ERC20ClaimableFacet, AragonAuth {
         LibERC20TimeClaimableStorage.Storage storage s = LibERC20TimeClaimableStorage.getStorage();
         // uint256 timePassed = _timeStamp - s.lastClaim[_claimer];
         // uint256 timeRewarded = Math.min(s.maxTimeRewarded, timePassed);
-        // uint256 claimerTier = ITieredMembershipStructure(address(this)).getTier(_claimer);
-        // return (timeRewarded / s.timeTillReward) * s.rewardForTier[claimerTier];
-        return (Math.min(s.maxTimeRewarded, _timeStamp - s.lastClaim[_claimer]) / s.timeTillReward) * s.rewardForTier[ITieredMembershipStructure(address(this)).getTier(_claimer)];
+        // return timeRewarded / s.timeTillReward;
+        return (Math.min(s.maxTimeRewarded, _timeStamp - s.lastClaim[_claimer]) / s.timeTillReward);
     }
 }

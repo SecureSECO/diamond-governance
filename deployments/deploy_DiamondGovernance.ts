@@ -9,9 +9,10 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { Always3, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20TimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
+import { Always3, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
 
 // Other
+import { deployLibraries } from "./deploy_Libraries";
 
 interface DiamondDeployedContracts {
   DiamondGovernanceSetup: DiamondGovernanceSetup;
@@ -22,12 +23,10 @@ interface DiamondDeployedContracts {
     PartialBurnVoting: PartialBurnVotingFacet;
     GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
     GovernanceERC20Burnable: GovernanceERC20BurnableFacet;
-    ERC20TimeClaimable: ERC20TimeClaimableFacet;
+    ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
     Always3: Always3; // TEMP MOCK for verifiction
   }
 }
-
-const initLibraries = [ "VerificationFacetInit", "PartialVotingProposalFacetInit", "ERC20TimeClaimableFacetInit" ];
 
 /**
  * Deploys the PartialTokenBurnVotingSetup contract and registers it with the pluginRepoFactory
@@ -87,9 +86,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.GovernanceERC20Burnable).remove(ERC20Disabled)
   });
   cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.ERC20TimeClaimable.address,
+    facetAddress: diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable.address,
     action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20TimeClaimable).get(["tokensClaimable(address)", "claim()"])
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable).get(["tokensClaimable(address)", "claim()"])
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.Always3.address,
@@ -113,9 +112,11 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
   const claimSettings = {
     tiers: [1, 2, 3], //uint256[]
     rewards: [50, 100, 1], //uint256[]
-    timeTillReward: 1 * days, //uint256
-    maxTimeRewarded: 10 * days //uint256
-  }
+    timeClaimableInit: {
+      timeTillReward: 1 * days, //uint256
+      maxTimeRewarded: 10 * days //uint256
+    }
+  };
   const constructionArgs = {
     _diamondCut: cut,
     _init: diamondGovernanceContracts.DiamondInit.address,
@@ -152,13 +153,14 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   // Deploy DiamondInit
   // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  let libraries : {[key: string] : string} = { };
-  for (let i = 0; i < initLibraries.length; i++) {
-    const initLibraryContract = await ethers.getContractFactory(initLibraries[i]);
-    const initLibrary = await initLibraryContract.deploy();
-    libraries[initLibraries[i]] = initLibrary.address;
-  }
-  const DiamondInitContract = await ethers.getContractFactory('DiamondInit', { libraries: libraries });
+  const libraries = await deployLibraries();
+  const DiamondInitContract = await ethers.getContractFactory('DiamondInit', { 
+    libraries: {
+      VerificationFacetInit: libraries.VerificationFacetInit,
+      PartialVotingProposalFacetInit: libraries.PartialVotingProposalFacetInit,
+      ERC20TieredTimeClaimableFacetInit: libraries.ERC20TieredTimeClaimableFacetInit
+    }
+  });
   const DiamondInit = await DiamondInitContract.deploy();
   console.log(`DiamondInit deployed at ${DiamondInit.address}`);
 
@@ -186,9 +188,9 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const GovernanceERC20BurnableFacet = await GovernanceERC20BurnableFacetContract.deploy(tokenName, tokenSymbol);
   console.log(`GovernanceERC20BurnableFacet deployed at ${GovernanceERC20BurnableFacet.address}`);
 
-  const ERC20TimeClaimableFacetContract = await ethers.getContractFactory("ERC20TimeClaimableFacet");
-  const ERC20TimeClaimableFacet = await ERC20TimeClaimableFacetContract.deploy();
-  console.log(`ERC20TimeClaimableFacet deployed at ${ERC20TimeClaimableFacet.address}`);
+  const ERC20TieredTimeClaimableFacetContract = await ethers.getContractFactory("ERC20TieredTimeClaimableFacet");
+  const ERC20TieredTimeClaimableFacet = await ERC20TieredTimeClaimableFacetContract.deploy();
+  console.log(`ERC20TieredTimeClaimableFacet deployed at ${ERC20TieredTimeClaimableFacet.address}`);
   
   const Always3Contract = await ethers.getContractFactory("Always3");
   const Always3 = await Always3Contract.deploy();
@@ -203,7 +205,7 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       PartialBurnVoting: PartialBurnVotingFacet,
       GovernanceERC20Disabled: GovernanceERC20DisabledFacet,
       GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
-      ERC20TimeClaimable: ERC20TimeClaimableFacet,
+      ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
       Always3: Always3
     }
   };

@@ -6,7 +6,6 @@ library LibERC20TimeClaimableStorage {
         keccak256("timeclaimable.erc20.diamond.storage.position");
 
     struct Storage {
-        mapping(uint256 => uint256) rewardForTier;
         uint256 timeTillReward;
         uint256 maxTimeRewarded;
         mapping(address => uint256) lastClaim;
