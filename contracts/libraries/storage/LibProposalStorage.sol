@@ -7,12 +7,12 @@ library LibProposalStorage {
     bytes32 constant PROPOSAL_STORAGE_POSITION =
         keccak256("proposal.diamond.storage.position");
 
-    struct ProposalStorage {
+    struct Storage {
         /// @notice The incremental ID for proposals and executions.
         Counters.Counter proposalCounter;
     }
 
-    function proposalStorage() internal pure returns (ProposalStorage storage ds) {
+    function getStorage() internal pure returns (Storage storage ds) {
         bytes32 position = PROPOSAL_STORAGE_POSITION;
         assembly {
             ds.slot := position

@@ -16,14 +16,14 @@ abstract contract ProposalFacet is IProposal {
 
     /// @inheritdoc IProposal
     function proposalCount() public view override returns (uint256) {
-        return LibProposalStorage.proposalStorage().proposalCounter.current();
+        return LibProposalStorage.getStorage().proposalCounter.current();
     }
 
     /// @notice Creates a proposal ID.
     /// @return proposalId The proposal ID.
     function _createProposalId() internal returns (uint256 proposalId) {
         proposalId = proposalCount();
-        LibProposalStorage.proposalStorage().proposalCounter.increment();
+        LibProposalStorage.getStorage().proposalCounter.increment();
     }
 
     /// @notice Internal function to create a proposal.

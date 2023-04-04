@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { GovernanceERC20Facet } from "./GovernanceERC20Facet.sol";
-import { IBurnableGovernanceStructure } from "../../../governance/structure/IBurnableGovernanceStructure.sol";
+import { IBurnableGovernanceStructure } from "../../../governance/structure/voting-power/IBurnableGovernanceStructure.sol";
 
 contract GovernanceERC20BurnableFacet is GovernanceERC20Facet, IBurnableGovernanceStructure {
     /// @notice The permission identifier to burn tokens (from any wallet)

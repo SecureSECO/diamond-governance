@@ -18,13 +18,15 @@ import { IERC173 } from "../additional-contracts/IERC173.sol";
 import { IERC5805 } from "../additional-contracts/IERC5805.sol";
 import { IDiamondLoupe } from "../additional-contracts/IDiamondLoupe.sol";
 
-import { IMintableGovernanceStructure } from "../facets/governance/structure/IMintableGovernanceStructure.sol";
-import { IBurnableGovernanceStructure } from "../facets/governance/structure/IBurnableGovernanceStructure.sol";
+import { IMintableGovernanceStructure } from "../facets/governance/structure/voting-power/IMintableGovernanceStructure.sol";
+import { IBurnableGovernanceStructure } from "../facets/governance/structure/voting-power/IBurnableGovernanceStructure.sol";
+import { ITieredMembershipStructure } from "../facets/governance/structure/membership/ITieredMembershipStructure.sol";
 import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
 import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
 
-import { GovernanceERC20Facet } from "../facets/token/ERC20/governance/GovernanceERC20Facet.sol";
-import { PartialVotingProposalFacet } from "../facets/governance/proposal/PartialVotingProposalFacet.sol";
+import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
+import { PartialVotingProposalFacetInit } from "../facets/governance/proposal/PartialVotingProposalFacet.sol";
+import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/ERC20TieredTimeClaimableFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { LibVerificationStorage } from "../libraries/storage/LibVerificationStorage.sol";
@@ -37,7 +39,11 @@ import { LibPartialVotingProposalStorage } from "../libraries/storage/LibPartial
 contract DiamondInit {    
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(address _verificationContractAddress, IPartialVotingProposalFacet.VotingSettings memory _votingSettings) external {
+    function init(
+        VerificationFacetInit.InitParams memory _verificationSettings, 
+        PartialVotingProposalFacetInit.InitParams memory _votingSettings, 
+        ERC20TieredTimeClaimableFacetInit.InitParams memory _claimSettings
+    ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -52,6 +58,7 @@ contract DiamondInit {
 
         ds.supportedInterfaces[type(IMintableGovernanceStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IBurnableGovernanceStructure).interfaceId] = true;
+        ds.supportedInterfaces[type(ITieredMembershipStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
 
@@ -62,12 +69,8 @@ contract DiamondInit {
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
 
-        LibVerificationStorage.VerificationStorage storage vds = LibVerificationStorage.verificationStorage();
-        // TODO: specify contract address
-        vds.verificationContractAddress = _verificationContractAddress;
-        
-        LibPartialVotingProposalStorage.PartialVotingProposalStorage storage partialVotingProposalStorage = 
-            LibPartialVotingProposalStorage.partialVotingProposalStorage();
-        partialVotingProposalStorage.votingSettings = _votingSettings;
+        VerificationFacetInit.init(_verificationSettings);
+        PartialVotingProposalFacetInit.init(_votingSettings);
+        ERC20TieredTimeClaimableFacetInit.init(_claimSettings);
     }
 }

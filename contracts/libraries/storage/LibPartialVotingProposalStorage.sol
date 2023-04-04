@@ -5,16 +5,16 @@ import { IPartialVotingProposalFacet } from "../../facets/governance/proposal/IP
 
 library LibPartialVotingProposalStorage {
     bytes32 constant PARTIAL_VOTING_PROPOSAL_STORAGE_POSITION =
-        keccak256("partial.voting.proposal.diamond.storage.position");
+        keccak256("proposal.partialvoting.diamond.storage.position");
 
-    struct PartialVotingProposalStorage {
+    struct Storage {
         /// @notice A mapping between proposal IDs and proposal information.
         mapping(uint256 => IPartialVotingProposalFacet.ProposalData) proposals;
         /// @notice The struct storing the voting settings.
         IPartialVotingProposalFacet.VotingSettings votingSettings;
     }
 
-    function partialVotingProposalStorage() internal pure returns (PartialVotingProposalStorage storage ds) {
+    function getStorage() internal pure returns (Storage storage ds) {
         bytes32 position = PARTIAL_VOTING_PROPOSAL_STORAGE_POSITION;
         assembly {
             ds.slot := position
