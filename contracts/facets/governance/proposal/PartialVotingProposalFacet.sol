@@ -8,12 +8,22 @@ import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { DaoAuthorizable } from "@aragon/osx/core/plugin/dao-authorizable/DaoAuthorizable.sol";
 
 import { IPartialVotingProposalFacet, IPartialVotingFacet, IDAO } from "./IPartialVotingProposalFacet.sol";
-import { IGovernanceStructure } from "../structure/IGovernanceStructure.sol";
+import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
 import "../../../utils/Ratio.sol";
 import { ProposalFacet } from "./ProposalFacet.sol";
 import { AragonAuth } from "../../../utils/AragonAuth.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
+
+library PartialVotingProposalFacetInit {
+    struct InitParams {
+        IPartialVotingProposalFacet.VotingSettings votingSettings;
+    }
+
+    function init(InitParams calldata _params) external {
+        LibPartialVotingProposalStorage.getStorage().votingSettings = _params.votingSettings;
+    }
+}
 
 /// @title PartialVotingProposalFacet
 /// @author Utrecht University - 2023
@@ -61,7 +71,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         uint256 _proposalId,
         address _voter
     ) public view virtual returns (IPartialVotingFacet.PartialVote[] memory) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId].voters[_voter];
+        return LibPartialVotingProposalStorage.getStorage().proposals[_proposalId].voters[_voter];
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
@@ -71,7 +81,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
 
     /// @inheritdoc IPartialVotingProposalFacet
     function isSupportThresholdReached(uint256 _proposalId) public view virtual returns (bool) {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         // The code below implements the formula of the support criterion explained in the top of this file.
         // `(1 - supportThreshold) * N_yes > supportThreshold *  N_no`
@@ -84,7 +94,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     function isSupportThresholdReachedEarly(
         uint256 _proposalId
     ) public view virtual returns (bool) {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         uint256 noVotesWorstCase = IGovernanceStructure(address(this)).totalVotingPower(proposal_.parameters.snapshotBlock) -
             proposal_.tally.yes -
@@ -99,7 +109,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
 
     /// @inheritdoc IPartialVotingProposalFacet
     function isMinParticipationReached(uint256 _proposalId) public view virtual returns (bool) {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         // The code below implements the formula of the participation criterion explained in the top of this file.
         // `N_yes + N_no + N_abstain >= minVotingPower = minParticipation * N_total`
@@ -112,29 +122,29 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     /// @notice Returns the vote mode stored in the voting settings.
     /// @return The vote mode parameter.
     function votingMode() public view virtual returns (IPartialVotingFacet.VotingMode) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.votingMode;
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.votingMode;
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
     function supportThreshold() public view virtual returns (uint32) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.supportThreshold;
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.supportThreshold;
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
     function minParticipation() public view virtual returns (uint32) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.minParticipation;
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.minParticipation;
     }
 
     /// @notice Returns the minimum duration parameter stored in the voting settings.
     /// @return The minimum duration parameter.
     function minDuration() public view virtual returns (uint64) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.minDuration;
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.minDuration;
     }
 
     /// @notice Returns the minimum voting power required to create a proposa stored in the voting settings.
     /// @return The minimum voting power required to create a proposal.
     function minProposerVotingPower() public view virtual returns (uint256) {
-        return LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.minProposerVotingPower;
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.minProposerVotingPower;
     }
 
     /// @notice Returns all information for a proposal vote by its ID.
@@ -160,7 +170,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             uint256 allowFailureMap
         )
     {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         open = _isProposalOpen(proposal_);
         executed = proposal_.executed;
@@ -243,7 +253,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         });
 
         // Store proposal related information
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[proposalId];
 
         proposal_.parameters.votingMode = votingMode();
         proposal_.parameters.earlyExecution = _allowEarlyExecution;
@@ -275,7 +285,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
     function _execute(uint256 _proposalId) internal virtual {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
         proposal_.executed = true;
 
         _executeProposal(
@@ -291,7 +301,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     /// @return True if the proposal can be executed, false otherwise.
     /// @dev Threshold and minimal values are compared with `>` and `>=` comparators, respectively.
     function _canExecute(uint256 _proposalId) internal view virtual returns (bool) {
-        ProposalData storage proposal_ = LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId];
+        ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         // Verify that the vote has not been executed already.
         if (proposal_.executed) {
@@ -320,7 +330,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     }
 
     function IsProposalOpen(uint256 _proposalId) external view returns (bool) {
-        return _isProposalOpen(LibPartialVotingProposalStorage.partialVotingProposalStorage().proposals[_proposalId]);
+        return _isProposalOpen(LibPartialVotingProposalStorage.getStorage().proposals[_proposalId]);
     }
 
     /// @notice Internal function to check if a proposal vote is still open.
@@ -359,7 +369,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             revert MinDurationOutOfBounds({limit: 365 days, actual: _votingSettings.minDuration});
         }
 
-        LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings = _votingSettings;
+        LibPartialVotingProposalStorage.getStorage().votingSettings = _votingSettings;
 
         emit VotingSettingsUpdated(_votingSettings);
     }
@@ -385,7 +395,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             }
         }
 
-        uint64 earliestEndDate = startDate + LibPartialVotingProposalStorage.partialVotingProposalStorage().votingSettings.minDuration; // Since `minDuration` is limited to 1 year, `startDate + minDuration` can only overflow if the `startDate` is after `type(uint64).max - minDuration`. In this case, the proposal creation will revert and another date can be picked.
+        uint64 earliestEndDate = startDate + LibPartialVotingProposalStorage.getStorage().votingSettings.minDuration; // Since `minDuration` is limited to 1 year, `startDate + minDuration` can only overflow if the `startDate` is after `type(uint64).max - minDuration`. In this case, the proposal creation will revert and another date can be picked.
 
         if (_end == 0) {
             endDate = earliestEndDate;

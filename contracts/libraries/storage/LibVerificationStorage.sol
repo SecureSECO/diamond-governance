@@ -5,13 +5,13 @@ library LibVerificationStorage {
     bytes32 constant VERIFICATION_STORAGE_POSITION =
         keccak256("verification.diamond.storage.position");
 
-    struct VerificationStorage {
+    struct Storage {
         // mapping from whitelisted address to timestamp of whitelisting
         mapping(address => uint256) whitelistTimestamps;
         address verificationContractAddress;
     }
 
-    function verificationStorage() internal pure returns (VerificationStorage storage ds) {
+    function getStorage() internal pure returns (Storage storage ds) {
         bytes32 position = VERIFICATION_STORAGE_POSITION;
         assembly {
             ds.slot := position

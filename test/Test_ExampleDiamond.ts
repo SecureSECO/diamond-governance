@@ -37,7 +37,7 @@ async function deployDiamondWithAllFacets() {
     return { Diamond, DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet, DiamondCutFacetDeploy, DiamondLoupeFacetDeploy, OwnershipFacetDeploy, Test1Facet, Test1FacetDeploy, Test2Facet, Test2FacetDeploy };
 }
   
-describe('DiamondTest', function () {
+describe('ExampleDiamond', function () {
     it('should have three facets -- call to facetAddresses function', async function () {
         const { DiamondLoupeFacet } = await loadFixture(deployDiamond);
 
