@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "./SignatureHelper.sol";
 
+error InvalidProof(string signature);
+
 /// @title A contract to verify addresses
 /// @author JSC LEE
 /// @notice You can use this contract to verify addresses
@@ -15,7 +17,7 @@ contract GithubVerification is SignatureHelper {
 
     // A stamp defines proof of verification for a user on a specific platform at a specific date
     struct Stamp {
-        string id;
+        string providerId;
         string _hash;
         uint64[] verifiedAt;
     }
@@ -65,7 +67,7 @@ contract GithubVerification is SignatureHelper {
 
         for (uint i = 0; i < stamps[_toVerify].length; i++) {
             if (
-                keccak256(abi.encodePacked(stamps[_toVerify][i].id)) ==
+                keccak256(abi.encodePacked(stamps[_toVerify][i].providerId)) ==
                 keccak256(abi.encodePacked(_providerId))
             ) {
                 found = true;

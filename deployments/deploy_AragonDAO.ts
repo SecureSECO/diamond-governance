@@ -23,7 +23,7 @@ async function deployAragonDAO() {
   // Deploy verification contract
   const { address: standaloneVerificationContractAddress } = await deployStandaloneVerificationContract();
 
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
@@ -42,7 +42,7 @@ async function deployAragonDAO() {
   // Link plugin addresses to Contracts
   const DiamondGovernanceContract = await ethers.getContractFactory("DiamondGovernance");
   const DiamondGovernance = await DiamondGovernanceContract.attach(pluginAddresses[0]);
-  return { DAO, DiamondGovernance, diamondGovernanceContracts };
+  return { DAO, DiamondGovernance, diamondGovernanceContracts, verificationContractAddress };
 }
 
 async function GetDaoCreationParams() {

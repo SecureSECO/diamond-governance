@@ -6,11 +6,22 @@ import { IMembershipExtended } from "./IMembershipExtended.sol";
 abstract contract ITieredMembershipStructure is IMembershipExtended {
     /// @inheritdoc IMembershipExtended
     function isMember(address _account) external view virtual override returns (bool) {
-        return getTier(_account) > 0;
+        return _isMemberAt(_account, block.timestamp);
+    }
+
+    /// @inheritdoc IMembershipExtended
+    function isMemberAt(address _account, uint256 _timestamp) external view override returns (bool) {
+        return _isMemberAt(_account, _timestamp);
+    }
+
+    /// @dev This internal copy is needed to be able to call the function from inside the contract
+    /// This function is used by the isMember function given the latest block timestamp
+    function _isMemberAt(address _account, uint256 _timestamp) internal view virtual returns (bool) {
+        return getTierAt(_account, _timestamp) > 0;
     }
 
     /// @inheritdoc IMembershipExtended
     function getMembers() external view virtual override returns (address[] memory);
 
-    function getTier(address _account) public view virtual returns (uint256);
+    function getTierAt(address _account, uint256 _timestamp) public view virtual returns (uint256);
 }
