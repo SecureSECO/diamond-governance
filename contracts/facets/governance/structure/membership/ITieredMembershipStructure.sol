@@ -23,5 +23,6 @@ abstract contract ITieredMembershipStructure is IMembershipExtended {
     /// @inheritdoc IMembershipExtended
     function getMembers() external view virtual override returns (address[] memory);
 
+    /// @notice Returns the tier score for an accout at a given timestamp
     function getTierAt(address _account, uint256 _timestamp) public view virtual returns (uint256);
 }

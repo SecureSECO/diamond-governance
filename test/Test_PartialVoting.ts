@@ -23,6 +23,7 @@ async function getVotingPower(amount : number) {
   const ERC20ClaimableFacet = await ethers.getContractAt("ERC20ClaimableFacet", DiamondGovernance.address);
   const standaloneVerificationContract = await ethers.getContractAt("GithubVerification", verificationContractAddress);
 
+  // Manually verify owner with github
   const timestamp = Date.now();
   const userHash =
     "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
