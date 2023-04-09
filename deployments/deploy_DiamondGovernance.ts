@@ -9,7 +9,7 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { Always3, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
+import { Always3, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -19,6 +19,8 @@ interface DiamondDeployedContracts {
   DiamondInit: DiamondInit;
   Facets: {
     DiamondLoupe: DiamondLoupeFacet;
+    DAOReferenceFacet: DAOReferenceFacet;
+    PluginFacet: PluginFacet;
     PartialBurnVotingProposal: PartialBurnVotingProposalFacet;
     PartialBurnVoting: PartialBurnVotingFacet;
     GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
@@ -67,6 +69,16 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DiamondLoupe)
   });
   cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.DAOReferenceFacet.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DAOReferenceFacet)
+  });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.PluginFacet.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.PluginFacet)
+  });
+  cut.push({
     facetAddress: diamondGovernanceContracts.Facets.PartialBurnVotingProposal.address,
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.PartialBurnVotingProposal)
@@ -102,9 +114,6 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.Verification).get(["getStampsAt(address, uint)"])
   });
 
-  const verficationSettings = {
-    verificationContractAddress: ethers.constants.AddressZero //address
-  };
   enum VotingMode { SingleVote, SinglePartialVote, MultiplePartialVote };
   const votingSettings = {
     votingSettings: {
@@ -114,6 +123,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
       minDuration: 1, //uint64
       minProposerVotingPower: 1, //uint256
     }
+  };
+  const verficationSettings = {
+    verificationContractAddress: ethers.constants.AddressZero //address
   };
   const claimSettings = {
     tiers: [1, 2, 3], //uint256[]
@@ -126,7 +138,7 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
   const constructionArgs = {
     _diamondCut: cut,
     _init: diamondGovernanceContracts.DiamondInit.address,
-    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [verficationSettings, votingSettings, claimSettings])
+    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [votingSettings, verficationSettings, claimSettings])
   };
   const constructionFormat = JSON.parse(buildMetadata).pluginSetupABI.prepareInstallation;
   const pluginConstructionBytes = ethers.utils.defaultAbiCoder.encode(
@@ -153,17 +165,23 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
 }
 
 async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
-  const DiamondGovernanceSetupContract = await ethers.getContractFactory("DiamondGovernanceSetup");
+  const libraries = await deployLibraries();
+
+  const DiamondGovernanceSetupContract = await ethers.getContractFactory("DiamondGovernanceSetup", {
+    libraries: {
+      DAOReferenceFacetInit: libraries.DAOReferenceFacetInit
+    }
+  });
   const DiamondGovernanceSetup = await DiamondGovernanceSetupContract.deploy();
   console.log(`DiamondGovernanceSetup deployed at ${DiamondGovernanceSetup.address}`);
+  
   // Deploy DiamondInit
   // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const libraries = await deployLibraries();
   const DiamondInitContract = await ethers.getContractFactory('DiamondInit', { 
     libraries: {
-      VerificationFacetInit: libraries.VerificationFacetInit,
       PartialVotingProposalFacetInit: libraries.PartialVotingProposalFacetInit,
+      VerificationFacetInit: libraries.VerificationFacetInit,
       ERC20TieredTimeClaimableFacetInit: libraries.ERC20TieredTimeClaimableFacetInit
     }
   });
@@ -174,6 +192,14 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const DiamondLoupeFacetContract = await ethers.getContractFactory("DiamondLoupeFacet");
   const DiamondLoupeFacet = await DiamondLoupeFacetContract.deploy();
   console.log(`DiamondLoupeFacet deployed at ${DiamondLoupeFacet.address}`);
+
+  const DAOReferenceFacetContract = await ethers.getContractFactory("DAOReferenceFacet");
+  const DAOReferenceFacet = await DAOReferenceFacetContract.deploy();
+  console.log(`DAOReferenceFacet deployed at ${DAOReferenceFacet.address}`);
+  
+  const PluginFacetContract = await ethers.getContractFactory("PluginFacet");
+  const PluginFacet = await PluginFacetContract.deploy();
+  console.log(`PluginFacet deployed at ${PluginFacet.address}`);
 
   const PartialBurnVotingProposalFacetContract = await ethers.getContractFactory("PartialBurnVotingProposalFacet");
   const PartialBurnVotingProposalFacet = await PartialBurnVotingProposalFacetContract.deploy();
@@ -211,6 +237,8 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
     DiamondInit: DiamondInit,
     Facets: {
       DiamondLoupe: DiamondLoupeFacet,
+      DAOReferenceFacet: DAOReferenceFacet,
+      PluginFacet: PluginFacet,
       PartialBurnVotingProposal: PartialBurnVotingProposalFacet,
       PartialBurnVoting: PartialBurnVotingFacet,
       GovernanceERC20Disabled: GovernanceERC20DisabledFacet,

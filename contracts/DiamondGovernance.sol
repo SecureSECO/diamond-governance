@@ -11,11 +11,9 @@ pragma solidity ^0.8.0;
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./additional-contracts/IDiamondCut.sol";
 
-import { Plugin, IDAO } from "@aragon/osx/core/plugin/Plugin.sol";
+contract DiamondGovernance {
 
-contract DiamondGovernance is Plugin {
-
-    constructor(IDAO _dao, IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) payable Plugin(_dao) {    
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) payable {    
         LibDiamond.setContractOwner(address(this));  
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
