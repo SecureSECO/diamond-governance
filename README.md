@@ -19,3 +19,6 @@ Deploys the plugin to the network setup in hardhat.
 
 ## npm test
 Runs the unit tests.  
+
+## npm generate-sdk
+Generates the sdk with the latest interfaces defined in contracts/utils/IntefaceIds.sol.  

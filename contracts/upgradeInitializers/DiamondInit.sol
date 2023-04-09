@@ -8,24 +8,33 @@ pragma solidity ^0.8.0;
 * Implementation of a diamond.
 /******************************************************************************/
 
-import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import { IERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol";
-import { IPlugin } from "@aragon/osx/core/plugin/IPlugin.sol";
+import { 
+    IERC165,
+    IERC20,
+    IERC20Metadata,
+    IERC20Permit,
 
-import { IERC173 } from "../additional-contracts/IERC173.sol";
-import { IERC5805 } from "../additional-contracts/IERC5805.sol";
-import { IDiamondLoupe } from "../additional-contracts/IDiamondLoupe.sol";
+    IERC173,
+    IERC6372,
+    IVotes,
+    IDiamondLoupe,
 
-import { IMintableGovernanceStructure } from "../facets/governance/structure/voting-power/IMintableGovernanceStructure.sol";
-import { IBurnableGovernanceStructure } from "../facets/governance/structure/voting-power/IBurnableGovernanceStructure.sol";
-import { ITieredMembershipStructure } from "../facets/governance/structure/membership/ITieredMembershipStructure.sol";
-import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
-import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
+    IPlugin,
 
-import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
+    IGovernanceStructure,
+    IMintableGovernanceStructure,
+    IBurnableGovernanceStructure,
+
+    IMembership,
+    IMembershipExtended,
+    ITieredMembershipStructure,
+    
+    IPartialVotingProposalFacet,
+    IPartialVotingFacet 
+} from "../utils/InterfaceIds.sol";
+
 import { PartialVotingProposalFacetInit } from "../facets/governance/proposal/PartialVotingProposalFacet.sol";
+import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
 import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/ERC20TieredTimeClaimableFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
@@ -40,8 +49,8 @@ contract DiamondInit {
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        VerificationFacetInit.InitParams memory _verificationSettings, 
         PartialVotingProposalFacetInit.InitParams memory _votingSettings, 
+        VerificationFacetInit.InitParams memory _verificationSettings, 
         ERC20TieredTimeClaimableFacetInit.InitParams memory _claimSettings
     ) external {
         // adding ERC165 data
@@ -50,15 +59,22 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC20).interfaceId] = true;
         ds.supportedInterfaces[type(IERC20Metadata).interfaceId] = true;
         ds.supportedInterfaces[type(IERC20Permit).interfaceId] = true;
-        ds.supportedInterfaces[type(IPlugin).interfaceId] = true;
         
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC5805).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC6372).interfaceId] = true;
+        ds.supportedInterfaces[type(IVotes).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
 
+        ds.supportedInterfaces[type(IPlugin).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IGovernanceStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IMintableGovernanceStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IBurnableGovernanceStructure).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IMembership).interfaceId] = true;
+        ds.supportedInterfaces[type(IMembershipExtended).interfaceId] = true;
         ds.supportedInterfaces[type(ITieredMembershipStructure).interfaceId] = true;
+
         ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
 
@@ -69,8 +85,8 @@ contract DiamondInit {
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
 
-        VerificationFacetInit.init(_verificationSettings);
         PartialVotingProposalFacetInit.init(_votingSettings);
+        VerificationFacetInit.init(_verificationSettings);
         ERC20TieredTimeClaimableFacetInit.init(_claimSettings);
     }
 }
