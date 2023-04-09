@@ -10,6 +10,7 @@ import { toBytes, getEvents } from "../utils/utils";
 // Other
 import { deployAragonFrameworkWithEns } from "./deploy_AragonOSxFramework";
 import { createDiamondGovernanceRepo } from "./deploy_DiamondGovernance";
+import {deployStandaloneVerificationContract} from "./deploy_StandaloneVerificationContract";
 
 /**
  * Creates a new Aragon DAO
@@ -18,7 +19,11 @@ import { createDiamondGovernanceRepo } from "./deploy_DiamondGovernance";
  */
 async function deployAragonDAO() {
   const { daoResolver, pluginResolver, PluginRepoFactory, DAOFactory } = await deployAragonFrameworkWithEns();
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver);
+
+  // Deploy verification contract
+  const { address: standaloneVerificationContractAddress } = await deployStandaloneVerificationContract();
+
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
