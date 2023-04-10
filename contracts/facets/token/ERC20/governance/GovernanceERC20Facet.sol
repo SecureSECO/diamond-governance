@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import { ERC20VotesFacet, ERC20PermitFacet, ERC20Facet } from "../core/ERC20VotesFacet.sol";
 import { IMintableGovernanceStructure, IGovernanceStructure } from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
-import { AragonAuth } from "../../../../utils/AragonAuth.sol";
+import { AuthConsumer } from "../../../../utils/AuthConsumer.sol";
 
-contract GovernanceERC20Facet is ERC20VotesFacet, AragonAuth, IMintableGovernanceStructure {
+contract GovernanceERC20Facet is ERC20VotesFacet, AuthConsumer, IMintableGovernanceStructure {
     /// @notice The permission identifier to mint new tokens
     bytes32 public constant MINT_PERMISSION_ID = keccak256("MINT_PERMISSION");
 

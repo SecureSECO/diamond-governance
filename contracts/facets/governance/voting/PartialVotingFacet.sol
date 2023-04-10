@@ -5,16 +5,15 @@ pragma solidity ^0.8.0;
 import { IPartialVotingFacet } from "./IPartialVotingFacet.sol";
 import { IPartialVotingProposalFacet } from "../proposal/IPartialVotingProposalFacet.sol";
 import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
-import { AragonAuth } from "../../../utils/AragonAuth.sol";
+import { AuthConsumer } from "../../../utils/AuthConsumer.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
-import { LibDiamond } from "../../../libraries/LibDiamond.sol";
 
 /// @title PartialVotingFacet
 /// @author Utrecht University - 2023
 /// @notice The partial implementation of partial voting plugins.
 /// @dev This contract implements the `IPartialVotingFacet` interface.
-contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
+contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
 {
     /// @notice Thrown if an account is not allowed to cast a vote. This can be because the vote
     /// - has not started,
@@ -41,13 +40,7 @@ contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
                 voteData: _voteData
             });
         }
-        _vote(proposal_, _voteData, account);
-        
-        emit VoteCast({
-            proposalId: _proposalId,
-            voter: account,
-            voteData: _voteData
-        });
+        _vote(_proposalId, proposal_, _voteData, account);
     }
 
     /// @inheritdoc IPartialVotingFacet
@@ -60,9 +53,12 @@ contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
     }
 
     /// @notice Internal function to cast a vote. It assumes the queried vote exists.
+    /// @param _proposalId The id of the proposal.
     /// @param _proposal The proposal.
     /// @param _voteData The chosen vote option and amount to be casted on the proposal vote.
+    /// @param _voter The wallet that is voting.
     function _vote(
+        uint256 _proposalId,
         IPartialVotingProposalFacet.ProposalData storage _proposal,
         PartialVote calldata _voteData,
         address _voter
@@ -77,6 +73,12 @@ contract PartialVotingFacet is IPartialVotingFacet, AragonAuth
         }
 
         _proposal.voters[_voter].push(_voteData);
+        
+        emit VoteCast({
+            proposalId: _proposalId,
+            voter: _voter,
+            voteData: _voteData
+        });
     }
 
     /// @notice Internal function to check if a voter can vote. It assumes the queried proposal exists.

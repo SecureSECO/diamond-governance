@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 import { Signer } from "@ethersproject/abstract-signer";
-import { IERC165, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes } from "../typechain-types";
+import { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes } from "../typechain-types";
 
-enum DiamondGovernanceInterfaces { IERC165, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes }
+enum DiamondGovernanceInterfaces { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes }
 
 export class DiamondGovernanceClient {
     private pluginAddress : string;
@@ -20,6 +20,10 @@ export class DiamondGovernanceClient {
         return await this._get<IERC165>(DiamondGovernanceInterfaces.IERC165, "");
     }
     
+    public async IAuthProvider() : Promise<IAuthProvider> {
+        return await this._get<IAuthProvider>(DiamondGovernanceInterfaces.IAuthProvider, "0xb2aee3b9");
+    }
+
     public async IBurnableGovernanceStructure() : Promise<IBurnableGovernanceStructure> {
         return await this._get<IBurnableGovernanceStructure>(DiamondGovernanceInterfaces.IBurnableGovernanceStructure, "0x85d9cf86");
     }

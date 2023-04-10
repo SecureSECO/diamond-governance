@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 library LibERC20TimeClaimableStorage {
     bytes32 constant ERC20_TIME_CLAIMABLE_STORAGE_POSITION =
-        keccak256("timeclaimable.erc20.diamond.storage.position");
+        keccak256("time.claim.erc20.diamond.storage.position");
 
     struct Storage {
         uint256 timeTillReward;

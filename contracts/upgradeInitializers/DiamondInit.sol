@@ -20,6 +20,7 @@ import {
     IDiamondLoupe,
 
     IPlugin,
+    IAuthProvider,
 
     IGovernanceStructure,
     IMintableGovernanceStructure,
@@ -33,9 +34,10 @@ import {
     IPartialVotingFacet 
 } from "../utils/InterfaceIds.sol";
 
-import { PartialVotingProposalFacetInit } from "../facets/governance/proposal/PartialVotingProposalFacet.sol";
+import { PartialBurnVotingProposalFacetInit } from "../facets/governance/proposal/PartialBurnVotingProposalFacet.sol";
 import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
-import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/ERC20TieredTimeClaimableFacet.sol";
+import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/time/ERC20TieredTimeClaimableFacet.sol";
+import { ERC20OneTimeVerificationRewardFacetInit } from "../facets/token/ERC20/claiming/one-time/ERC20OneTimeVerificationRewardFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { LibVerificationStorage } from "../libraries/storage/LibVerificationStorage.sol";
@@ -49,9 +51,10 @@ contract DiamondInit {
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        PartialVotingProposalFacetInit.InitParams memory _votingSettings, 
+        PartialBurnVotingProposalFacetInit.InitParams memory _votingSettings, 
         VerificationFacetInit.InitParams memory _verificationSettings, 
-        ERC20TieredTimeClaimableFacetInit.InitParams memory _claimSettings
+        ERC20TieredTimeClaimableFacetInit.InitParams memory _timeClaimSettings,
+        ERC20OneTimeVerificationRewardFacetInit.InitParams memory _onetimeClaimSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -66,6 +69,7 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
 
         ds.supportedInterfaces[type(IPlugin).interfaceId] = true;
+        ds.supportedInterfaces[type(IAuthProvider).interfaceId] = true;
 
         ds.supportedInterfaces[type(IGovernanceStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IMintableGovernanceStructure).interfaceId] = true;
@@ -85,8 +89,9 @@ contract DiamondInit {
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
 
-        PartialVotingProposalFacetInit.init(_votingSettings);
+        PartialBurnVotingProposalFacetInit.init(_votingSettings);
         VerificationFacetInit.init(_verificationSettings);
-        ERC20TieredTimeClaimableFacetInit.init(_claimSettings);
+        ERC20TieredTimeClaimableFacetInit.init(_timeClaimSettings);
+        ERC20OneTimeVerificationRewardFacetInit.init(_onetimeClaimSettings);
     }
 }

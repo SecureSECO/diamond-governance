@@ -18,8 +18,8 @@ enum VoteOption { Abstain, Yes, No }
 
 async function getVotingPower(amount : number) {
   const { DiamondGovernance } = await loadFixture(deployAragonDAO);
-  const ERC20ClaimableFacet = await ethers.getContractAt("ERC20ClaimableFacet", DiamondGovernance.address);
-  await ERC20ClaimableFacet.claim();
+  const ERC20TimeClaimableFacet = await ethers.getContractAt("ERC20TimeClaimableFacet", DiamondGovernance.address);
+  await ERC20TimeClaimableFacet.claimTime();
 }
 
 async function createProposal() {
@@ -160,3 +160,5 @@ describe("PartialVoting", function () {
     expect(voteTx).to.be.revertedWithCustomError(PartialVotingFacet, "VoteCastForbidden");
   });
 });
+
+export { createProposal, voteOnProposal, VoteOption }

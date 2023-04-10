@@ -11,9 +11,12 @@ import { ethers } from "hardhat";
 interface Libraries {
     DAOReferenceFacetInit: string;
     PartialVotingProposalFacetInit: string;
+    PartialBurnVotingProposalFacetInit: string;
     VerificationFacetInit: string;
     ERC20TimeClaimableFacetInit: string;
     ERC20TieredTimeClaimableFacetInit: string;
+    ERC20OneTimeRewardFacetInit: string;
+    ERC20OneTimeVerificationRewardFacetInit: string;
 }
 
 async function deployLibraries() : Promise<Libraries> {
@@ -22,6 +25,13 @@ async function deployLibraries() : Promise<Libraries> {
 
     const PartialVotingProposalFacetInitContract = await ethers.getContractFactory("PartialVotingProposalFacetInit");
     const PartialVotingProposalFacetInit = await PartialVotingProposalFacetInitContract.deploy();
+    
+    const PartialBurnVotingProposalFacetInitContract = await ethers.getContractFactory("PartialBurnVotingProposalFacetInit", { 
+        libraries: {
+            PartialVotingProposalFacetInit: PartialVotingProposalFacetInit.address 
+        }
+    });
+    const PartialBurnVotingProposalFacetInit = await PartialBurnVotingProposalFacetInitContract.deploy();
 
     const VerificationFacetInitContract = await ethers.getContractFactory("VerificationFacetInit");
     const VerificationFacetInit = await VerificationFacetInitContract.deploy();
@@ -36,12 +46,25 @@ async function deployLibraries() : Promise<Libraries> {
     });
     const ERC20TieredTimeClaimableFacetInit = await ERC20TieredTimeClaimableFacetInitContract.deploy();
 
+    const ERC20OneTimeRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeRewardFacetInit");
+    const ERC20OneTimeRewardFacetInit = await ERC20OneTimeRewardFacetInitContract.deploy();
+    
+    const ERC20OneTimeVerificationRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacetInit", { 
+        libraries: {
+            ERC20OneTimeRewardFacetInit: ERC20OneTimeRewardFacetInit.address 
+        }
+    });
+    const ERC20OneTimeVerificationRewardFacetInit = await ERC20OneTimeVerificationRewardFacetInitContract.deploy();
+
     return {
         DAOReferenceFacetInit: DAOReferenceFacetInit.address,
         PartialVotingProposalFacetInit: PartialVotingProposalFacetInit.address,
+        PartialBurnVotingProposalFacetInit: PartialBurnVotingProposalFacetInit.address,
         VerificationFacetInit: VerificationFacetInit.address,
         ERC20TimeClaimableFacetInit: ERC20TimeClaimableFacetInit.address,
-        ERC20TieredTimeClaimableFacetInit: ERC20TieredTimeClaimableFacetInit.address
+        ERC20TieredTimeClaimableFacetInit: ERC20TieredTimeClaimableFacetInit.address,
+        ERC20OneTimeRewardFacetInit: ERC20OneTimeRewardFacetInit.address,
+        ERC20OneTimeVerificationRewardFacetInit: ERC20OneTimeVerificationRewardFacetInit.address,
     };
 }
 
