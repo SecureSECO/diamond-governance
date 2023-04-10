@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: MIT
+/**
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  *
+  * This source code is licensed under the MIT license found in the
+  * LICENSE file in the root directory of this source tree.
+  */
+ 
 pragma solidity ^0.8.0;
 
 import { ERC20TimeClaimableFacet, ERC20TimeClaimableFacetInit } from "./ERC20TimeClaimableFacet.sol";
@@ -37,6 +45,6 @@ contract ERC20TieredTimeClaimableFacet is ERC20TimeClaimableFacet {
 
     /// @inheritdoc ERC20TimeClaimableFacet
     function _tokensClaimableAt(address _claimer, uint256 _timeStamp) internal view virtual override returns (uint256 amount) {
-        return super._tokensClaimableAt(_claimer, _timeStamp) * LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[ITieredMembershipStructure(address(this)).getTier(_claimer)];
+        return super._tokensClaimableAt(_claimer, _timeStamp) * LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[ITieredMembershipStructure(address(this)).getTierAt(_claimer, _timeStamp)];
     }
 }

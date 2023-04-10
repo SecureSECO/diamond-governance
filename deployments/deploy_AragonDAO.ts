@@ -1,3 +1,11 @@
+/**
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  *
+  * This source code is licensed under the MIT license found in the
+  * LICENSE file in the root directory of this source tree.
+  */
+
 // Framework
 import { ethers } from "hardhat";
 
@@ -23,7 +31,7 @@ async function deployAragonDAO() {
   // Deploy verification contract
   const { address: standaloneVerificationContractAddress } = await deployStandaloneVerificationContract();
 
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
@@ -42,7 +50,7 @@ async function deployAragonDAO() {
   // Link plugin addresses to Contracts
   const DiamondGovernanceContract = await ethers.getContractFactory("DiamondGovernance");
   const DiamondGovernance = await DiamondGovernanceContract.attach(pluginAddresses[0]);
-  return { DAO, DiamondGovernance, diamondGovernanceContracts };
+  return { DAO, DiamondGovernance, diamondGovernanceContracts, verificationContractAddress };
 }
 
 async function GetDaoCreationParams() {

@@ -29,6 +29,7 @@
     "@ensdomains/ens-contracts": "^0.0.20",
     "@ethersproject/abstract-signer": "^5.7.0",
     "@openzeppelin/contracts": "^4.8.2",
-    "@openzeppelin/contracts-upgradeable": "^4.8.2"
+    "@openzeppelin/contracts-upgradeable": "^4.8.2",
+    "dotenv": "^16.0.3"
   }
 }
