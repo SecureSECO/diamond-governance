@@ -108,3 +108,4 @@ dist
 artifacts/
 cache/
 typechain-types/
+.DS_Store

@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: MIT
+/**
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  */
+
 // OpenZeppelin Contracts (interfaces/IERC6372.sol)
 // https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/IERC6372.sol
 
