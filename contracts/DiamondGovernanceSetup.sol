@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+/**
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  */
+
 pragma solidity 0.8.17;
 
 import { PermissionLib } from "@aragon/osx/core/permission/PermissionLib.sol";
 import { PluginSetup } from "@aragon/osx/framework/plugin/setup/PluginSetup.sol";
 import { DAO } from "@aragon/osx/core/dao/DAO.sol";
 
-import { DiamondGovernance, IDAO } from "./DiamondGovernance.sol";
-import { IDiamondCut } from "./additional-contracts/IDiamondCut.sol";
+import { DiamondGovernanceAragon, IDiamondCut } from "./DiamondGovernanceAragon.sol";
 
 contract DiamondGovernanceSetup is PluginSetup {
   function prepareInstallation(
@@ -22,7 +26,7 @@ contract DiamondGovernanceSetup is PluginSetup {
             _data,
             (IDiamondCut.FacetCut[], address, bytes)
         );
-    plugin = address(new DiamondGovernance(IDAO(_dao), _diamondCut, _init, _calldata));
+    plugin = address(new DiamondGovernanceAragon(DAO(payable(_dao)), _diamondCut, _init, _calldata));
 
     // Prepare permissions
     PermissionLib.MultiTargetPermission[]

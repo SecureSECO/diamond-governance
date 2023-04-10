@@ -6,7 +6,8 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npm run compile && npx hardhat test --typecheck",
-    "deploy": "npm run compile && npx hardhat run deployments/deploy.ts"
+    "deploy": "npm run compile && npx hardhat run deployments/deploy.ts",
+    "generate-sdk": "npm run compile && npx hardhat run scripts/GenerateSDK.ts"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
   "dependencies": {
     "@aragon/osx": "^1.0.1",
     "@ensdomains/ens-contracts": "^0.0.20",
+    "@ethersproject/abstract-signer": "^5.7.0",
     "@openzeppelin/contracts": "^4.8.2",
     "@openzeppelin/contracts-upgradeable": "^4.8.2",
     "dotenv": "^16.0.3"
