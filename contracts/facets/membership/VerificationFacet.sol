@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
 import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibVerificationStorage} from "../../libraries/storage/LibVerificationStorage.sol";
 import { ITieredMembershipStructure } from "../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
-import { AragonAuth } from "../../utils/AragonAuth.sol";
+import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { GithubVerification } from "../../verification/GithubVerification.sol";
 
 // Used for diamond pattern storage
@@ -26,7 +26,7 @@ library VerificationFacetInit {
 /// @title Verification facet for the Diamond Governance Plugin
 /// @author J.S.C.L. & T.Y.M.W. @ UU
 /// @notice Additionally to the verification functionality, this includes the whitelisting functionality for the DAO membership
-contract VerificationFacet is ITieredMembershipStructure, AragonAuth {
+contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
     // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION = keccak256("UPDATE_TIER_MAPPING_PERMISSION");
 

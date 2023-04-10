@@ -16,7 +16,7 @@ import { IPartialVotingProposalFacet, IPartialVotingFacet, IDAO } from "./IParti
 import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
 import "../../../utils/Ratio.sol";
 import { ProposalFacet } from "./ProposalFacet.sol";
-import { AragonAuth } from "../../../utils/AragonAuth.sol";
+import { AuthConsumer } from "../../../utils/AuthConsumer.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
 
@@ -34,7 +34,7 @@ library PartialVotingProposalFacetInit {
 /// @author Utrecht University - 2023
 /// @notice The partial implementation of partial voting proposal plugins.
 /// @dev This contract implements the `IPartialVotingProposalFacet` interface.
-contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFacet, AragonAuth
+contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFacet, AuthConsumer
 {
     using SafeCast for uint256;
 

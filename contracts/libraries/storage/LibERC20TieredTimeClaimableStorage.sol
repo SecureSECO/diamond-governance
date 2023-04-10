@@ -8,7 +8,7 @@ pragma solidity ^0.8.0;
 
 library LibERC20TieredTimeClaimableStorage {
     bytes32 constant ERC20_TIERED_TIME_CLAIMABLE_STORAGE_POSITION =
-        keccak256("tiered.timeclaimable.erc20.diamond.storage.position");
+        keccak256("tiered.time.claim.erc20.diamond.storage.position");
 
     struct Storage {
         mapping(uint256 => uint256) rewardForTier;

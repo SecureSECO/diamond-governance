@@ -17,6 +17,7 @@ import { IVotes } from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import { IDiamondLoupe } from "../additional-contracts/IDiamondLoupe.sol";
 
 import { IPlugin } from "@aragon/osx/core/plugin/IPlugin.sol";
+import { IAuthProvider } from "./auth-providers/IAuthProvider.sol";
 
 import { IGovernanceStructure } from "../facets/governance/structure/voting-power/IGovernanceStructure.sol";
 import { IMintableGovernanceStructure } from "../facets/governance/structure/voting-power/IMintableGovernanceStructure.sol";
@@ -41,6 +42,7 @@ library InterfaceIds {
     bytes4 constant public IDiamondLoupe_ID = type(IDiamondLoupe).interfaceId;
     
     bytes4 constant public IPlugin_ID = type(IPlugin).interfaceId;
+    bytes4 constant public IAuthProvider_ID = type(IAuthProvider).interfaceId;
 
     bytes4 constant public IGovernanceStructure_ID = type(IGovernanceStructure).interfaceId;
     bytes4 constant public IMintableGovernanceStructure_ID = type(IMintableGovernanceStructure).interfaceId;

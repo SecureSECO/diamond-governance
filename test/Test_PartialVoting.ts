@@ -28,7 +28,7 @@ enum VoteOption { Abstain, Yes, No }
 async function getVotingPower(amount : number) {
   const { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress } = await loadFixture(deployAragonDAO);
   const [owner] = await ethers.getSigners();
-  const ERC20ClaimableFacet = await ethers.getContractAt("ERC20ClaimableFacet", DiamondGovernance.address);
+  const ERC20TimeClaimableFacet = await ethers.getContractAt("ERC20TimeClaimableFacet", DiamondGovernance.address);
   const standaloneVerificationContract = await ethers.getContractAt("GithubVerification", verificationContractAddress);
 
   // Manually verify owner with github
@@ -37,7 +37,7 @@ async function getVotingPower(amount : number) {
     "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
   const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
   await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
-  await ERC20ClaimableFacet.claim();
+  await ERC20TimeClaimableFacet.claimTime();
 }
 
 async function createProposal() {
@@ -178,3 +178,5 @@ describe("PartialVoting", function () {
     expect(voteTx).to.be.revertedWithCustomError(PartialVotingFacet, "VoteCastForbidden");
   });
 });
+
+export { createProposal, voteOnProposal, VoteOption }
