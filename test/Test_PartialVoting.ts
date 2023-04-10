@@ -15,6 +15,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { toBytes, getEvents } from "../utils/utils";
+import { createSignature } from "../utils/signatureHelper";
 
 // Types
 import { IPartialVotingFacet, PartialVotingFacet, PartialVotingProposalFacet } from "../typechain-types";
@@ -25,8 +26,17 @@ import { deployAragonDAO } from "../deployments/deploy_AragonDAO";
 enum VoteOption { Abstain, Yes, No }
 
 async function getVotingPower(amount : number) {
-  const { DiamondGovernance } = await loadFixture(deployAragonDAO);
+  const { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress } = await loadFixture(deployAragonDAO);
+  const [owner] = await ethers.getSigners();
   const ERC20ClaimableFacet = await ethers.getContractAt("ERC20ClaimableFacet", DiamondGovernance.address);
+  const standaloneVerificationContract = await ethers.getContractAt("GithubVerification", verificationContractAddress);
+
+  // Manually verify owner with github
+  const timestamp = Date.now();
+  const userHash =
+    "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
+  const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
+  await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
   await ERC20ClaimableFacet.claim();
 }
 

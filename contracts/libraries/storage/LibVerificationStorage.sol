@@ -12,7 +12,9 @@ library LibVerificationStorage {
 
     struct Storage {
         // mapping from whitelisted address to timestamp of whitelisting
-        mapping(address => uint256) whitelistTimestamps;
+        mapping(address => uint64) whitelistTimestamps;
+        // mapping from providerId to tier score
+        mapping(string => uint256) tierMapping;
         address verificationContractAddress;
     }
 
