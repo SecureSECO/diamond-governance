@@ -22,3 +22,7 @@ Runs the unit tests.
 
 ## npm generate-sdk
 Generates the sdk with the latest interfaces defined in contracts/utils/IntefaceIds.sol.  
+
+### License
+
+The majority of the code is [MIT licensed](./LICENSE). However, there are some files that have been taken and modified from an [AGPL-3.0 licensed](https://www.gnu.org/licenses/agpl-3.0.en.html) project ([aragon/osx](https://github.com/aragon/osx)). The specific license of a file can be found at the very first lines of the file.
