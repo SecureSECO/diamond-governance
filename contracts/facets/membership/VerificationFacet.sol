@@ -94,7 +94,9 @@ contract VerificationFacet is ITieredMembershipStructure, AragonAuth {
 
     /// @inheritdoc ITieredMembershipStructure
     function getMembers() external view virtual override returns (address[] memory members) {
-        
+        LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
+        GithubVerification verificationContract = GithubVerification(ds.verificationContractAddress);
+        return verificationContract.getAllMembers();
     }
 
     /// @inheritdoc ITieredMembershipStructure
