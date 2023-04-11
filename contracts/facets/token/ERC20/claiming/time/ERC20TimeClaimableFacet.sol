@@ -33,7 +33,7 @@ contract ERC20TimeClaimableFacet is ERC20ClaimableFacet, AuthConsumer {
     /// @notice The permission to update claim reward and period
     bytes32 public constant UPDATE_CLAIM_SETTINGS_PERMISSION_ID = keccak256("UPDATE_CLAIM_SETTINGS_PERMISSION");
 
-    function tokensClaimable() external view virtual returns (uint256 amount) {
+    function tokensClaimableTime() external view virtual returns (uint256 amount) {
         return _tokensClaimable(msg.sender);
     }
 

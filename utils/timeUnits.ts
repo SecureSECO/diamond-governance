@@ -13,3 +13,4 @@ export const minutes = 60 * seconds;
 export const hours = 60 * minutes;
 export const days = 24 * hours;
 export const week = 7 * days;
+export function now() { return Math.round(new Date().getTime() / 1000) };

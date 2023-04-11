@@ -6,7 +6,12 @@ library LibERC20OneTimeVerificationRewardStorage {
         keccak256("verification.onetime.claim.diamond.storage.position");
 
     struct Storage {
-        mapping(string => bool) hasBeenClaimed;
+        /// @notice Check if how much a address has claimed for a provider id.
+        mapping(address => mapping(string => uint256)) amountClaimedByAddressForProvider;
+        /// @notice Check how much has been claimed for a stamp id.
+        mapping(string => uint256) amountClaimedForStamp;
+        /// @notice Check how much will be rewarded if a user claims the one time reward for a provider id.
+        mapping (string => uint256) providerReward;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {
