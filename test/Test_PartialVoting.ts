@@ -15,43 +15,33 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { toBytes, getEvents } from "../utils/utils";
-import { createSignature } from "../utils/signatureHelper";
+import { deployAragonDAOAndVerifyFixture } from "../utils/verificationHelper";
+import { now, minutes, days } from "../utils/timeUnits";
 
 // Types
-import { IPartialVotingFacet, PartialVotingFacet, PartialVotingProposalFacet } from "../typechain-types";
+import { DiamondGovernance, IPartialVotingFacet, PartialVotingFacet, PartialVotingProposalFacet } from "../typechain-types";
 
 // Other
-import { deployAragonDAO } from "../deployments/deploy_AragonDAO";
 
 enum VoteOption { Abstain, Yes, No }
 
-async function getVotingPower(amount : number) {
-  const { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress } = await loadFixture(deployAragonDAO);
-  const [owner] = await ethers.getSigners();
+async function getVotingPower(DiamondGovernance : DiamondGovernance) {
   const ERC20TimeClaimableFacet = await ethers.getContractAt("ERC20TimeClaimableFacet", DiamondGovernance.address);
-  const standaloneVerificationContract = await ethers.getContractAt("GithubVerification", verificationContractAddress);
-
-  // Manually verify owner with github
-  const timestamp = Date.now();
-  const userHash =
-    "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
-  const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
-  await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
   await ERC20TimeClaimableFacet.claimTime();
 }
 
 async function createProposal() {
-  const { DiamondGovernance } = await loadFixture(deployAragonDAO);
-  await getVotingPower(10);
+  const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
+  await getVotingPower(DiamondGovernance);
   const PartialVotingProposalFacet = await ethers.getContractAt("PartialVotingProposalFacet", DiamondGovernance.address);
 
-  const start = Math.round(new Date().getTime() / 1000) + 60;
+  const start = now() + 20 * minutes;
   const proposalData = {
       _metadata: toBytes("Metadata"), //bytes
       _actions: [], //IDAO.Action[]
       _allowFailureMap: 0, //uint256
       _startDate: start, //uint64
-      _endDate: start + 1440, //uint64
+      _endDate: start + 2 * days, //uint64
       _allowEarlyExecution: true //bool
   }
   const tx = await PartialVotingProposalFacet.createProposal(proposalData._metadata, proposalData._actions, proposalData._allowFailureMap, 

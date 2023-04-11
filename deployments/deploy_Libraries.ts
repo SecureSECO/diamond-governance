@@ -57,11 +57,7 @@ async function deployLibraries() : Promise<Libraries> {
     const ERC20OneTimeRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeRewardFacetInit");
     const ERC20OneTimeRewardFacetInit = await ERC20OneTimeRewardFacetInitContract.deploy();
     
-    const ERC20OneTimeVerificationRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacetInit", { 
-        libraries: {
-            ERC20OneTimeRewardFacetInit: ERC20OneTimeRewardFacetInit.address 
-        }
-    });
+    const ERC20OneTimeVerificationRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacetInit");
     const ERC20OneTimeVerificationRewardFacetInit = await ERC20OneTimeVerificationRewardFacetInitContract.deploy();
 
     return {

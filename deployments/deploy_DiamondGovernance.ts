@@ -17,7 +17,7 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -37,6 +37,7 @@ interface DiamondDeployedContracts {
     ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet;
     ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
     Verification: VerificationFacet;
+    ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet;
   }
 }
 
@@ -127,6 +128,11 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.Verification)
   });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.ERC20OneTimeVerificationReward.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20OneTimeVerificationReward)
+  });
 
   enum VotingMode { SingleVote, SinglePartialVote, MultiplePartialVote };
   const votingSettings = {
@@ -142,7 +148,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     }
   };
   const verificationSettings = {
-    verificationContractAddress: verificationContractAddress //address
+    verificationContractAddress: verificationContractAddress, //address
+    providers: ["github", "proofofhumanity"], //string[]
+    rewards: [3, 10], //uint256[]
   };
   const timeClaimSettings = {
     tiers: [1, 2, 3], //uint256[]
@@ -153,9 +161,8 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     }
   };
   const onetimeClaimSettings = {
-    oneTimeRewardInit: {
-      reward: 50,
-    }
+    providers: ["github", "proofofhumanity"], //string[]
+    rewards: [20, 50], //uint256[]
   };
   const constructionArgs = {
     _diamondCut: cut,
@@ -252,11 +259,13 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const ERC20TieredTimeClaimableFacet = await ERC20TieredTimeClaimableFacetContract.deploy();
   console.log(`ERC20TieredTimeClaimableFacet deployed at ${ERC20TieredTimeClaimableFacet.address}`);
   
-  const VerificationContract = await ethers.getContractFactory("VerificationFacet");
-  const VerificationFacet = await VerificationContract.deploy();
-  await VerificationFacet.updateTierMapping("github", 3);
-  await VerificationFacet.updateTierMapping("proofofhumanity", 10);
+  const VerificationFacetContract = await ethers.getContractFactory("VerificationFacet");
+  const VerificationFacet = await VerificationFacetContract.deploy();
   console.log(`VerificationFacet deployed at ${VerificationFacet.address}`);
+
+  const ERC20OneTimeVerificationRewardFacetContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacet");
+  const ERC20OneTimeVerificationRewardFacet = await ERC20OneTimeVerificationRewardFacetContract.deploy();
+  console.log(`ERC20OneTimeVerificationRewardFacet deployed at ${ERC20OneTimeVerificationRewardFacet.address}`);
   
   return {
     DiamondGovernanceSetup: DiamondGovernanceSetup,
@@ -272,6 +281,7 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
       ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet,
       ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
+      ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet,
       Verification: VerificationFacet,
     }
   };

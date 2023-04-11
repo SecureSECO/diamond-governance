@@ -16,10 +16,22 @@ import { GithubVerification } from "../../verification/GithubVerification.sol";
 library VerificationFacetInit {
     struct InitParams {
         address verificationContractAddress;
+        string[] providers;
+        uint256[] rewards;
     }
 
     function init(InitParams calldata _params) external {
-        LibVerificationStorage.getStorage().verificationContractAddress = _params.verificationContractAddress;
+        LibVerificationStorage.Storage storage s = LibVerificationStorage.getStorage();
+
+        s.verificationContractAddress = _params.verificationContractAddress;
+        require(_params.providers.length == _params.rewards.length, "Something something");
+        for (uint i; i < _params.providers.length;) {
+            s.tierMapping[_params.providers[i]] = _params.rewards[i];
+
+            unchecked {
+                i++;
+            }
+        }
     }
 }
 
@@ -121,7 +133,7 @@ contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
                 tier = currentTier;
         }
 
-        return 3;
+        return tier;
     }
 
     /// @notice Updates a "tier" score for a given provider. This can be used to either score new providers or update
