@@ -47,7 +47,10 @@ contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet {
 
         // Check if the diamond supports burning
         if (LibDiamond.diamondStorage().supportedInterfaces[type(IBurnableGovernanceStructure).interfaceId]) {
-            IBurnableGovernanceStructure(address(this)).burnVotingPower(msg.sender, LibPartialBurnVotingProposalStorage.getStorage().proposalCreationCost);
+            LibPartialBurnVotingProposalStorage.Storage storage s = LibPartialBurnVotingProposalStorage.getStorage();
+            IBurnableGovernanceStructure(address(this)).burnVotingPower(msg.sender, s.proposalCreationCost);
+            s.proposalCreator[proposalId] = msg.sender;
+            s.proposalCost[proposalId] = s.proposalCreationCost;
         }
     }
 }

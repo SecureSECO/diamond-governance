@@ -9,10 +9,10 @@
  
 pragma solidity ^0.8.0;
 
-import { IMintableGovernanceStructure } from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
-import { PartialVotingProposalFacet } from "../../../governance/proposal/PartialVotingProposalFacet.sol";
+import { IMintableGovernanceStructure } from "../../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
+import { PartialVotingProposalFacet } from "../../../../governance/proposal/PartialVotingProposalFacet.sol";
 
-import { LibPartialBurnVotingProposalStorage } from "../../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
+import { LibPartialBurnVotingProposalStorage } from "../../../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
 
 contract ERC20PartialBurnVotingRefundFacet {
     function tokensRefundableFromProposal(uint256 _proposalId, address _claimer) public view virtual returns (uint256) {
