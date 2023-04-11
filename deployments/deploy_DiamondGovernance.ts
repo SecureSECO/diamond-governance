@@ -17,7 +17,7 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20PartialVoteBurningRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -27,14 +27,14 @@ interface DiamondDeployedContracts {
   DiamondInit: DiamondInit;
   Facets: {
     DiamondLoupe: DiamondLoupeFacet;
-    DAOReferenceFacet: DAOReferenceFacet;
-    PluginFacet: PluginFacet;
+    DAOReference: DAOReferenceFacet;
+    Plugin: PluginFacet;
     AragonAuth: AragonAuth;
     PartialBurnVotingProposal: PartialBurnVotingProposalFacet;
     PartialBurnVoting: PartialBurnVotingFacet;
     GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
     GovernanceERC20Burnable: GovernanceERC20BurnableFacet;
-    ERC20PartialVoteBurningRefundFacet: ERC20PartialVoteBurningRefundFacet;
+    ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet;
     ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
     Verification: VerificationFacet;
   }
@@ -78,9 +78,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DiamondLoupe)
   });
   cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.DAOReferenceFacet.address,
+    facetAddress: diamondGovernanceContracts.Facets.DAOReference.address,
     action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DAOReferenceFacet)
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DAOReference)
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.AragonAuth.address,
@@ -88,9 +88,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.AragonAuth)
   });
   cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.PluginFacet.address,
+    facetAddress: diamondGovernanceContracts.Facets.Plugin.address,
     action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.PluginFacet)
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.Plugin)
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.PartialBurnVotingProposal.address,
@@ -113,9 +113,9 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.GovernanceERC20Burnable).remove(ERC20Disabled)
   });
   cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.ERC20PartialVoteBurningRefundFacet.address,
+    facetAddress: diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund.address,
     action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20PartialVoteBurningRefundFacet)
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund)
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable.address,
@@ -244,9 +244,9 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const GovernanceERC20BurnableFacet = await GovernanceERC20BurnableFacetContract.deploy("my-token", "TOK");
   console.log(`GovernanceERC20BurnableFacet deployed at ${GovernanceERC20BurnableFacet.address}`);
 
-  const ERC20PartialVoteBurningRefundFacetContract = await ethers.getContractFactory("ERC20PartialVoteBurningRefundFacet");
-  const ERC20PartialVoteBurningRefundFacet = await ERC20PartialVoteBurningRefundFacetContract.deploy();
-  console.log(`ERC20PartialVoteBurningRefundFacet deployed at ${ERC20PartialVoteBurningRefundFacet.address}`);
+  const ERC20PartialBurnVotingRefundFacetContract = await ethers.getContractFactory("ERC20PartialBurnVotingRefundFacet");
+  const ERC20PartialBurnVotingRefundFacet = await ERC20PartialBurnVotingRefundFacetContract.deploy();
+  console.log(`ERC20PartialBurnVotingRefundFacet deployed at ${ERC20PartialBurnVotingRefundFacet.address}`);
 
   const ERC20TieredTimeClaimableFacetContract = await ethers.getContractFactory("ERC20TieredTimeClaimableFacet");
   const ERC20TieredTimeClaimableFacet = await ERC20TieredTimeClaimableFacetContract.deploy();
@@ -263,14 +263,14 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
     DiamondInit: DiamondInit,
     Facets: {
       DiamondLoupe: DiamondLoupeFacet,
-      DAOReferenceFacet: DAOReferenceFacet,
-      PluginFacet: PluginFacet,
+      DAOReference: DAOReferenceFacet,
+      Plugin: PluginFacet,
       AragonAuth: AragonAuth,
       PartialBurnVotingProposal: PartialBurnVotingProposalFacet,
       PartialBurnVoting: PartialBurnVotingFacet,
       GovernanceERC20Disabled: GovernanceERC20DisabledFacet,
       GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
-      ERC20PartialVoteBurningRefundFacet: ERC20PartialVoteBurningRefundFacet,
+      ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet,
       ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
       Verification: VerificationFacet,
     }

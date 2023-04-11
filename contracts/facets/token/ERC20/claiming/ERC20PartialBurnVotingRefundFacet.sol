@@ -14,7 +14,7 @@ import { PartialVotingProposalFacet } from "../../../governance/proposal/Partial
 
 import { LibPartialBurnVotingProposalStorage } from "../../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
 
-contract ERC20PartialVoteBurningRefundFacet {
+contract ERC20PartialBurnVotingRefundFacet {
     function tokensRefundableFromProposal(uint256 _proposalId, address _claimer) public view virtual returns (uint256) {
         if (!_proposalRefundable(_proposalId)) return 0;
 
