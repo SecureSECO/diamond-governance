@@ -17,7 +17,7 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingProposalRefundFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -35,6 +35,7 @@ interface DiamondDeployedContracts {
     GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
     GovernanceERC20Burnable: GovernanceERC20BurnableFacet;
     ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet;
+    ERC20PartialBurnVotingProposalRefund: ERC20PartialBurnVotingProposalRefundFacet;
     ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
     Verification: VerificationFacet;
     ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet;
@@ -117,6 +118,11 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     facetAddress: diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund.address,
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund)
+  });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.ERC20PartialBurnVotingProposalRefund.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20PartialBurnVotingProposalRefund)
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable.address,
@@ -254,6 +260,10 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const ERC20PartialBurnVotingRefundFacetContract = await ethers.getContractFactory("ERC20PartialBurnVotingRefundFacet");
   const ERC20PartialBurnVotingRefundFacet = await ERC20PartialBurnVotingRefundFacetContract.deploy();
   console.log(`ERC20PartialBurnVotingRefundFacet deployed at ${ERC20PartialBurnVotingRefundFacet.address}`);
+  
+  const ERC20PartialBurnVotingProposalRefundFacetContract = await ethers.getContractFactory("ERC20PartialBurnVotingProposalRefundFacet");
+  const ERC20PartialBurnVotingProposalRefundFacet = await ERC20PartialBurnVotingProposalRefundFacetContract.deploy();
+  console.log(`ERC20PartialBurnVotingProposalRefundFacet deployed at ${ERC20PartialBurnVotingProposalRefundFacet.address}`);
 
   const ERC20TieredTimeClaimableFacetContract = await ethers.getContractFactory("ERC20TieredTimeClaimableFacet");
   const ERC20TieredTimeClaimableFacet = await ERC20TieredTimeClaimableFacetContract.deploy();
@@ -280,6 +290,7 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       GovernanceERC20Disabled: GovernanceERC20DisabledFacet,
       GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
       ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet,
+      ERC20PartialBurnVotingProposalRefund: ERC20PartialBurnVotingProposalRefundFacet,
       ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
       ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet,
       Verification: VerificationFacet,
