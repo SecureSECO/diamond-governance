@@ -11,7 +11,7 @@ library LibSearchSECOMonetizationStorage {
         keccak256("searchseco.monetization.diamond.storage.position");
 
     struct Storage {
-        // how much a single hash costs
+        /// @notice how much a single hash costs
         uint256 hashCost;
     }
 

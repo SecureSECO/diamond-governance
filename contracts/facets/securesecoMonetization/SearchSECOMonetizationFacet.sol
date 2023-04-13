@@ -30,7 +30,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
     event PaymentProcessed(address sender, uint amount, string uniqueId);
 
     // Permission used by the updateTierMapping function
-    bytes32 public constant UPDATE_HASH_COST_MAPPING_PERMISSION =
+    bytes32 public constant UPDATE_HASH_COST_MAPPING_PERMISSION_ID =
         keccak256("UPDATE_HASH_COST_MAPPING_PERMISSION");
 
     /// @notice This function is used to pay for hashes. The user builds a credit of hashes.
@@ -52,7 +52,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
 
     /// @notice Updates the cost of a hash (in the context of SearchSECO)
     /// @param _newCost The new cost of a hash
-    function updateHashCost(uint _newCost) external auth(UPDATE_HASH_COST_MAPPING_PERMISSION) {
+    function updateHashCost(uint _newCost) external auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _newCost;
     }
 
