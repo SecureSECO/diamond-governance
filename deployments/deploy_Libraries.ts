@@ -25,6 +25,7 @@ interface Libraries {
     ERC20TieredTimeClaimableFacetInit: string;
     ERC20OneTimeRewardFacetInit: string;
     ERC20OneTimeVerificationRewardFacetInit: string;
+    SearchSECOMonetizationFacetInit: string;
 }
 
 async function deployLibraries() : Promise<Libraries> {
@@ -60,6 +61,9 @@ async function deployLibraries() : Promise<Libraries> {
     const ERC20OneTimeVerificationRewardFacetInitContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacetInit");
     const ERC20OneTimeVerificationRewardFacetInit = await ERC20OneTimeVerificationRewardFacetInitContract.deploy();
 
+    const SearchSECOMonetizationFacetInitContract = await ethers.getContractFactory("SearchSECOMonetizationFacetInit");
+    const SearchSECOMonetizationFacetInit = await SearchSECOMonetizationFacetInitContract.deploy();
+
     return {
         DAOReferenceFacetInit: DAOReferenceFacetInit.address,
         PartialVotingProposalFacetInit: PartialVotingProposalFacetInit.address,
@@ -69,6 +73,7 @@ async function deployLibraries() : Promise<Libraries> {
         ERC20TieredTimeClaimableFacetInit: ERC20TieredTimeClaimableFacetInit.address,
         ERC20OneTimeRewardFacetInit: ERC20OneTimeRewardFacetInit.address,
         ERC20OneTimeVerificationRewardFacetInit: ERC20OneTimeVerificationRewardFacetInit.address,
+        SearchSECOMonetizationFacetInit: SearchSECOMonetizationFacetInit.address,
     };
 }
 

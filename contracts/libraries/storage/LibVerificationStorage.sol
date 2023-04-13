@@ -11,9 +11,9 @@ library LibVerificationStorage {
         keccak256("verification.diamond.storage.position");
 
     struct Storage {
-        // mapping from whitelisted address to timestamp of whitelisting
+        /// @notice mapping from whitelisted address to timestamp of whitelisting
         mapping(address => uint64) whitelistTimestamps;
-        // mapping from providerId to tier score
+        /// @notice mapping from providerId to tier score
         mapping(string => uint256) tierMapping;
         address verificationContractAddress;
     }
