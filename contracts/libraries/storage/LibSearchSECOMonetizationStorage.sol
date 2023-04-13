@@ -11,8 +11,6 @@ library LibSearchSECOMonetizationStorage {
         keccak256("searchseco.monetization.diamond.storage.position");
 
     struct Storage {
-        // mapping from address to the number of hashed this account has credit
-        mapping(address => uint) hashCredit;
         // how much a single hash costs
         uint256 hashCost;
     }
