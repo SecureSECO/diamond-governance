@@ -24,7 +24,7 @@ library VerificationFacetInit {
         LibVerificationStorage.Storage storage s = LibVerificationStorage.getStorage();
 
         s.verificationContractAddress = _params.verificationContractAddress;
-        require(_params.providers.length == _params.rewards.length, "Something something");
+        require(_params.providers.length == _params.rewards.length, "Providers and rewards array length does not match");
         for (uint i; i < _params.providers.length;) {
             s.tierMapping[_params.providers[i]] = _params.rewards[i];
 

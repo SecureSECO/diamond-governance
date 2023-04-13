@@ -17,7 +17,7 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingProposalRefundFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, VerificationFacet } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingProposalRefundFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, SearchSECOMonetizationFacet, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -39,6 +39,7 @@ interface DiamondDeployedContracts {
     ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
     Verification: VerificationFacet;
     ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet;
+    SearchSECOMonetization: SearchSECOMonetizationFacet;
   }
 }
 
@@ -139,6 +140,11 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20OneTimeVerificationReward)
   });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.SearchSECOMonetization.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.SearchSECOMonetization)
+  });
 
   enum VotingMode { SingleVote, SinglePartialVote, MultiplePartialVote };
   const votingSettings = {
@@ -170,10 +176,13 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     providers: ["github", "proofofhumanity"], //string[]
     rewards: [20, 50], //uint256[]
   };
+  const searchSECOMonetizationSettings = {
+    hashCost: 1,
+  }
   const constructionArgs = {
     _diamondCut: cut,
     _init: diamondGovernanceContracts.DiamondInit.address,
-    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [votingSettings, verificationSettings, timeClaimSettings, onetimeClaimSettings])
+    _calldata: diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData("init", [votingSettings, verificationSettings, timeClaimSettings, onetimeClaimSettings, searchSECOMonetizationSettings])
   };
   const constructionFormat = JSON.parse(buildMetadata).pluginSetupABI.prepareInstallation;
   const pluginConstructionBytes = ethers.utils.defaultAbiCoder.encode(
@@ -219,6 +228,7 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       VerificationFacetInit: libraries.VerificationFacetInit,
       ERC20TieredTimeClaimableFacetInit: libraries.ERC20TieredTimeClaimableFacetInit,
       ERC20OneTimeVerificationRewardFacetInit: libraries.ERC20OneTimeVerificationRewardFacetInit,
+      SearchSECOMonetizationFacetInit: libraries.SearchSECOMonetizationFacetInit,
     }
   });
   const DiamondInit = await DiamondInitContract.deploy();
@@ -276,6 +286,10 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
   const ERC20OneTimeVerificationRewardFacetContract = await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacet");
   const ERC20OneTimeVerificationRewardFacet = await ERC20OneTimeVerificationRewardFacetContract.deploy();
   console.log(`ERC20OneTimeVerificationRewardFacet deployed at ${ERC20OneTimeVerificationRewardFacet.address}`);
+
+  const SearchSECOMonetizationFacetContract = await ethers.getContractFactory("SearchSECOMonetizationFacet");
+  const SearchSECOMonetizationFacet = await SearchSECOMonetizationFacetContract.deploy();
+  console.log(`SearchSECOMonetizationFacet deployed at ${SearchSECOMonetizationFacet.address}`);
   
   return {
     DiamondGovernanceSetup: DiamondGovernanceSetup,
@@ -294,6 +308,7 @@ async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
       ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
       ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet,
       Verification: VerificationFacet,
+      SearchSECOMonetization: SearchSECOMonetizationFacet,
     }
   };
 }

@@ -43,9 +43,9 @@ import { PartialBurnVotingProposalFacetInit } from "../facets/governance/proposa
 import { VerificationFacetInit } from "../facets/membership/VerificationFacet.sol";
 import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/time/ERC20TieredTimeClaimableFacet.sol";
 import { ERC20OneTimeVerificationRewardFacetInit } from "../facets/token/ERC20/claiming/one-time/ERC20OneTimeVerificationRewardFacet.sol";
+import { SearchSECOMonetizationFacetInit } from "../facets/securesecoMonetization/SearchSECOMonetizationFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
-import { LibVerificationStorage } from "../libraries/storage/LibVerificationStorage.sol";
 import { LibPartialVotingProposalStorage } from "../libraries/storage/LibPartialVotingProposalStorage.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
@@ -59,7 +59,8 @@ contract DiamondInit {
         PartialBurnVotingProposalFacetInit.InitParams memory _votingSettings, 
         VerificationFacetInit.InitParams memory _verificationSettings, 
         ERC20TieredTimeClaimableFacetInit.InitParams memory _timeClaimSettings,
-        ERC20OneTimeVerificationRewardFacetInit.InitParams memory _onetimeClaimSettings
+        ERC20OneTimeVerificationRewardFacetInit.InitParams memory _onetimeClaimSettings,
+        SearchSECOMonetizationFacetInit.InitParams memory _searchSECOMonetizationSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -98,5 +99,6 @@ contract DiamondInit {
         VerificationFacetInit.init(_verificationSettings);
         ERC20TieredTimeClaimableFacetInit.init(_timeClaimSettings);
         ERC20OneTimeVerificationRewardFacetInit.init(_onetimeClaimSettings);
+        SearchSECOMonetizationFacetInit.init(_searchSECOMonetizationSettings);
     }
 }
