@@ -10,40 +10,45 @@
 import { ethers } from "hardhat";
 
 // Utils
-import { resolveENS } from "../utils/ensHelper";
 import { toBytes, getEvents } from "../utils/utils";
 
 // Types
 
 // Other
-import { deployAragonFrameworkWithEns } from "./deploy_AragonOSxFramework";
+import { deployAragonFrameworkWithEns, AragonOSxFrameworkContracts } from "./deploy_AragonOSxFramework";
 import { createDiamondGovernanceRepo } from "./deploy_DiamondGovernance";
 import {deployStandaloneVerificationContract} from "./deploy_StandaloneVerificationContract";
 
+async function deployAragonDAOWithFramework() {
+  const { aragonOSxFramework } = await deployAragonFrameworkWithEns();
+  return await deployAragonDAO(aragonOSxFramework);
+}
+
 /**
  * Creates a new Aragon DAO
- * This DAO has the Plugins: PartialTokenBurnVoting
+ * This DAO has the Plugins: DiamondGovernance
  * @returns The newly created DAO
  */
-async function deployAragonDAO() {
-  const { daoResolver, pluginResolver, PluginRepoFactory, DAOFactory } = await deployAragonFrameworkWithEns();
-
+async function deployAragonDAO(aragonOSxFramework: AragonOSxFrameworkContracts) {
   // Deploy verification contract
   const { address: standaloneVerificationContractAddress } = await deployStandaloneVerificationContract();
 
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress } = await createDiamondGovernanceRepo(PluginRepoFactory, pluginResolver, standaloneVerificationContractAddress);
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress } = 
+    await createDiamondGovernanceRepo(aragonOSxFramework.PluginRepoFactory, aragonOSxFramework.PluginRepoRegistry, standaloneVerificationContractAddress);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
-  const tx = await DAOFactory.createDao(DAOSettings, [diamondGovernancePluginSettings]);
+  const tx = await aragonOSxFramework.DAOFactory.createDao(DAOSettings, [diamondGovernancePluginSettings]);
   const receipt = await tx.wait();
   
-  // Retrieve plugin address from DAO creation log
+  // Retrieve addresses from DAO creation log
+  const DAORegistryContract = await ethers.getContractFactory("DAORegistry");
+  const DAOAddress = getEvents(DAORegistryContract, "DAORegistered", receipt)[0].args.dao;
+
   const PluginSetupProcessorContract = await ethers.getContractFactory("PluginSetupProcessor");
   const pluginAddresses = getEvents(PluginSetupProcessorContract, "InstallationApplied", receipt).map((log : any) => log.args.plugin);
 
   // Retrieve DAO address with ENS
-  const DAOAddress = await resolveENS(daoResolver, "dao", "my-dao");
   const DAOConctract = await ethers.getContractFactory("DAO");
   const DAO = await DAOConctract.attach(DAOAddress);
 
@@ -57,11 +62,11 @@ async function GetDaoCreationParams() {
   const DAOSettings = {
     trustedForwarder: ethers.constants.AddressZero, //address
     daoURI: "https://plopmenz.com", //string
-    subdomain: "my-dao", //string
+    subdomain: "my-dao" + Math.round(Math.random() * 100000), //string
     metadata: toBytes("https://plopmenz.com/daoMetadata") //bytes
   };
 
   return DAOSettings;
 }
 
-export { deployAragonDAO }
+export { deployAragonDAO, deployAragonDAOWithFramework }

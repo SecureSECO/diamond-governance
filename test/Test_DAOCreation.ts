@@ -18,11 +18,11 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 // Types
 
 // Other
-import { deployAragonDAO } from "../deployments/deploy_AragonDAO";
+import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
 
 describe("DAO", function () {
   it("should deploy", async function () {
-    const { DAO } = await loadFixture(deployAragonDAO);
+    const { DAO } = await loadFixture(deployAragonDAOWithFramework);
     expect(await DAO.daoURI()).to.be.equal("https://plopmenz.com");
   });
 });

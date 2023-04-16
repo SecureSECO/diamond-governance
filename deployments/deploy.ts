@@ -6,10 +6,55 @@
   * LICENSE file in the root directory of this source tree.
   */
 
+import { deployAragonDAO } from "./deploy_AragonDAO";
+import { AragonOSxFrameworkContracts, ENSFrameworkContracts } from "./deploy_AragonOSxFramework";
+import { ethers } from "hardhat";
+import fs from "fs";
+
+const network = "mumbai";
+
 async function main() {
   console.log("Deploying...");
-    // do deploy
+  const ensFramework = await getExistingENSFramework();
+  const aragonOSxFramework = await getExistingAragonOSxFramework();
+  const deploy = await deployAragonDAO(aragonOSxFramework);
+  console.log(deploy);
   console.log("Deployed!");
+}
+
+async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
+  const path = "./deployments/existing-contracts/existing_ENSFramework.json";
+  const fileContent = fs.readFileSync(path, "utf-8");
+  const fileContentParsed = JSON.parse(fileContent);
+  if (!fileContentParsed.hasOwnProperty(network)) {
+    throw new Error(`Network ${network} doesnt exist in ${path}`);
+  }
+  const existingContractAddresses = fileContentParsed[network];
+  return {
+    ens: await ethers.getContractAt("ENS", existingContractAddresses.ens),
+    daoResolver: await ethers.getContractAt("PublicResolver", existingContractAddresses.daoResolver),
+    pluginResolver: await ethers.getContractAt("PublicResolver", existingContractAddresses.pluginResolver),
+  }
+}
+
+async function getExistingAragonOSxFramework() : Promise<AragonOSxFrameworkContracts> {
+  const path = "./deployments/existing-contracts/existing_AragonOSxFramework.json";
+  const fileContent = fs.readFileSync(path, "utf-8");
+  const fileContentParsed = JSON.parse(fileContent);
+  if (!fileContentParsed.hasOwnProperty(network)) {
+    throw new Error(`Network ${network} doesnt exist in ${path}`);
+  }
+  const existingContractAddresses = fileContentParsed[network];
+  return {
+    ManagingDAO: await ethers.getContractAt("DAO", existingContractAddresses.managingDAO),
+    DAO_ENSSubdomainRegistrar: await ethers.getContractAt("ENSSubdomainRegistrar", existingContractAddresses.DAO_ENSSubdomainRegistrar),
+    Plugin_ENSSubdomainRegistrar: await ethers.getContractAt("ENSSubdomainRegistrar", existingContractAddresses.Plugin_ENSSubdomainRegistrar),
+    DAORegistry: await ethers.getContractAt("DAORegistry", existingContractAddresses.DAORegistry),
+    PluginRepoRegistry: await ethers.getContractAt("PluginRepoRegistry", existingContractAddresses.PluginRepoRegistry),
+    PluginRepoFactory: await ethers.getContractAt("PluginRepoFactory", existingContractAddresses.PluginRepoFactory),
+    PluginSetupProcessor: await ethers.getContractAt("PluginSetupProcessor", existingContractAddresses.PluginSetupProcessor),
+    DAOFactory: await ethers.getContractAt("DAOFactory", existingContractAddresses.DAOFactory),
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -14,10 +14,10 @@ import fs from "fs";
 import { getSelectors, FacetCutAction } from "../utils/diamondHelper";
 import { resolveENS } from "../utils/ensHelper";
 import { days } from "../utils/timeUnits";
-import { toBytes } from "../utils/utils";
+import { toBytes, getEvents } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingProposalRefundFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PublicResolver, SearchSECOMonetizationFacet, VerificationFacet } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DiamondInit, DiamondLoupeFacet, ERC20OneTimeVerificationRewardFacet, ERC20PartialBurnVotingProposalRefundFacet, ERC20PartialBurnVotingRefundFacet, ERC20TieredTimeClaimableFacet, GovernanceERC20BurnableFacet, GovernanceERC20DisabledFacet, PartialBurnVotingFacet, PartialBurnVotingProposalFacet, PluginFacet, PluginRepoFactory, PluginRepoRegistry, SearchSECOMonetizationFacet, VerificationFacet } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -49,20 +49,21 @@ interface DiamondDeployedContracts {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver, verificationContractAddress: string) {
+async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, PluginRepoRegistry : PluginRepoRegistry, verificationContractAddress: string) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDiamondGovernance();
   const [owner] = await ethers.getSigners();
 
-  await pluginRepoFactory.createPluginRepoWithFirstVersion(
-    "my-plugin",
+  const tx = await pluginRepoFactory.createPluginRepoWithFirstVersion(
+    "my-plugin" + Math.round(Math.random() * 100000),
     diamondGovernanceContracts.DiamondGovernanceSetup.address,
     owner.address,
     toBytes("https://plopmenz.com/buildMetadata"),
     toBytes("https://plopmenz.com/releaseMetadata")
   );
-  const PluginRepoAddress = await resolveENS(pluginResolver, "plugin", "my-plugin");
+  const receipt = await tx.wait();
+  const PluginRepoAddress = getEvents(PluginRepoRegistry, "PluginRepoRegistered", receipt)[0].args.pluginRepo;
 
   const ERC20Disabled = [
     "transfer(address, uint256)", 
