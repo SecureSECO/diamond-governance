@@ -40,10 +40,12 @@ library VerificationFacetInit {
 /// @notice Additionally to the verification functionality, this includes the whitelisting functionality for the DAO membership
 contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
     // Permission used by the updateTierMapping function
-    bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION = keccak256("UPDATE_TIER_MAPPING_PERMISSION");
+    bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION_ID = keccak256("UPDATE_TIER_MAPPING_PERMISSION");
+    // Permission used by the whitelist function
+    bytes32 public constant WHITELIST_MEMBER_PERMISSION_ID = keccak256("WHITELIST_MEMBER_PERMISSION");
 
     /// @notice Whitelist a given account
-    function whitelist(address _address) internal {
+    function whitelist(address _address) external auth(WHITELIST_MEMBER_PERMISSION_ID) {
         LibVerificationStorage.getStorage().whitelistTimestamps[_address] = uint64(block.timestamp);
     }
 
@@ -139,7 +141,7 @@ contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
     /// @notice Updates a "tier" score for a given provider. This can be used to either score new providers or update
     /// scores of already scored providers
     /// @dev This maps a providerId to a uint256 tier
-    function updateTierMapping(string calldata providerId, uint256 tier) external {
+    function updateTierMapping(string calldata providerId, uint256 tier) external auth(UPDATE_TIER_MAPPING_PERMISSION_ID) {
         LibVerificationStorage.getStorage().tierMapping[providerId] = tier;
     }
 }
