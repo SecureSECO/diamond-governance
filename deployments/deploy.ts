@@ -8,18 +8,17 @@
 
 import { deployAragonDAO } from "./deploy_AragonDAO";
 import { AragonOSxFrameworkContracts, ENSFrameworkContracts } from "./deploy_AragonOSxFramework";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import fs from "fs";
 
-const network = "mumbai";
-
 async function main() {
-  console.log("Deploying...");
+  console.log("Deploying to ", network.name);
   const ensFramework = await getExistingENSFramework();
   const aragonOSxFramework = await getExistingAragonOSxFramework();
   const deploy = await deployAragonDAO(aragonOSxFramework);
-  console.log(deploy);
-  console.log("Deployed!");
+  console.log("DAO at: ", deploy.DAO.address);
+  console.log("Diamond Governance at: ", deploy.DiamondGovernance.address);
+  console.log("Deploy finished!");
 }
 
 async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
@@ -29,7 +28,7 @@ async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
   if (!fileContentParsed.hasOwnProperty(network)) {
     throw new Error(`Network ${network} doesnt exist in ${path}`);
   }
-  const existingContractAddresses = fileContentParsed[network];
+  const existingContractAddresses = fileContentParsed[network.name];
   return {
     ens: await ethers.getContractAt("ENS", existingContractAddresses.ens),
     daoResolver: await ethers.getContractAt("PublicResolver", existingContractAddresses.daoResolver),
@@ -44,7 +43,7 @@ async function getExistingAragonOSxFramework() : Promise<AragonOSxFrameworkContr
   if (!fileContentParsed.hasOwnProperty(network)) {
     throw new Error(`Network ${network} doesnt exist in ${path}`);
   }
-  const existingContractAddresses = fileContentParsed[network];
+  const existingContractAddresses = fileContentParsed[network.name];
   return {
     ManagingDAO: await ethers.getContractAt("DAO", existingContractAddresses.managingDAO),
     DAO_ENSSubdomainRegistrar: await ethers.getContractAt("ENSSubdomainRegistrar", existingContractAddresses.DAO_ENSSubdomainRegistrar),

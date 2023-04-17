@@ -15,7 +15,8 @@ npm run compile
 Compiles all the smart contracts and generates the typescript types.  
 
 ## npm run deploy
-Deploys the plugin to the network setup in hardhat.  
+Deploys the plugin to the mumbai network. Currently this also creates a DAO with the Diamond Governance plugin.  
+If the user would like to deploy to a different network they can use the command `npx hardhat run deployments/deploy.ts --network x` instead, where x is the name of the network, such as polygon, mainnet, sepolia etc.
 
 ## npm test
 Runs the unit tests.  
