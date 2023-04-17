@@ -19,7 +19,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Other
 import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
-import { DiamondGovernanceClient } from "../sdk/client";
+import { DiamondGovernanceClient } from "../sdk/src/client";
 
 // Tests as described in https://eips.ethereum.org/EIPS/eip-165
 describe("SDK ERC165", function () {

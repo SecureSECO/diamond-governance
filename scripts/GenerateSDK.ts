@@ -33,10 +33,10 @@ async function main() {
     const interfaces = interfaceKeys.join(", ");
     const methods = interfaceMethodArray.join("\n");
 
-    const template = fs.readFileSync("./sdk/client-template.ts", 'utf-8');
+    const template = fs.readFileSync("./sdk/src/client-template.ts", 'utf-8');
     const newClient = template.replaceAll(insertInterfaces, interfaces).replaceAll(insertMethods, methods);
 
-    fs.writeFileSync("./sdk/client.ts", newClient);
+    fs.writeFileSync("./sdk/src/client.ts", newClient);
     console.log("Finished generating of SDK");
 }
 

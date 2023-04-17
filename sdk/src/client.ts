@@ -8,11 +8,11 @@
 
 import { ethers } from "hardhat";
 import { Signer } from "@ethersproject/abstract-signer";
-import { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes } from "../typechain-types";
+import { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes } from "../../typechain-types";
 
 enum DiamondGovernanceInterfaces { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes }
 
-export class DiamondGovernanceClient {
+class DiamondGovernanceClient {
     private pluginAddress : string;
     private signer : Signer;
     private cache: { [id: string] : any }
@@ -65,7 +65,7 @@ export class DiamondGovernanceClient {
     }
 
     public async IMembershipExtended() : Promise<IMembershipExtended> {
-        return await this._get<IMembershipExtended>(DiamondGovernanceInterfaces.IMembershipExtended, "0x3c9b9777");
+        return await this._get<IMembershipExtended>(DiamondGovernanceInterfaces.IMembershipExtended, "0x2a21f601");
     }
 
     public async IMembership() : Promise<IMembership> {
@@ -89,7 +89,7 @@ export class DiamondGovernanceClient {
     }
 
     public async ITieredMembershipStructure() : Promise<ITieredMembershipStructure> {
-        return await this._get<ITieredMembershipStructure>(DiamondGovernanceInterfaces.ITieredMembershipStructure, "0x88c13925");
+        return await this._get<ITieredMembershipStructure>(DiamondGovernanceInterfaces.ITieredMembershipStructure, "0xdea631ee");
     }
 
     public async IVotes() : Promise<IVotes> {
@@ -118,3 +118,5 @@ export class DiamondGovernanceClient {
         return contract;
     }
 }
+
+export { DiamondGovernanceClient, IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, ITieredMembershipStructure, IVotes }
