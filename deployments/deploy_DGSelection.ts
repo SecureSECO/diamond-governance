@@ -17,16 +17,18 @@ import { days } from "../utils/timeUnits";
 import { toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DIInterfaces, DiamondLoupeFacet, PluginFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DIInterfaces, DiamondLoupeFacet, DiamondCutFacet, DiamondCutMockFacet, PluginFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
 
-interface DiamondDeployedContracts {
+interface DiamondDeployedContractsBase {
   DiamondGovernanceSetup: DiamondGovernanceSetup;
   DIInterfaces: DIInterfaces;
   Facets: {
     DiamondLoupe: DiamondLoupeFacet;
+    DiamondCut: DiamondCutFacet;
+    DiamondCutMock: DiamondCutMockFacet;
     DAOReference: DAOReferenceFacet;
     Plugin: PluginFacet;
     AragonAuth: AragonAuth;
@@ -40,7 +42,7 @@ interface DiamondDeployedContracts {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver, verificationContractAddress: string) {
+async function createDGBaseRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDGBase();
@@ -60,6 +62,16 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     facetAddress: diamondGovernanceContracts.Facets.DiamondLoupe.address,
     action: FacetCutAction.Add,
     functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DiamondLoupe)
+  });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.DiamondCut.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DiamondCut)
+  });
+  cut.push({
+    facetAddress: diamondGovernanceContracts.Facets.DiamondCutMock.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.DiamondCutMock)
   });
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.DAOReference.address,
@@ -103,10 +115,10 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
       data: pluginConstructionBytes //bytes
   };
 
-  return { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress };
+  return { diamondGovernancePluginSettings, diamondGovernanceContracts };
 }
 
-async function deployDGBase() : Promise<DiamondDeployedContracts> {
+async function deployDGBase() : Promise<DiamondDeployedContractsBase> {
   // TODO: Change this later
   const libraries = await deployLibraries();
 
@@ -123,7 +135,6 @@ async function deployDGBase() : Promise<DiamondDeployedContracts> {
   // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
   const DIInterfacesContract = await ethers.getContractFactory("DIInterfaces");
-  
   const DIInterfaces = await DIInterfacesContract.deploy();
   console.log(`DIInterfaces deployed at ${DIInterfaces.address}`);
 
@@ -131,6 +142,14 @@ async function deployDGBase() : Promise<DiamondDeployedContracts> {
   const DiamondLoupeFacetContract = await ethers.getContractFactory("DiamondLoupeFacet");
   const DiamondLoupeFacet = await DiamondLoupeFacetContract.deploy();
   console.log(`DiamondLoupeFacet deployed at ${DiamondLoupeFacet.address}`);
+
+  const DiamondCutFacetContract = await ethers.getContractFactory("DiamondCutFacet");
+  const DiamondCutFacet = await DiamondCutFacetContract.deploy();
+  console.log(`DiamondCutFacet deployed at ${DiamondCutFacet.address}`);
+
+  const DiamondCutMockFacetContract = await ethers.getContractFactory("DiamondCutMockFacet");
+  const DiamondCutMockFacet = await DiamondCutMockFacetContract.deploy();
+  console.log(`DiamondCutMockFacet deployed at ${DiamondCutFacet.address}`);
 
   const DAOReferenceFacetContract = await ethers.getContractFactory("DAOReferenceFacet");
   const DAOReferenceFacet = await DAOReferenceFacetContract.deploy();
@@ -149,6 +168,8 @@ async function deployDGBase() : Promise<DiamondDeployedContracts> {
     DIInterfaces: DIInterfaces,
     Facets: {
       DiamondLoupe: DiamondLoupeFacet,
+      DiamondCut: DiamondCutFacet,
+      DiamondCutMock: DiamondCutMockFacet,
       DAOReference: DAOReferenceFacet,
       Plugin: PluginFacet,
       AragonAuth: AragonAuth,
@@ -157,13 +178,67 @@ async function deployDGBase() : Promise<DiamondDeployedContracts> {
   };
 }
 
-async function addFacetToDiamond (diamondGovernanceContracts: DiamondDeployedContracts, contractName: string) {
+async function addFacetToDiamond(
+  diamondGovernanceContracts: DiamondDeployedContractsBase,
+  diamondGovernanceAddress: string,
+  facetContractName: string,
+  _init = ethers.constants.AddressZero,
+  _calldata = ethers.constants.AddressZero,
+) {
   // Catch error if contractName is invalid
-  const facetContract = await ethers.getContractFactory(contractName);
+  // Deploy facet contract
+  const facetContract = await ethers.getContractFactory(facetContractName);
   const facet = await facetContract.deploy();
-  console.log(`${contractName} deployed at ${facet.address}`);
+  console.log(`${facetContractName} deployed at ${facet.address}`);
+
+  // Cut facet into diamond
+  let cut = [];
+  cut.push({
+    facetAddress: facet.address,
+    action: FacetCutAction.Add,
+    functionSelectors: getSelectors(facet)
+  });
+  const constructionArgs = {
+    _diamondCut: cut,
+    _init: _init,
+    _calldata: _calldata,
+  };
+
+  const DiamondCutMock = await ethers.getContractAt("DiamondCutMockFacet", diamondGovernanceAddress);
+  await DiamondCutMock.diamondCutMock(constructionArgs._diamondCut, constructionArgs._init, constructionArgs._calldata);
 
   diamondGovernanceContracts.Facets.AdditionalFacets.push(facet);
 }
 
-export { deployDGBase, createDiamondGovernanceRepo }
+interface ContractNames {
+  facetContractName: string;
+  facetInitContractName: string;
+  diamondInitName: string;
+}
+
+async function addFacetToDiamondWithInit (diamondGovernanceContracts: DiamondDeployedContractsBase, diamondGovernanceAddress: string, contractNames: ContractNames, settings: Object) {
+  const { facetContractName, facetInitContractName, diamondInitName } = contractNames
+
+  // Deploy library for init
+  const facetInitContract = await ethers.getContractFactory(facetInitContractName);
+  const facetInit = await facetInitContract.deploy();
+
+  // Deploy init contract
+  const DiamondInitContract = await ethers.getContractFactory(diamondInitName, { 
+    libraries: {
+      [facetInitContractName]: facetInit.address,
+    }
+  });
+  const DiamondInit = await DiamondInitContract.deploy();
+  console.log(`${diamondInitName} deployed at ${DiamondInit.address}`);
+
+  addFacetToDiamond(
+    diamondGovernanceContracts, 
+    diamondGovernanceAddress, 
+    facetContractName, 
+    DiamondInit.address, 
+    DiamondInitContract.interface.encodeFunctionData("init", [settings])
+  );
+}
+
+export { DiamondDeployedContractsBase, deployDGBase, createDGBaseRepo, addFacetToDiamond, addFacetToDiamondWithInit }
