@@ -7,26 +7,16 @@
   */
 
 // Framework
-import { ethers } from "hardhat";
 
 // Tests
-import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
-import { 
-    getSelectors,
-    FacetCutAction,
-    removeSelectors,
-    findAddressPositionInFacets 
-} from "../../utils/diamondHelper";
 
 // Types
 
 // Other
 import { deployBaseAragonDAO } from "../../deployments/deploy_BaseAragonDAO";
-import { addFacetToDiamond, addFacetToDiamondWithInit } from "../../deployments/deploy_DGSelection";
-import { deployStandaloneVerificationContract } from "../../deployments/deploy_StandaloneVerificationContract";
 import { searchSecoMonetization, verification } from "./addSingleFacet";
 
 // async function deployDiamondWithTest1Facet() {
