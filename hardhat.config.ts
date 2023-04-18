@@ -13,6 +13,11 @@ import '@openzeppelin/hardhat-upgrades';
 import '@typechain/hardhat'
 import '@nomiclabs/hardhat-ethers'
 
+//.env secrets
+import { config as dotEnvConfig } from "dotenv";
+import { ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, MUMBAI_API_KEY, MUMBAI_PRIVATE_KEY } from './secrets';
+dotEnvConfig();
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.17",
@@ -26,5 +31,20 @@ module.exports = {
         passphrase: "",
       },
     },
+    mumbai: {
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${MUMBAI_API_KEY()}`,
+      accounts: [MUMBAI_PRIVATE_KEY()]
+    }
+  },
+  etherscan: {
+    apiKey: {
+      //ethereum
+      mainnet: ETHERSCAN_API_KEY(),
+      sepolia: ETHERSCAN_API_KEY(),
+
+      //polygon
+      polygon: POLYGONSCAN_API_KEY(),
+      polygonMumbai: POLYGONSCAN_API_KEY(),
+    }
   },
 };

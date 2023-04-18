@@ -18,13 +18,13 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 // Types
 
 // Other
-import { deployAragonDAO } from "../deployments/deploy_AragonDAO";
+import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
 import { DiamondGovernanceClient } from "../sdk/client";
 
 // Tests as described in https://eips.ethereum.org/EIPS/eip-165
 describe("SDK ERC165", function () {
   it("should support the ERC165 interfaceid", async function () {
-    const { DiamondGovernance } = await loadFixture(deployAragonDAO);
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOWithFramework);
     const [owner] = await ethers.getSigners();
 
     const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
@@ -33,7 +33,7 @@ describe("SDK ERC165", function () {
   });
 
   it("shouldnt support an invalid interfaceid", async function () {
-    const { DiamondGovernance } = await loadFixture(deployAragonDAO);
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOWithFramework);
     const [owner] = await ethers.getSigners();
 
     const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
