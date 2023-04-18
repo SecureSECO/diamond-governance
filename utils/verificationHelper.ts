@@ -11,7 +11,7 @@ import { now } from "./timeUnits";
 // Types
 
 // Other
-import { deployAragonDAO } from "../deployments/deploy_AragonDAO";
+import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
 
 async function verify(verificationContractAddress : string) {
   const [owner] = await ethers.getSigners();
@@ -26,7 +26,7 @@ async function verify(verificationContractAddress : string) {
 }
 
 async function deployAragonDAOAndVerifyFixture() {
-    const { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress, DAO } = await loadFixture(deployAragonDAO);
+    const { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress, DAO } = await loadFixture(deployAragonDAOWithFramework);
     await verify(verificationContractAddress);
     return { DiamondGovernance, diamondGovernanceContracts, verificationContractAddress, DAO };
 }
