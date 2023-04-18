@@ -10,6 +10,8 @@ import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IMintableGovernanceStructure} from "../governance/structure/voting-power/IMintableGovernanceStructure.sol";
+import {IBurnableGovernanceStructure} from "../governance/structure/voting-power/IBurnableGovernanceStructure.sol";
 
 // Used for diamond pattern storage
 library SearchSECOMonetizationFacetInit {
@@ -42,12 +44,19 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
 
         // Require that the balance of the sender has sufficient funds for this transaction
         // hashCost is the cost of a single hash
-        require(tokenContract.balanceOf(msg.sender) > s.hashCost * _amount, "Insufficient funds for this transaction");
+        require(tokenContract.balanceOf(msg.sender) > s.hashCost * _amount, "Insufficient tokens for this transaction");
 
-        tokenContract.transferFrom(msg.sender, address(this), s.hashCost * _amount);
+        // tokenContract.transferFrom(msg.sender, address(this), s.hashCost * _amount);
+        IBurnableGovernanceStructure burnBridges = IBurnableGovernanceStructure(address(this));
+        burnBridges.burnVotingPower(msg.sender, s.hashCost * _amount);
         
         // Emit event so back-end can verify payment
         emit PaymentProcessed(msg.sender, _amount, _uniqueId);
+    }
+
+    function giveMoneyz() external {
+        IMintableGovernanceStructure tokenContract = IMintableGovernanceStructure(address(this));
+        tokenContract.mintVotingPower(msg.sender, 0, 1000000000);
     }
 
     /// @notice Updates the cost of a hash (in the context of SearchSECO)

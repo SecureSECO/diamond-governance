@@ -25,8 +25,8 @@ async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
   const path = "./deployments/existing-contracts/existing_ENSFramework.json";
   const fileContent = fs.readFileSync(path, "utf-8");
   const fileContentParsed = JSON.parse(fileContent);
-  if (!fileContentParsed.hasOwnProperty(network)) {
-    throw new Error(`Network ${network} doesnt exist in ${path}`);
+  if (!fileContentParsed.hasOwnProperty(network.name)) {
+    throw new Error(`Network ${network.name} doesnt exist in ${path}`);
   }
   const existingContractAddresses = fileContentParsed[network.name];
   return {
@@ -40,8 +40,8 @@ async function getExistingAragonOSxFramework() : Promise<AragonOSxFrameworkContr
   const path = "./deployments/existing-contracts/existing_AragonOSxFramework.json";
   const fileContent = fs.readFileSync(path, "utf-8");
   const fileContentParsed = JSON.parse(fileContent);
-  if (!fileContentParsed.hasOwnProperty(network)) {
-    throw new Error(`Network ${network} doesnt exist in ${path}`);
+  if (!fileContentParsed.hasOwnProperty(network.name)) {
+    throw new Error(`Network ${network.name} doesnt exist in ${path}`);
   }
   const existingContractAddresses = fileContentParsed[network.name];
   return {

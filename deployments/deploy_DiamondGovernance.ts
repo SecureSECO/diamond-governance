@@ -68,7 +68,6 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
   const ERC20Disabled = [
     "transfer(address, uint256)", 
     "approve(address, uint256)", 
-    "transferFrom(address, address, uint256)", 
     "increaseAllowance(address, uint256)", 
     "decreaseAllowance(address, uint256)", 
     "permit(address, address, uint256, uint256, uint8, bytes32, bytes32)", 
