@@ -49,7 +49,7 @@ interface DiamondDeployedContracts {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, PluginRepoRegistry : PluginRepoRegistry, verificationContractAddress: string) {
+async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginRepoRegistry : PluginRepoRegistry, verificationContractAddress: string) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDiamondGovernance();
@@ -63,7 +63,7 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     toBytes("https://plopmenz.com/releaseMetadata")
   );
   const receipt = await tx.wait();
-  const PluginRepoAddress = getEvents(PluginRepoRegistry, "PluginRepoRegistered", receipt)[0].args.pluginRepo;
+  const PluginRepoAddress = getEvents(pluginRepoRegistry, "PluginRepoRegistered", receipt)[0].args.pluginRepo;
 
   const ERC20Disabled = [
     "transfer(address, uint256)", 

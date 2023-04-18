@@ -14,10 +14,10 @@ import fs from "fs";
 import { getSelectors, FacetCutAction } from "../utils/diamondHelper";
 import { resolveENS } from "../utils/ensHelper";
 import { days } from "../utils/timeUnits";
-import { toBytes } from "../utils/utils";
+import { getEvents, toBytes } from "../utils/utils";
 
 // Types
-import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DIInterfaces, DiamondLoupeFacet, DiamondCutFacet, DiamondCutMockFacet, PluginFacet, PluginRepoFactory, PublicResolver } from "../typechain-types";
+import { AragonAuth, DAOReferenceFacet, DiamondGovernanceSetup, DIInterfaces, DiamondLoupeFacet, DiamondCutFacet, DiamondCutMockFacet, PluginFacet, PluginRepoFactory, PublicResolver, PluginRepoRegistry } from "../typechain-types";
 
 // Other
 import { deployLibraries } from "./deploy_Libraries";
@@ -42,20 +42,22 @@ interface DiamondDeployedContractsBase {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDGBaseRepo(pluginRepoFactory : PluginRepoFactory, pluginResolver : PublicResolver) {
+async function createDGBaseRepo(pluginRepoFactory : PluginRepoFactory, pluginRepoRegistry : PluginRepoRegistry) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDGBase();
   const [owner] = await ethers.getSigners();
 
-  await pluginRepoFactory.createPluginRepoWithFirstVersion(
+  const tx = await pluginRepoFactory.createPluginRepoWithFirstVersion(
     "my-plugin",
     diamondGovernanceContracts.DiamondGovernanceSetup.address,
     owner.address,
     toBytes("https://plopmenz.com/buildMetadata"),
     toBytes("https://plopmenz.com/releaseMetadata")
   );
-  const PluginRepoAddress = await resolveENS(pluginResolver, "plugin", "my-plugin");
+  // const PluginRepoAddress = await resolveENS(pluginResolver, "plugin", "my-plugin");
+  const receipt = await tx.wait();
+  const PluginRepoAddress = getEvents(pluginRepoRegistry, "PluginRepoRegistered", receipt)[0].args.pluginRepo;
 
   let cut = [];
   cut.push({

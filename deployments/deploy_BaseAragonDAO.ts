@@ -27,23 +27,25 @@ import { createDGBaseRepo } from "./deploy_DGSelection";
  * @returns The newly created DAO
  */
 async function deployBaseAragonDAO() {
-  const { daoResolver, pluginResolver, PluginRepoFactory, DAOFactory } = await deployAragonFrameworkWithEns();
+  const { aragonOSxFramework } = await deployAragonFrameworkWithEns();
 
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDGBaseRepo(PluginRepoFactory, pluginResolver);
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts } = await createDGBaseRepo(aragonOSxFramework.PluginRepoFactory, aragonOSxFramework.PluginRepoRegistry);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
-  const tx = await DAOFactory.createDao(DAOSettings, [diamondGovernancePluginSettings]);
+  const tx = await aragonOSxFramework.DAOFactory.createDao(DAOSettings, [diamondGovernancePluginSettings]);
   const receipt = await tx.wait();
   
-  // Retrieve plugin address from DAO creation log
+  // Retrieve addresses from DAO creation log
+  const DAORegistryContract = await ethers.getContractFactory("DAORegistry");
+  const DAOAddress = getEvents(DAORegistryContract, "DAORegistered", receipt)[0].args.dao;
+
   const PluginSetupProcessorContract = await ethers.getContractFactory("PluginSetupProcessor");
   const pluginAddresses = getEvents(PluginSetupProcessorContract, "InstallationApplied", receipt).map((log : any) => log.args.plugin);
 
   // Retrieve DAO address with ENS
-  const DAOAddress = await resolveENS(daoResolver, "dao", "my-dao");
-  const DAOContract = await ethers.getContractFactory("DAO");
-  const DAO = await DAOContract.attach(DAOAddress);
+  const DAOConctract = await ethers.getContractFactory("DAO");
+  const DAO = await DAOConctract.attach(DAOAddress);
 
   // Link plugin addresses to Contracts
   const DiamondGovernanceContract = await ethers.getContractFactory("DiamondGovernance");
