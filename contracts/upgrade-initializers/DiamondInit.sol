@@ -46,7 +46,6 @@ import { ERC20OneTimeVerificationRewardFacetInit } from "../facets/token/ERC20/c
 import { SearchSECOMonetizationFacetInit } from "../facets/securesecoMonetization/SearchSECOMonetizationFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
-import { LibPartialVotingProposalStorage } from "../libraries/storage/LibPartialVotingProposalStorage.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
