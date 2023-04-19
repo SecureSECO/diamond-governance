@@ -12,8 +12,8 @@ import { IERC165, /* interfaces */ } from "../../typechain-types";
 
 enum DiamondGovernanceInterfaces { IERC165, /* interfaces */ }
 
-class DiamondGovernanceClient {
-    private pluginAddress : string;
+class DiamondGovernancePure {
+    public pluginAddress : string;
     private signer : Signer;
     private cache: { [id: string] : any }
 
@@ -52,4 +52,4 @@ class DiamondGovernanceClient {
     }
 }
 
-export { DiamondGovernanceClient, IERC165, /* interfaces */ }
+export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, /* interfaces */ }

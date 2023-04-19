@@ -24,7 +24,7 @@ contract ERC20PartialBurnVotingProposalRefundFacet {
 
     function _proposalRefundable(uint256 _proposalId) internal view virtual returns (bool) {
         PartialVotingProposalFacet proposalFacet = PartialVotingProposalFacet(address(this));
-        (bool open, , , , , ) = proposalFacet.getProposal(_proposalId);
+        (bool open, , , , , , ) = proposalFacet.getProposal(_proposalId);
         return !open && proposalFacet.isSupportThresholdReached(_proposalId);
     }
 
