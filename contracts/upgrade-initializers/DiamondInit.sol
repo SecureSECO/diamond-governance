@@ -44,6 +44,7 @@ import { VerificationFacetInit } from "../facets/membership/VerificationFacet.so
 import { ERC20TieredTimeClaimableFacetInit } from "../facets/token/ERC20/claiming/time/ERC20TieredTimeClaimableFacet.sol";
 import { ERC20OneTimeVerificationRewardFacetInit } from "../facets/token/ERC20/claiming/one-time/ERC20OneTimeVerificationRewardFacet.sol";
 import { SearchSECOMonetizationFacetInit } from "../facets/securesecoMonetization/SearchSECOMonetizationFacet.sol";
+import { ERC20SearchSECOFacetInit } from "../facets/token/ERC20/ERC20SearchSECOToken/ERC20SearchSECOFacet.sol";
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 
@@ -59,7 +60,8 @@ contract DiamondInit {
         VerificationFacetInit.InitParams memory _verificationSettings, 
         ERC20TieredTimeClaimableFacetInit.InitParams memory _timeClaimSettings,
         ERC20OneTimeVerificationRewardFacetInit.InitParams memory _onetimeClaimSettings,
-        SearchSECOMonetizationFacetInit.InitParams memory _searchSECOMonetizationSettings
+        SearchSECOMonetizationFacetInit.InitParams memory _searchSECOMonetizationSettings,
+        ERC20SearchSECOFacetInit.InitParams memory _erc20SearchSECOSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -99,5 +101,6 @@ contract DiamondInit {
         ERC20TieredTimeClaimableFacetInit.init(_timeClaimSettings);
         ERC20OneTimeVerificationRewardFacetInit.init(_onetimeClaimSettings);
         SearchSECOMonetizationFacetInit.init(_searchSECOMonetizationSettings);
+        ERC20SearchSECOFacetInit.init(_erc20SearchSECOSettings);
     }
 }
