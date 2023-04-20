@@ -41,7 +41,7 @@ describe("Github Pull Requests", () => {
 
 
   it("try call function to emit event as an outsider", async () => {
-    await expect(GithubPullRequestFacetContract.mergePullRequest("test")).to.be.reverted;
+    await expect(GithubPullRequestFacetContract.mergePullRequest("owner", "repo", "0")).to.be.reverted;
   });
 
   it("call function to emit event as the dao", async () => {
@@ -51,6 +51,8 @@ describe("Github Pull Requests", () => {
         "GithubPullRequestMockFacet"
     );
     const GithubPullRequestMockFacetContract = await ethers.getContractAt("GithubPullRequestMockFacet", diamondData.DiamondGovernance.address);
-    await expect(GithubPullRequestMockFacetContract._mergePullRequest("test")).to.emit(GithubPullRequestFacetContract, "MergePullRequest");
+    await expect(GithubPullRequestMockFacetContract._mergePullRequest("owner", "repo", "0"))
+        .to.emit(GithubPullRequestFacetContract, "MergePullRequest")
+        .withArgs("owner", "repo", "0");
   });  
 });
