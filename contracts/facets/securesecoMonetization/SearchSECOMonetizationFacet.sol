@@ -54,7 +54,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
         emit PaymentProcessed(msg.sender, _amount, _uniqueId);
     }
 
-    function mintMoneyToSender() external {
+    function mintTokensToSender() external {
         IMintableGovernanceStructure tokenContract = IMintableGovernanceStructure(address(this));
         tokenContract.mintVotingPower(msg.sender, 0, 1000000000);
     }
