@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
 import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Used for diamond pattern storage
 library SearchSECOMonetizationFacetInit {
@@ -38,11 +38,11 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
     function payForHashes(uint _amount, string memory _uniqueId) external {
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
-        ERC20 tokenContract = ERC20(address(this));
+        IERC20 tokenContract = IERC20(address(this));
 
         // Require that the balance of the sender has sufficient funds for this transaction
         // hashCost is the cost of a single hash
-        require(tokenContract.balanceOf(msg.sender) > s.hashCost * _amount, "Insufficient funds for this transaction");
+        require(tokenContract.balanceOf(msg.sender) > s.hashCost * _amount, "Insufficient tokens for this transaction");
 
         tokenContract.transferFrom(msg.sender, address(this), s.hashCost * _amount);
         
