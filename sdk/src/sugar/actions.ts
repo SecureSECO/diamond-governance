@@ -10,6 +10,7 @@ import { IDAO, Action } from "./data";
 import { ethers } from "hardhat";
 import { DiamondGovernanceInterfaces } from "../client";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
+import { arrayify } from "@ethersproject/bytes";
 
 //https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/client/src/client-common/encoding.ts#L63
 function getFunctionFragment(
@@ -57,26 +58,26 @@ export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> 
       };
     }
 
-    return {
-      interface: "Coming soon",
-      method: "Does not work yet :(",
-      params: { }
-    };
+    // return {
+    //   interface: "Coming soon",
+    //   method: "Does not work yet :(",
+    //   params: { }
+    // };
 
-    const hexBytes = bytesToHex((await action.data) as Uint8Array);
+    const hexBytes = bytesToHex(arrayify(await action.data));
     const contractName = Object.keys(DiamondGovernanceInterfaces)[(action.value as any).toNumber() - 1];
     const contract =  await ethers.getContractAt(contractName, ethers.constants.AddressZero);
-    const method = contract.interface.getFunction(hexBytes.substring(0, 10)).name; // hexBytes.substring(0, 10) is not correct function name (maybe this interface is different from Interface Aragon uses?)
-    const inputs = await contract.interface.functions[method].inputs;
+    const method = contract.interface.getFunction(hexBytes.substring(0, 10)); // hexBytes.substring(0, 10) is not correct function name (maybe this interface is different from Interface Aragon uses?)
+    const fullMethodName = method.name + "(" + method.inputs.map((input) => input.type).join(",") + ")";
     const inputData = await contract.interface.decodeFunctionData(method, await action.data)
     const params : { [name: string]: any } = { };
     for (let i = 0; i < inputData.length; i++) {
-      params[inputs[i].name] = inputData[i];
+      params[method.inputs[i].name] = inputData[i];
     }
 
     return {
       interface: contractName,
-      method: method,
+      method: fullMethodName,
       params: params
     };
 }

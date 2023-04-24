@@ -87,33 +87,35 @@ describe("SDK", function () {
 
   // Test for sorting
 
-  // it("actions", async function () {
-  //   const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
-  //   await getVotingPower(DiamondGovernance);
-  //   const [owner] = await ethers.getSigners();
+  it.only("actions", async function () {
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
+    await getVotingPower(DiamondGovernance);
+    const [owner] = await ethers.getSigners();
 
-  //   const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
-  //   const title = "title";
-  //   const description = "description";
-  //   const body = "body";
-  //   const metadata = {
-  //     title: title,
-  //     description: description,
-  //     body: body,
-  //     resources: []
-  //   };
-  //   const action = {
-  //     interface: "IERC165",
-  //     method: "supportsInterface(bytes4)",
-  //     params: {
-  //       interfaceId: "0xffffffff"
-  //     }
-  //   }
-  //   const start = new Date();
-  //   start.setTime(start.getTime() + 20 * 60 * 1000); // 20 minutes
-  //   const end = new Date();
-  //   end.setTime(start.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
-  //   await client.sugar.CreateProposal(metadata, [action], start, end);
-  //   const proposal = await client.sugar.GetProposal(0);
-  // });
+    const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
+    const title = "title";
+    const description = "description";
+    const body = "body";
+    const metadata = {
+      title: title,
+      description: description,
+      body: body,
+      resources: []
+    };
+    const action = {
+      interface: "IERC165",
+      method: "supportsInterface(bytes4)",
+      params: {
+        interfaceId: "0xffffffff"
+      }
+    }
+    const start = new Date();
+    start.setTime(start.getTime() + 20 * 60 * 1000); // 20 minutes
+    const end = new Date();
+    end.setTime(start.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
+    await client.sugar.CreateProposal(metadata, [action], start, end);
+
+    const proposal = await client.sugar.GetProposal(0);
+    console.log(proposal);
+  });
 });

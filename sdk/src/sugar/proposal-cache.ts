@@ -26,7 +26,8 @@ export class ProposalCache {
 
     private async FillCacheUntil(until : number) {
         while (this.proposals.length < until) {
-            this.proposals.push(await Proposal.New(this.proposals.length, await this.getProposal(this.proposals.length)));
+            const prop = await Proposal.New(this.proposals.length, await this.getProposal(this.proposals.length));
+            this.proposals.push(prop);
         }
     }
 
