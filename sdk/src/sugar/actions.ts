@@ -79,5 +79,5 @@ export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> 
       interface: contractName,
       method: fullMethodName,
       params: params
-    };
+    } as Action;
 }

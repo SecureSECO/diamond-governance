@@ -37,7 +37,27 @@ export interface ProposalMetadata {
 }
 
 export interface Action {
-    interface: string;
-    method: string;
-    params: { [name: string]: any };
+  interface: string;
+  method: string;
+  params: { [name: string]: any };
+}
+
+export type WithdrawAction = Action & {
+  params: {
+    amount: BigInt;
+    tokenAddress: string;
+    to: string;
+  }
+}
+
+export type MintAction = Action & {
+  params: {
+    to: [
+      {
+        to: string;
+        amount: BigInt;
+        tokenId: BigInt;
+      }
+    ]
+  }
 }
