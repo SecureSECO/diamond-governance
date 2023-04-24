@@ -10,6 +10,7 @@ import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20SearchSECOFacet} from "../token/ERC20/ERC20SearchSECOToken/ERC20SearchSECOFacet.sol";
 
 // Used for diamond pattern storage
 library SearchSECOMonetizationFacetInit {
@@ -38,7 +39,9 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
     function payForHashes(uint _amount, string memory _uniqueId) external {
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
-        IERC20 tokenContract = IERC20(address(this));
+        ERC20SearchSECOFacet erc20SearchSECOFacet = ERC20SearchSECOFacet(address(this));
+        IERC20 tokenContract = IERC20(erc20SearchSECOFacet.getERC20ContractAddress());
+
 
         // Require that the balance of the sender has sufficient funds for this transaction
         // hashCost is the cost of a single hash
