@@ -88,7 +88,7 @@ describe("SDK", function () {
   // Test for sorting
 
   // Test for action parsing
-  it.only("actions", async function () {
+  it("actions", async function () {
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     await getVotingPower(DiamondGovernance);
     const [owner] = await ethers.getSigners();
