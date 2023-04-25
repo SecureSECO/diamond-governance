@@ -15,6 +15,6 @@ contract GithubPullRequestMockFacet {
     /// @param _pull_number pull request number
     function _mergePullRequest(string memory _owner, string memory _rep, string memory _pull_number) external {
         GithubPullRequestFacet mergePullRequestFacet = GithubPullRequestFacet(address(this));
-        mergePullRequestFacet.mergePullRequest(_owner, _rep, _pull_number);
+        mergePullRequestFacet.merge(_owner, _rep, _pull_number);
     }
 }

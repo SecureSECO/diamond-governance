@@ -20,10 +20,10 @@ contract GithubPullRequestFacet is AuthConsumer {
     bytes32 public constant MERGE_PR_PERMISSION_ID = keccak256("MERGE_PR_PERMISSION");
 
     /// Function that emits an event to merge a pull request
-    /// @param _owner Owner of the repository
-    /// @param _rep Name of the repository
-    /// @param _pull_number Number of the pull request
-    function mergePullRequest(string memory _owner, string memory _rep, string memory _pull_number) external auth(MERGE_PR_PERMISSION_ID) {
-        emit MergePullRequest(_owner, _rep, _pull_number);
+    /// @param owner Owner of the repository
+    /// @param repo Name of the repository
+    /// @param pull_number Number of the pull request
+    function merge(string memory owner, string memory repo, string memory pull_number) external auth(MERGE_PR_PERMISSION_ID) {
+        emit MergePullRequest(owner, repo, pull_number);
     }
 }

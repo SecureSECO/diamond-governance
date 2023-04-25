@@ -42,15 +42,13 @@ export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
 export async function ToAction(toAddress : string, action : Action) : Promise<IDAO.ActionStruct> {
     const contract = await ethers.getContractAt(action.interface, ethers.constants.AddressZero);
     const inputs = await contract.interface.functions[action.method].inputs;
-    let args = [];
-    for (let i = 0; i < inputs.length; i++) {
-        args.push(action.params[inputs[i].name]); 
-    }
+    const args = inputs.map((input) => action.params[input.name]);
     const calldata = await contract.interface.encodeFunctionData(action.method, args);
     return {
       to: toAddress,
       // idk if the value is an information field? In the Aragon SDK it is zero everywhere
-      value: Object.keys(DiamondGovernanceInterfaces).indexOf(action.interface) + 1,
+      // This is the native token value, this should be zero assuming it isn't a paid function
+      value: Object.keys(DiamondGovernanceInterfaces).indexOf(action.interface) + 1, 
       data: calldata
     };
 }
@@ -90,5 +88,5 @@ export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> 
       interface: contractName,
       method: fullMethodName,
       params: params
-    } as Action;
+    };
 }
