@@ -170,7 +170,8 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             ProposalParameters memory parameters,
             Tally memory tally,
             IDAO.Action[] memory actions,
-            uint256 allowFailureMap
+            uint256 allowFailureMap,
+            bytes memory metadata
         )
     {
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
@@ -181,6 +182,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         tally = proposal_.tally;
         actions = proposal_.actions;
         allowFailureMap = proposal_.allowFailureMap;
+        metadata = proposal_.metadata;
     }
 
     /// @notice Updates the voting settings.
@@ -271,6 +273,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             minParticipation()
         );
         proposal_.proposalType = _proposalType;
+        proposal_.metadata = _metadata;
 
         // Reduce costs
         if (_allowFailureMap != 0) {

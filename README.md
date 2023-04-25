@@ -26,6 +26,13 @@ Runs the unit tests.
 
 ## npm generate-sdk
 Generates the sdk with the latest interfaces defined in contracts/utils/IntefaceIds.sol.  
+To publish to npm (`npm i -g typescript` needed to be run once before):
+```
+cd sdk
+npm version patch / npm version minor / npm version major
+tsc --declaration
+npm publish
+```
 
 ### License
 

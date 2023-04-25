@@ -26,6 +26,7 @@ import {
 
     IPlugin,
     IAuthProvider,
+    IProposal,
 
     IGovernanceStructure,
     IMintableGovernanceStructure,
@@ -75,6 +76,7 @@ contract DiamondInit {
 
         ds.supportedInterfaces[type(IPlugin).interfaceId] = true;
         ds.supportedInterfaces[type(IAuthProvider).interfaceId] = true;
+        ds.supportedInterfaces[type(IProposal).interfaceId] = true;
 
         ds.supportedInterfaces[type(IGovernanceStructure).interfaceId] = true;
         ds.supportedInterfaces[type(IMintableGovernanceStructure).interfaceId] = true;

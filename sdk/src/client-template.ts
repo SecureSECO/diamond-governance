@@ -8,12 +8,12 @@
 
 import { ethers } from "hardhat";
 import { Signer } from "@ethersproject/abstract-signer";
-import { IERC165, /* interfaces */ } from "../typechain-types";
+import { IERC165, /* interfaces */ } from "../../typechain-types";
 
 enum DiamondGovernanceInterfaces { IERC165, /* interfaces */ }
 
-export class DiamondGovernanceClient {
-    private pluginAddress : string;
+class DiamondGovernancePure {
+    public pluginAddress : string;
     private signer : Signer;
     private cache: { [id: string] : any }
 
@@ -51,3 +51,5 @@ export class DiamondGovernanceClient {
         return contract;
     }
 }
+
+export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, /* interfaces */ }

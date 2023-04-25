@@ -38,6 +38,7 @@ interface IPartialVotingProposalFacet {
     /// @param actions The actions to be executed when the proposal passes.
     /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert. If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.
     /// @param proposalType keccak256 of the proposal type, can be used by extensions to apply certain rules to proposal created in a certain way.
+    /// @param metadata The IPFS hash of the metadata of the proposal.
     struct ProposalData {
         bool executed;
         ProposalParameters parameters;
@@ -46,6 +47,7 @@ interface IPartialVotingProposalFacet {
         IDAO.Action[] actions;
         uint256 allowFailureMap;
         bytes32 proposalType;
+        bytes metadata;
     }
 
     /// @notice A container for the proposal parameters at the time of proposal creation.
@@ -117,6 +119,38 @@ interface IPartialVotingProposalFacet {
         uint256 _proposalId,
         address _account
     ) external view returns (IPartialVotingFacet.PartialVote[] calldata);
+
+    /// @notice Retrieve the proposal data for a certain proposal.
+    /// @dev This function is used by the frontend/sdk to display the proposal data.
+    /// @param _proposalId The ID of the proposal.
+    function getProposal(
+        uint256 _proposalId
+    ) external view returns (
+            bool open,
+            bool executed,
+            ProposalParameters memory parameters,
+            Tally memory tally,
+            IDAO.Action[] memory actions,
+            uint256 allowFailureMap,
+            bytes memory metadata
+        );
+
+    /// @notice Create a new proposal.
+    /// @param _metadata The IPFS hash of the metadata of the proposal.
+    /// @param _actions The actions to be executed when the proposal passes.
+    /// @param _allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
+    /// @param _startDate The start date of the proposal vote.
+    /// @param _endDate The end date of the proposal vote.
+    /// @param _allowEarlyExecution If the vote is sure to pass, allow it to pass before the end of the proposal.
+    /// @return proposalId The ID of the newly created proposal.
+    function createProposal(
+        bytes calldata _metadata,
+        IDAO.Action[] calldata _actions,
+        uint256 _allowFailureMap,
+        uint64 _startDate,
+        uint64 _endDate,
+        bool _allowEarlyExecution
+    ) external returns (uint256 proposalId);
 
     function IsProposalOpen(uint256 _proposalId) external view returns (bool);
 }
