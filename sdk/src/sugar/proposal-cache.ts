@@ -9,6 +9,12 @@
 import { ProposalData, ProposalStatus, ProposalSorting, SortingOrder } from "./data";
 import { Proposal } from "./proposal";
 
+/**
+ * ProposalCache is a cache for proposals. 
+ * It can be used to get proposals by id, or to get a list of proposals. 
+ * It is possible to sort and filter the proposals.
+ * This reduces the amount of calls to the blockchain.
+ */
 export class ProposalCache {
     private proposals: Proposal[];
     private getProposal: (i : number) => Promise<ProposalData>;
@@ -17,6 +23,10 @@ export class ProposalCache {
     //Actually should not be allowed to cache total votes on open proposals... (Refresh all open proposal upon selecting this filter?)
     private cachedSorting: { [sort: number]: { [stat: number]: number[] } }; 
 
+    /**
+     * @param _getProposal Function to get proposal data from the blockchain
+     * @param _getProposalCount Function to get the number of proposals from the blockchain
+     */
     constructor(_getProposal : (i : number) => Promise<ProposalData>, _getProposalCount : () => Promise<number>) {
         this.proposals = [];
         this.getProposal = _getProposal;
@@ -24,6 +34,9 @@ export class ProposalCache {
         this.cachedSorting =  { };
     }
 
+    /**
+     * @param until Fill the cache until this index (exclusive)
+     */
     private async FillCacheUntil(until : number) {
         while (this.proposals.length < until) {
             const prop = await Proposal.New(this.proposals.length, await this.getProposal(this.proposals.length));
@@ -31,10 +44,19 @@ export class ProposalCache {
         }
     }
 
+    /**
+     * Asynchronously retrieve the number of proposals from the blockchain
+     * @returns {Promise<number>} The number of proposals
+     */
     public async GetProposalCount() : Promise<number> {
         return await this.getProposalCount();
     }
 
+    /**
+     * Asynchronously retrieve a proposal from the blockchain
+     * @param id The id of the proposal
+     * @returns {Promise<Proposal>} The proposal with the given id
+     */
     public async GetProposal(id : number) {
         const proposalCount = await this.GetProposalCount();
         if (id < 0 || id > proposalCount) {
@@ -45,6 +67,16 @@ export class ProposalCache {
         return this.proposals[id];
     }
 
+    /**
+     * Asynchronously retrieve a list of proposals from the blockchain
+     * @param status List of statuses to filter on
+     * @param sorting What to sort on
+     * @param order Order of results (ascending or descending)
+     * @param fromIndex Index to start from
+     * @param count Number of proposals to return
+     * @param refreshSorting Refresh the sorting (if false, the sorting will be cached)
+     * @returns {Promise<Proposal[]>} List of proposals
+     */
     public async GetProposals(status : ProposalStatus[], sorting : ProposalSorting, order : SortingOrder, fromIndex : number, count : number, refreshSorting : boolean) : Promise<Proposal[]> {
         const proposalCount = await this.GetProposalCount();
         await this.FillCacheUntil(proposalCount);
@@ -64,6 +96,12 @@ export class ProposalCache {
         return this.cachedSorting[sort][stat].slice(fromIndex, fromIndex + count).map(i => this.proposals[i]);
     }
     
+    /**
+     * Get a function to sort proposals
+     * @param sorting What to sort on
+     * @param order Order of results (ascending or descending)
+     * @returns {Function} Function to sort proposals
+     */
     private getSortingFunc(sorting : ProposalSorting, order : SortingOrder) : (prop1: Proposal, prop2: Proposal) => number {
         const sort = (x1 : any, x2 : any) => { 
             // This can be significatly shorted with x1 - x2 (and switch on order reverse), but this is more readable

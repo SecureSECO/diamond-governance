@@ -120,6 +120,9 @@ interface IPartialVotingProposalFacet {
         address _account
     ) external view returns (IPartialVotingFacet.PartialVote[] calldata);
 
+    /// @notice Retrieve the proposal data for a certain proposal.
+    /// @dev This function is used by the frontend/sdk to display the proposal data.
+    /// @param _proposalId The ID of the proposal.
     function getProposal(
         uint256 _proposalId
     ) external view returns (
@@ -132,6 +135,14 @@ interface IPartialVotingProposalFacet {
             bytes memory metadata
         );
 
+    /// @notice Create a new proposal.
+    /// @param _metadata The IPFS hash of the metadata of the proposal.
+    /// @param _actions The actions to be executed when the proposal passes.
+    /// @param _allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
+    /// @param _startDate The start date of the proposal vote.
+    /// @param _endDate The end date of the proposal vote.
+    /// @param _allowEarlyExecution If the vote is sure to pass, allow it to pass before the end of the proposal.
+    /// @return proposalId The ID of the newly created proposal.
     function createProposal(
         bytes calldata _metadata,
         IDAO.Action[] calldata _actions,

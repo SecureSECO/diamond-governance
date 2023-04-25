@@ -42,6 +42,7 @@ export interface Action {
   params: { [name: string]: any };
 }
 
+// Used as a subtype of Action to make sure that the params are correct
 export type WithdrawAction = Action & {
   params: {
     amount: BigInt;
@@ -50,6 +51,7 @@ export type WithdrawAction = Action & {
   }
 }
 
+// Used as a subtype of Action to make sure that the params are correct
 export type MintAction = Action & {
   params: {
     to: [

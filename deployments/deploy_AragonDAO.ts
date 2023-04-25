@@ -19,6 +19,10 @@ import { deployAragonFrameworkWithEns, AragonOSxFrameworkContracts } from "./dep
 import { createDiamondGovernanceRepo } from "./deploy_DiamondGovernance";
 import {deployStandaloneVerificationContract} from "./deploy_StandaloneVerificationContract";
 
+/**
+ * Deploys both the AragonOSxFramework and the Aragon DAO
+ * @returns The newly created DAO
+ */
 async function deployAragonDAOWithFramework() {
   const { aragonOSxFramework } = await deployAragonFrameworkWithEns();
   return await deployAragonDAO(aragonOSxFramework);
@@ -58,6 +62,9 @@ async function deployAragonDAO(aragonOSxFramework: AragonOSxFrameworkContracts) 
   return { DAO, DiamondGovernance, diamondGovernanceContracts, verificationContractAddress };
 }
 
+/**
+ * @returns The parameters/settings needed to create a DAO
+ */
 async function GetDaoCreationParams() {
   const DAOSettings = {
     trustedForwarder: ethers.constants.AddressZero, //address

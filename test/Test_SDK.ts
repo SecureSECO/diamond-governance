@@ -87,6 +87,7 @@ describe("SDK", function () {
 
   // Test for sorting
 
+  // Test for action parsing
   it.only("actions", async function () {
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     await getVotingPower(DiamondGovernance);

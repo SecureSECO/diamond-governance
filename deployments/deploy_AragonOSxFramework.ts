@@ -45,11 +45,23 @@ async function setupENS() : Promise<ENSFrameworkContracts> {
     return { ens, daoResolver, pluginResolver };
 }
 
+/**
+ * Grants permissions to an address in a DAO
+ * @param dao The DAO that the permissions will be granted in
+ * @param where The address of the contract that the permissions will be granted to
+ * @param who The address of the account that the permissions will be granted to
+ * @param permissionId The ID of the permission that will be granted
+ */
 async function grant(dao : DAO, where : any, who : any, permissionId : string) {
     await dao.grant(where.address, who.address, ethers.utils.keccak256(ethers.utils.toUtf8Bytes(permissionId)));
     console.log(`Granted ${permissionId} to ${who.address} at ${where.address}`);
 }
 
+/**
+ * Deploys the AragonOSxFramework contracts
+ * @param ens Deployed ENSRegistry
+ * @returns Deployed AragonOSxFramework contracts
+ */
 async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrameworkContracts> {
     const [owner] = await ethers.getSigners();
 
@@ -158,6 +170,10 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
     };
 }
 
+/**
+ * Deploys the AragonOS framework with the ENS framework
+ * @returns The deployed contracts for the AragonOS framework and the ENS framework
+ */
 async function deployAragonFrameworkWithEns() {
     const ensFramework = await setupENS();
     const aragonOSxFramework = await deployAragonFramework(ensFramework.ens);

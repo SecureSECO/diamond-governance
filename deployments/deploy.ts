@@ -21,6 +21,9 @@ async function main() {
   console.log("Deploy finished!");
 }
 
+/**
+ * @returns The existing ENSFramework contracts
+ */
 async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
   const path = "./deployments/existing-contracts/existing_ENSFramework.json";
   const fileContent = fs.readFileSync(path, "utf-8");
@@ -36,6 +39,9 @@ async function getExistingENSFramework() : Promise<ENSFrameworkContracts> {
   }
 }
 
+/**
+ * @returns The existing AragonOSxFramework contracts
+ */
 async function getExistingAragonOSxFramework() : Promise<AragonOSxFrameworkContracts> {
   const path = "./deployments/existing-contracts/existing_AragonOSxFramework.json";
   const fileContent = fs.readFileSync(path, "utf-8");

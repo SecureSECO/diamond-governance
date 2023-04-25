@@ -12,6 +12,9 @@ import { ParseAction } from "./actions";
 import { ethers } from "hardhat";
 import { asyncMap } from "../utils";
 
+/**
+ * Proposal is a class that represents a proposal on the blockchain.
+ */
 export class Proposal {
     public id: number;
     public data: ProposalData;
@@ -34,6 +37,12 @@ export class Proposal {
     }
 
     private fromHexString(hexString : string) : Uint8Array { return Uint8Array.from(hexString.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? new Uint8Array()); }
+    /**
+     * New proposal object from the blockchain
+     * @param _id The id of the proposal
+     * @param _data The data of the proposal
+     * @returns {Promise<Proposal>} The proposal with the given id
+     */
     public static async New(_id : number, _data : ProposalData) : Promise<Proposal> {
         const prop = new Proposal(_id, _data);
         prop.metadata = await DecodeMetadata(prop.fromHexString(prop.data.metadata.substring(2))); //remove 0x and convert to utf-8 array
@@ -43,9 +52,12 @@ export class Proposal {
     }
 
     public async Refresh() {
-      // Seems like a usefull function to support in the future
+      // Seems like a useful function to support in the future
     }
 
+    /**
+     * @returns {ProposalStatus} The status of the proposal
+     */
     private getStatus() : ProposalStatus {
       if (this.data.executed) return ProposalStatus.Executed;
       if (this.data.open) return ProposalStatus.Active;

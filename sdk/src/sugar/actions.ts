@@ -12,7 +12,7 @@ import { DiamondGovernanceInterfaces } from "../client";
 import { FunctionFragment, Interface } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";
 
-//https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/client/src/client-common/encoding.ts#L63
+// Source: https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/client/src/client-common/encoding.ts#L63
 function getFunctionFragment(
   data: Uint8Array,
   availableFunctions: string[],
@@ -22,7 +22,7 @@ function getFunctionFragment(
   return iface.getFunction(hexBytes.substring(0, 10));
 }
 
-//https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/common/src/encoding.ts#L24
+// Source: https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/common/src/encoding.ts#L24
 export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
   const bytes: string[] = [];
   for (let i = 0; i < buff.length; i++) {
@@ -33,12 +33,18 @@ export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
   return "0x" + bytes.join("");
 }
 
+/**
+ * Converts an Action object (interface, method, params) to an ActionStruct (to, value, data) that can be used in the Aragon SDK
+ * @param toAddress Address of the contract that should execute the action
+ * @param action Action (interface, method, params) object
+ * @returns {Promise<IDAO.ActionStruct>} ActionStruct object
+ */
 export async function ToAction(toAddress : string, action : Action) : Promise<IDAO.ActionStruct> {
     const contract = await ethers.getContractAt(action.interface, ethers.constants.AddressZero);
     const inputs = await contract.interface.functions[action.method].inputs;
     let args = [];
     for (let i = 0; i < inputs.length; i++) {
-        args.push(action.params[inputs[i].name]);
+        args.push(action.params[inputs[i].name]); 
     }
     const calldata = await contract.interface.encodeFunctionData(action.method, args);
     return {
@@ -49,6 +55,11 @@ export async function ToAction(toAddress : string, action : Action) : Promise<ID
     };
 }
 
+/**
+ * Parses an ActionStruct from Aragon SDK to an Action object (interface, method, params)
+ * @param action ActionStruct from Aragon SDK
+ * @returns {Promise<Action>} Action object
+ */
 export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> {
     if (action.value == 0) {
       return {
