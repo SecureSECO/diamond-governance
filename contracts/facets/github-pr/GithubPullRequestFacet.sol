@@ -21,9 +21,9 @@ contract GithubPullRequestFacet is AuthConsumer {
 
     /// Function that emits an event to merge a pull request
     /// @param _owner Owner of the repository
-    /// @param _rep Name of the repository
+    /// @param _repo Name of the repository
     /// @param _pull_number Number of the pull request
-    function mergePullRequest(string memory _owner, string memory _rep, string memory _pull_number) external auth(MERGE_PR_PERMISSION_ID) {
-        emit MergePullRequest(_owner, _rep, _pull_number);
+    function merge(string memory _owner, string memory _repo, string memory _pull_number) external auth(MERGE_PR_PERMISSION_ID) {
+        emit MergePullRequest(_owner, _repo, _pull_number);
     }
 }
