@@ -140,9 +140,9 @@ describe("SDK", function () {
       interface: "GithubPullRequestFacet",
       method: "merge(string,string,string)",
       params: {
-        owner: "SecureSECO-DAO",
-        repo: "dao-webapp",
-        pull_number: "1",
+        _owner: "SecureSECO-DAO",
+        _repo: "dao-webapp",
+        _pull_number: "1",
       }
     }
     const start = new Date();
