@@ -111,6 +111,42 @@ contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
         }
     }
 
+    /// @notice This function returns the stamps of an address
+    /// @param _address The address to retrieve the stamps for
+    /// @return An array of stamps
+    function getStamps(address _address) public view returns (GithubVerification.Stamp[] memory) {
+        LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
+        GithubVerification verificationContract = GithubVerification(ds.verificationContractAddress);
+        GithubVerification.Stamp[] memory stamps = verificationContract.getStamps(_address);
+
+        // Check if this account was whitelisted and add a "whitelist" stamp if applicable
+        uint64 whitelistTimestamp = ds.whitelistTimestamps[_address];
+        if (whitelistTimestamp == 0) {
+            return stamps;
+        } else {
+            GithubVerification.Stamp[] memory stamps2 = new GithubVerification.Stamp[](
+                stamps.length + 1
+            );
+
+            uint64[] memory verifiedAt = new uint64[](1);
+            verifiedAt[0] = whitelistTimestamp;
+
+            GithubVerification.Stamp memory stamp = GithubVerification.Stamp(
+                "whitelist",
+                toAsciiString(_address),
+                verifiedAt
+            );
+
+            stamps2[0] = stamp;
+
+            for (uint i = 0; i < stamps.length; i++) {
+                stamps2[i + 1] = stamps[i];
+            }
+
+            return stamps2;
+        }
+    }
+
     /// @inheritdoc ITieredMembershipStructure
     function getMembers() external view virtual override returns (address[] memory members) {
         LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
