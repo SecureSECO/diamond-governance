@@ -35,6 +35,9 @@ import {
     IMembership,
     IMembershipExtended,
     ITieredMembershipStructure,
+    IMembershipWhitelisting,
+
+    IVerificationFacet,
     
     IPartialVotingProposalFacet,
     IPartialVotingFacet 
@@ -85,6 +88,9 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IMembership).interfaceId] = true;
         ds.supportedInterfaces[type(IMembershipExtended).interfaceId] = true;
         ds.supportedInterfaces[type(ITieredMembershipStructure).interfaceId] = true;
+        ds.supportedInterfaces[type(IMembershipWhitelisting).interfaceId] = true;
+        
+        ds.supportedInterfaces[type(IVerificationFacet).interfaceId] = true;
 
         ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;

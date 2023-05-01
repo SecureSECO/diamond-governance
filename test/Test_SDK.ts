@@ -17,11 +17,15 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { deployAragonDAOAndVerifyFixture } from "../utils/verificationHelper";
 
 // Types
+import { Stamp } from "../sdk/index";
+import { BigNumber } from "ethers";
 
 // Other
 import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
 import { DiamondGovernanceClient } from "../sdk/index";
 import { getVotingPower } from "./Test_PartialVoting";
+import { createSignature } from "../utils/signatureHelper";
+import { now } from "../utils/timeUnits";
 
 // Tests as described in https://eips.ethereum.org/EIPS/eip-165
 describe("SDK", function () {
@@ -155,5 +159,48 @@ describe("SDK", function () {
     console.log(proposal);
 
     // await client.sugar.PartialVote(proposal.id, VoteOption.Yes, 1);
+  });
+
+  // Test to retrieve threshold history
+  it("get verification threshold history", async function () {
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
+    await getVotingPower(DiamondGovernance);
+    const [owner] = await ethers.getSigners();
+
+    const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
+    const thresholdHistory = await client.verification.GetThresholdHistory();
+
+    expect(thresholdHistory).to.be.lengthOf(1);
+    expect(thresholdHistory[0][1]).to.be.equal(60);
+    console.log(thresholdHistory);
+  });
+
+  // Test if verification works
+  it("verifies correctly", async function() {
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
+    const [owner, alice] = await ethers.getSigners();
+
+    const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
+
+    // Manually verify owner with github
+    const timestamp = now();
+    const userHash =
+      "x";
+    const dataHexString = await createSignature(timestamp, alice.address, userHash, owner);
+
+    // This is technically a reverification, because the initial deployment already verifies the user with github but with another userHash
+    await client.verification.Verify(
+      alice.address,
+      userHash,
+      timestamp,
+      "github",
+      dataHexString
+    );
+
+    const stamps: Stamp[] = await client.verification.GetStamps(alice.address);
+    const expectedStamp: Stamp = ["github", userHash, [BigNumber.from(timestamp)]];
+
+    expect(stamps).to.be.lengthOf(1);
+    expect(stamps[0]).to.be.deep.equal(expectedStamp);
   });
 });

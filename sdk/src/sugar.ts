@@ -1,5 +1,5 @@
 import { DiamondGovernancePure } from "./client";
-import { ProposalStatus, ProposalSorting, SortingOrder, VoteOption, ProposalMetadata, Action } from "./sugar/data";
+import { ProposalStatus, ProposalSorting, SortingOrder, VoteOption, ProposalMetadata, Action, Stamp } from "./sugar/data";
 import { ProposalCache } from "./sugar/proposal-cache";
 import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
@@ -14,6 +14,17 @@ export class DiamondGovernanceSugar {
 
     constructor(_pure : DiamondGovernancePure) {
         this.pure = _pure;
+    }
+
+    public async GetStamps(address: string) : Promise<Stamp[]> {
+        const IVerificationFacet = await this.pure.IVerificationFacet();
+
+        return IVerificationFacet.getStamps(address);
+    }
+
+    public async GetVerificationContractAddress() : Promise<string> {
+        const IVerificationFacet = await this.pure.IVerificationFacet();
+        return IVerificationFacet.getVerificationContractAddress();
     }
 
     /**
