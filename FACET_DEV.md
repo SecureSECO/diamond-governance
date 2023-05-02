@@ -213,3 +213,54 @@ async function createDiamondGovernanceRepo(/*...*/) {
 That's about it for the initialization stuff.
 
 ## Inheriting from interfaces
+Interfaces are really nice. **mention something about everyone agrees upon and exchangability**
+
+Suppose we have the following interface (we can add this in the same folder as we added `CounterFacet.ts`):
+
+#### **`ICounter.sol`**
+```solidity
+interface ICounter {
+  /// @notice This function increments a number by 1
+  /// @returns uint The new value of our number
+  function incrementCounter() external returns (uint);
+}
+```
+
+We can implement it as follows.
+
+#### **`CounterFacet.sol`**
+```solidity
+contract CounterFacet is ICounter {
+  /// @inheritdoc CounterInterface
+  function incrementCounter() external returns (uint) { /*...*/ }
+}
+```
+
+Add the interface to the interface ids in `/utils/InterfaceIds.sol`.
+
+```solidity
+import { ICounter } from "../facets/ICounter.sol";
+
+library InterfaceIds {
+    bytes4 constant public ICounter = type(ICounter).interfaceId;
+}
+```
+
+Now we show the world that we implement this interface (ERC165) in the `DiamondInit.sol` file.
+
+#### **`DiamondInit.sol`**
+```solidity
+import { ICounter } from "../utils/InterfaceIds.sol";
+
+// ...
+
+contract DiamondInit {    
+    function init(/* ... */) external {
+        // adding ERC165 data
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        ds.supportedInterfaces[type(ICounter).interfaceId] = true;
+
+        // ... 
+    }
+}
+```
