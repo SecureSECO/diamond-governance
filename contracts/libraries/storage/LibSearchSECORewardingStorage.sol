@@ -6,17 +6,17 @@
 
 pragma solidity ^0.8.0;
 
-library LibSearchSECOMonetizationStorage {
-    bytes32 constant SEARCHSECO_MONETIZATION_STORAGE_POSITION =
-        keccak256("searchseco.monetization.diamond.storage.position");
+library LibSearchSECORewardingStorage {
+    bytes32 constant SEARCHSECO_REWARDING_STORAGE_POSITION =
+        keccak256("searchseco.rewarding.diamond.storage.position");
 
     struct Storage {
-        /// @notice how much a single hash costs
-        uint256 hashCost;
+        /// @notice The total number of hashes a user has submitted
+        mapping(address => uint) hashCount;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {
-        bytes32 position = SEARCHSECO_MONETIZATION_STORAGE_POSITION;
+        bytes32 position = SEARCHSECO_REWARDING_STORAGE_POSITION;
         assembly {
             ds.slot := position
         }
