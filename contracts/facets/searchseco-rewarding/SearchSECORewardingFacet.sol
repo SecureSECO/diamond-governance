@@ -75,4 +75,11 @@ contract SearchSECORewardingFacet is AuthConsumer, Ownable, SignatureHelper {
         // TODO: Reward the user
         // ...
     }
+
+    /// @notice Returns the hash count for a given user
+    /// @param _user The address of the user
+    /// @return The hash count
+    function getHashCount(address _user) public view returns (uint) {
+        return LibSearchSECORewardingStorage.getStorage().hashCount[_user];
+    }
 }
