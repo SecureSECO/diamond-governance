@@ -25,7 +25,7 @@ import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
 import { DiamondGovernanceClient } from "../sdk/index";
 import { getVotingPower } from "./Test_PartialVoting";
 import { createSignature } from "../utils/signatureHelper";
-import { now } from "../utils/timeUnits";
+import { days, now } from "../utils/timeUnits";
 
 // Tests as described in https://eips.ethereum.org/EIPS/eip-165
 describe("SDK", function () {
@@ -176,7 +176,15 @@ describe("SDK", function () {
   });
 
   // Test if verification works
-  it("verifies correctly", async function() {
+  // This tests the following functions:
+  // - Verify
+  // - Unverify
+  // - GetStamps
+  // - GetThresholdHistory
+  // - GetExpiration
+  // - GetVerificationContract
+  // - GetVerificationContractAddress 
+  it.only("(un)verifies correctly & retrieves stamps", async function() {
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     const [owner, alice] = await ethers.getSigners();
 
@@ -200,7 +208,25 @@ describe("SDK", function () {
     const stamps: Stamp[] = await client.verification.GetStamps(alice.address);
     const expectedStamp: Stamp = ["github", userHash, [BigNumber.from(timestamp)]];
 
+    // Check if the stamp is correct
     expect(stamps).to.be.lengthOf(1);
     expect(stamps[0]).to.be.deep.equal(expectedStamp);
+
+    // Check if the expiration is correct
+    const expiration = await client.verification.GetExpiration(stamps[0]);
+    const expectedExpiration = {
+      verified: true,
+      expired: false,
+      timeLeftUntilExpiration: ((timestamp + 60 * days) - now()),
+      threshold: BigNumber.from(60), // 60 days
+    };
+    expect(expiration.timeLeftUntilExpiration).to.be.closeTo(expectedExpiration.timeLeftUntilExpiration, 60); // Arbitrary 60 seconds tolerance
+
+    // Unverify
+    await client.verification.Unverify("github");
+    const newStamps: Stamp[] = await client.verification.GetStamps(alice.address);
+
+    // Check if the stamp is correct
+    expect(newStamps).to.be.lengthOf(0);
   });
 });
