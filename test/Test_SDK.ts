@@ -184,7 +184,7 @@ describe("SDK", function () {
   // - GetExpiration
   // - GetVerificationContract
   // - GetVerificationContractAddress 
-  it.only("(un)verifies correctly & retrieves stamps", async function() {
+  it("(un)verifies correctly & retrieves stamps", async function() {
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     const [owner, alice] = await ethers.getSigners();
 
