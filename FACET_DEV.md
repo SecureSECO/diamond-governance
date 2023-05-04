@@ -1,17 +1,31 @@
 # How to create a new facet
-I'll be walking you through how to create a facet by using an example for Counter. okay someone please improve my English. 
+This guide will walk you through the steps on how to create a facet by using a Counter implementation as an example. 
+This counter will simply store a number and increment it after a function is called.
 All facet contracts can be found in /contracts/facets.
-This guide assumes you have basic knowledge on Solidity smart contract development and Chai testing. You can follow this [CryptoZombies](https://cryptozombies.io/) course to get started on learning Solidity.
+This guide assumes you have basic knowledge on Solidity smart contract development, ethers.js, and Chai testing. 
+You can follow this [CryptoZombies](https://cryptozombies.io/) course to get started on learning Solidity.
 
-Everytime you modify your solidity files and get a type error somewhere, don't forget to run `npm run compile` or `npx hardhat compile`. If this doesn't work you can try running `npx hardhat clean` and see if that works.
+Everytime you modify your solidity files and get a type error somewhere, don't forget to run `npm run compile` or `npx hardhat compile`. 
+If this doesn't work you can try running `npx hardhat clean` (before running the above commands again) and see if that works.
 
-If that doesn't work consider having written faulty code and stop blaming other people/things for your own mistakes <3.
+<!-- If that doesn't work consider having written faulty code and stop blaming other people/things for your own mistakes <3. -->
 
 ## Contents
 - [Writing a facet contract](#writing-a-facet-contract)
+  - [Write a facet contract](#write-a-facet-contract)
+  - [Deploy the facet contract](#deploying-the-facet-contract)
+  - [Cutting the facet](#cutting-the-facet)
 - [Facet storage](#facet-storage)
+  - [Storage contract](#libcounterstoragesol)
+  - [Storage access](#counterfacetsol-1)
 - [Facet initialization](#facet-initialization)
+  - [Write an init function](#write-an-init-function)
+  - [Add an init call](#add-init-call-in-central-init-function)
+  - [Deploy your library](#deploy-your-library)
+  - [Add your parameters](#add-your-parameters)
 - [Testing your facets](#testing-your-facets)
+  - [With the whole diamond](#deploying-the-whole-diamond)
+  - [Isolated testing](#deploying-just-the-base-diamond)
 
 ## Writing a facet contract
 Facet development works as follows:
@@ -21,9 +35,10 @@ Facet development works as follows:
 2. Deploy the facet contract
 3. Cut the facet into the diamond
 
-First we create a new solidity contract in the `/facets` folder. Let's call this contract `CounterFacet.sol`. Our contract should specify a pragma and should ideally also specify an SDPX-license. 
-
-### Basic facet example
+### Write a facet contract
+First create a new solidity contract in the `/facets` folder. 
+Let's call this contract `CounterFacet.sol`. 
+This contract should specify a pragma and should ideally also specify an SDPX-license. 
 
 #### **`CounterFacet.sol`**
 ```solidity
@@ -31,26 +46,81 @@ contract CounterFacet {
   /// @notice This function increments a number by 1
   /// @returns uint The new value of our number
   function incrementCounter() external returns (uint) {
-    return 0; // We'll later replace this with the new value of our integer
+    return 0; // This value will be replaced with the new incremented value of our integer later 
   }
 }
 ```
 
 ### Deploying the facet contract
-We can add this facet to our diamond by cutting it into the diamond. The deployment scripts (for the diamond) are all located in the `/deployments` folder. There are a lot of files for deployment but for now we only need to focus on the `deploy_DiamondGovernance.ts` file (I'll explain what the rest is later).
-To deploy the contract we need to do 3 things:
+This facet can be added to our diamond by cutting it into the diamond. 
+The deployment scripts (for the diamond) are all located in the `/deployments` folder. 
+There are a lot of files for deployment but for now the only relevant one is `deploy_DiamondGovernance.ts` (it will become clear later what the other files are for).
+3 things must be done to deploy the contract:
 
 1. Deploying the contract in the function **deployDiamondGovernance()**.
     
-    To deploy a contract in (hardhat) ethers, we can simply request the contract factory (abi/template) using the **ethers.getContractFactory("Your contract name")** method. We can then call the **factory.deploy()** method. It doesn't really matter where in the function you deploy the contract, but please do stick to our naming convention (...FacetContract for the Factory, and ...Facet for the deployed contract).
+    In order to deploy a contract in (hardhat) ethers, 
+    the contract factory (abi/template) must first be requested using the **ethers.getContractFactory("Your contract name")** method. 
+    The contract can then be deployed by calling the **factory.deploy()** method. 
+    It doesn't really matter where in the function you deploy the contract, but please do stick to the existing naming convention (...FacetContract for the Factory, and ...Facet for the deployed contract).
 
     Ideally you would also like to log that you've deployed the contract.
+
+    #### **`deploy_DiamondGovernance.ts`**
+    ```ts
+    async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
+      /* ... */
+      
+      const CounterFacetContract = await ethers.getContractFactory("CounterFacet");
+      const CounterFacet = await CounterFacetContract.deploy();
+      console.log(`CounterFacet deployed at ${CounterFacet.address}`);
+      
+      /* ... */
+    }
+    ```
 2. Add the contract type to the returned object.
 
-    At the end of the **deployDiamondGovernance()** function we can see a returned object. We need to return the deployment of our facet in this object so we later use it to cut the facet into the diamond. First import your contract type at the top of the file. This should be imported from `../typechain-types`. Next add your type to the Facets field in the return interface called **DiamondDeployedContracts**. Finally add your facet to the returned object in the **deployDiamondGovernance()** function.
+    At the end of the **deployDiamondGovernance()** function there is a returned object. 
+    This object should be used to return the deployment of our facet in this object so the facet can later be cut (added) into the diamond. 
+    First import your contract type at the top of the file. 
+    This should be imported from `../typechain-types`. 
+    Next add your type to the Facets field in the return interface called **DiamondDeployedContracts**. 
+    Finally add your facet to the returned object in the **deployDiamondGovernance()** function.
+
+    #### **`deploy_DiamondGovernance.ts`**
+    ```ts
+    // Types
+    import { CounterFacet } from "../typechain-types"; // Import facet type here
+    
+    /* ... */
+
+    interface DiamondDeployedContracts {
+      /* ... */
+      Facets: {
+        /* ... */
+        Counter: CounterFacet; // Change this here
+      }
+    }
+
+    /* ... */
+
+    async function deployDiamondGovernance() : Promise<DiamondDeployedContracts> {
+      /* ... */
+      
+      return {
+        /* ... */
+        Facets: {
+          /* ... */
+          Counter: CounterFacet, // Change this here
+        }
+      };
+    }
+    ```
 
 ### Cutting the facet
-In the same `deploy_DiamondGovernance.ts` file you can find a function called **createDiamondGovernanceRepo()**. At the top of the function you can see we call the **deployDiamondGovernance()** function where we previously deployed and returned our facet. To add our facet into the diamond we need to add/push an object into the "cut" array. This object should have the following structure:
+In the same `deploy_DiamondGovernance.ts` file you can find a function called **createDiamondGovernanceRepo()**. 
+At the top of the function there is function a call to **deployDiamondGovernance()**, where our facet was previously deployed and returned. 
+To add your facet into the diamond, an object must be added/pushed into the "cut" array. This object should have the following structure:
 
 #### **`deploy_DiamondGovernance.ts`**
 ```ts
@@ -67,10 +137,12 @@ Optionally you can also select only specific functions that you want to expose t
 functionSelectors: getSelectors(diamondGovernanceContracts.Facets.YourFacet).get(["foo(uint)", "bar(bool)"]).remove("foobar(address)")
 ```
 
-That's it, you've now successfully added your very basic facet to the diamond. This facet currently doesn't have any storage nor initialization so let's add that next. (Also interface implementation has some special stuff we need to take care of so refer to the subparagraph on Inheritance for that please thanks).
+That's it, you've now successfully added your very basic facet to the diamond. 
+This facet currently doesn't have any storage nor initialization so this guide will show you how to add that next. 
+(Also if your contract implements an interface, the diamond has to show that you implement that interface through ERC165 so refer to the subparagraph on [Inheritance](#inheriting-from-interfaces) how to do that).
 
 ## Facet storage
-We currently don't have storage, the way storage works with our diamond structure is by creating a storage contract in `/contracts/libraries/storage`. Our naming convention for this is `LibYourContractStorage.sol`, so `LibCounterStorage.sol` (note: without the "Facet"). A storage contract looks as follows:`
+The Counter facet currently doesn't have any storage, the way storage works with our diamond structure is by creating a storage contract in `/contracts/libraries/storage`. Our naming convention for this is `LibYourContractStorage.sol`, so `LibCounterStorage.sol` (note: without the "Facet"). A storage contract looks as follows:`
 
 ### Storage example
 
@@ -78,9 +150,9 @@ We currently don't have storage, the way storage works with our diamond structur
 ```solidity
 library LibCounterStorage {
     bytes32 constant COUNTER_STORAGE_POSITION =
-        keccak256("counter.diamond.storage.position"); // THIS SHOULD BE A UNIQUE HASH!!!
+        keccak256("counter.diamond.storage.position"); // This should be a unique hash!
 
-    // PUT YOUR STORAGE VARIABLES HERE!!!
+    // Put your storage variables here
     struct Storage {
         uint myNumber;
         // plus any other storage variables you might want...
@@ -118,17 +190,32 @@ contract CounterFacet {
 
 ## Facet initialization
 
-Now let's say we wanted to have an initial number. Usually you would have put your initialization in the constructor but for our diamond we need a separate init function. To do this add a library at the top of your `CounterFacet.sol` file.
+Suppose our facet needs to have an initial number. 
+It is not possible to simply create a constructor because this constructor will be executed when the facet is deployed (and not cut) and the variables it sets will not be shared with the diamond. 
+The diamond also cannot execute the constructor when the facet is cut into the diamond.
+
+The way initialization works in our diamond structure is as follows:
+1. Write a "init" function in a separate "library contract".
+2. All init functions are called from a central init function. Add a call to your init function here.
+3. It is not possible to make a call to a non-deployed library. Add a deployment for your library.
+4. Add your parameters to the function call to the central init function.
+
+This might seem a bit confusing at first, but it is much simpler than it seems. 
+This guide will show you step-by-step how to add initialization to your facet.
+
+### Write an init function
+Usually initialization is done in the constructor but for our diamond a separate "init" function is needed. 
+To do this add a library at the top of your `CounterFacet.sol` file.
 
 #### **`CounterFacet.sol`**
 ```solidity
 library CounterFacetInit {
-    // PUT YOUR INITIALIZATION PARAMETERS HERE AS YOU WOULD FOR YOUR CONSTRUCTOR
+    // Put your initialization parameters here as you would for your constructor
     struct InitParams {
         uint myInitialNumber;
     }
 
-    // INITIALIZE YOUR STORAGE VARIABLES HERE
+    // Initialize your storage variables here
     function init(InitParams calldata _params) external {
         LibCounterStorage.Storage storage s = LibCounterStorage.getStorage();
 
@@ -139,14 +226,20 @@ library CounterFacetInit {
 contract CounterFacet { ... }
 ```
 
-We now have a init function but we still don't call it anywhere. To call this function we need to add the library to the `DiamondInit.sol` file. Add your file import like so:
+### Add init call in central init function
+The `DiamondInit.sol` file acts like a central init function that calls all initialization functions.
+The **init()** function has been created but it isn't called anywhere. 
+To call this function the library needs to be added to the `DiamondInit.sol` file. 
+Add your file import like so:
 
 #### **`DiamondInit.sol`**
 ```solidity
 import { CounterFacetInit } from "../facets/CounterFacet.sol";
 ```
 
-Then in the **init()** function in the **DiamondInit** contract, we add our InitParams to the parameters fo the **init()** function and at the bottom of the same function we add the call to the **init()** function (of the **CounterFacetInit**) with parameters. Like so:
+Then in the **init()** function in the **DiamondInit** contract, 
+add the InitParams to the parameters for the **init()** function 
+and at the bottom of the same function add the call to the **init()** function (of the **CounterFacetInit**) with parameters. Like so:
 
 #### **`DiamondInit.sol`**
 ```solidity
@@ -162,7 +255,8 @@ contract DiamondInit {
 }
 ```
 
-Next we deploy our library. We add our library to the **deployLibraries()** function in `deploy_Libraries.ts` file.
+### Deploy your library
+Next the (init) library must be deployed. Add your library to the **deployLibraries()** function in `deploy_Libraries.ts` file.
 
 #### **`deploy_Libraries.ts`**
 ```ts
@@ -195,7 +289,8 @@ const DiamondInitContract = await ethers.getContractFactory('DiamondInit', {
 });
 ```
 
-Then in the **createDiamondGovernanceRepo()** function:
+### Add your parameters
+Now in the **createDiamondGovernanceRepo()** function, add your parameters/settings:
 
 #### **`deploy_DiamondGovernance.ts`**
 ```ts
@@ -285,7 +380,9 @@ All tests must be placed within the `/test` folder. Tests are written in Chai. T
 It is recommended to use method 2, because this reduces the influence of outside factors (isolated testing is nicer).
 
 ### Deploying the whole diamond
-Let's create a test file `/test/Test_Counter1.ts`. It is very easy to get a diamond and the relevant data needed to test your facets, we can simply call the function **deployAragonDAOWithFramework()** found in `/deployments/deploy_AragonDAO.ts`. It is however strongly recommended you use the **loadFixture()** functionality, because this will revert the local (hardhat) blockchain to the last saved point.
+First create a test file `/test/Test_Counter1.ts`. 
+To get a diamond and the relevant data needed to test your facets, simply call the function **deployAragonDAOWithFramework()** found in `/deployments/deploy_AragonDAO.ts`. 
+It is however strongly recommended you use the **loadFixture()** functionality, because this will revert the local (hardhat) blockchain to the last saved point.
 
 #### **`Test_Counter1.ts`**
 ```ts
@@ -314,7 +411,9 @@ describe("Counter facet", function () {
 ```
 
 ### Deploying just the base diamond
-When we want a minimal deploy of the diamond (without all the other facets), we must write a separate init file. Let's go ahead and create `DICounter.sol` (DI stands for DiamondInit) in `/contracts/upgrade-initializers/single-contract-init`. The contents of this file should be similar to the contents we talked about in the [Facet Initialization](#facet-initialization) section.
+To get a minimal deploy of the diamond (without all the other facets), a separate init file must be created, our central init doesn't work here because it calls init functions that aren't added to the diamond. 
+Let's go ahead and create `DICounter.sol` (DI stands for DiamondInit) in `/contracts/upgrade-initializers/single-contract-init`. 
+The contents of this file should be similar to the contents we talked about in the [Facet Initialization](#facet-initialization) section.
 
 #### **`DICounter.sol`**
 ```solidity
@@ -331,7 +430,8 @@ contract DICounter {
 }
 ```
 
-We can then write our tests in `/test/Test_Counter2.ts`. It is very easy to do. Note that we use **deployBaseAragonDAO** here and not **deployAragonDAOWithFramework**.
+Our tests can then be written in `/test/Test_Counter2.ts`.
+Note that **deployBaseAragonDAO** is used here and not **deployAragonDAOWithFramework**.
 
 #### **`Test_Counter2.ts`**
 ```ts
@@ -366,7 +466,7 @@ describe("Counter facet", () => {
 });
 ```
 
-I, myself, like to split the above function up so I can then later reuse it in other tests. Like this:
+A nice way to structure this is to split the above function up so the facet cutting can then later be reused in other tests. Like this:
 
 #### **`/test/facet-selection/addSingleFacet.ts`**
 ```ts
@@ -400,9 +500,12 @@ describe("Counter facet", () => {
 ```
 
 ### What to do when your function is 'auth'ed?
-Some functions can only be called from within the diamond. To test these functions we can create a "mock" facet that exposes a function that call the private or authed function. The mock self should generally not need initialization or storage. This mock can then be used to test in the same way as a normal facet.
+Some functions can only be called from within the diamond. 
+To test these functions you can create a "mock" facet that exposes a function that calls the private or authed function. 
+The mock itself should generally not need initialization or storage, and should never be included in the diamond outside of tests. 
+This mock can then be used to test in the same way as a normal facet.
 
 We'll leave this as an exercise to the reader.
 
-## Closing notes
-Thank you for reading my guide on facet development, I hope you learned something. I wish you the best of luck on your journey to becoming a diamond guru!
+<!-- ## Closing notes
+Thank you for reading my guide on facet development, I hope you learned something. I wish you the best of luck on your journey to becoming a diamond guru! -->
