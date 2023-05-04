@@ -1,6 +1,6 @@
 {
   "name": "@plopmenz/diamond-governance-sdk",
-  "version": "0.0.5",
+  "version": "0.0.11",
   "description": "SDK for Diamond Governance, a ERC-2535 DAO bridge.",
   "main": "dist/sdk/index.js",
   "typings": "dist/sdk/index.d.ts",
@@ -34,7 +34,6 @@
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/abstract-signer": "^5.7.0",
     "@ethersproject/bytes": "^5.7.0",
-    "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "hardhat": "^2.14.0"
+    "@nomiclabs/hardhat-ethers": "^2.2.3"
   }
 }
