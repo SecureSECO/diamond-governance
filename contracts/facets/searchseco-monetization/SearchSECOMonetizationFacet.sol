@@ -42,17 +42,26 @@ contract SearchSECOMonetizationFacet is AuthConsumer {
 
         // Require that the balance of the sender has sufficient funds for this transaction
         // hashCost is the cost of a single hash
-        require(tokenContract.balanceOf(msg.sender) > s.hashCost * _amount, "Insufficient tokens for this transaction");
+        require(
+            tokenContract.balanceOf(msg.sender) > s.hashCost * _amount,
+            "Insufficient tokens for this transaction"
+        );
 
-        tokenContract.transferFrom(msg.sender, address(this), s.hashCost * _amount);
-        
+        tokenContract.transferFrom(
+            msg.sender,
+            address(this),
+            s.hashCost * _amount
+        );
+
         // Emit event so back-end can verify payment
         emit PaymentProcessed(msg.sender, _amount, _uniqueId);
     }
 
     /// @notice Updates the cost of a hash (in the context of SearchSECO)
     /// @param _newCost The new cost of a hash
-    function updateHashCost(uint _newCost) external auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
+    function updateHashCost(
+        uint _newCost
+    ) external auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _newCost;
     }
 
