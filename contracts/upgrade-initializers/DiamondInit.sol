@@ -13,7 +13,36 @@ pragma solidity ^0.8.0;
 * Implementation of a diamond.
 /******************************************************************************/
 
-import {IERC165, IERC20, IERC20Metadata, IERC20Permit, IERC173, IERC6372, IVotes, IDiamondLoupe, IPlugin, IAuthProvider, IProposal, IGovernanceStructure, IMintableGovernanceStructure, IBurnableGovernanceStructure, IMembership, IMembershipExtended, ITieredMembershipStructure, IPartialVotingProposalFacet, IPartialVotingFacet} from "../utils/InterfaceIds.sol";
+import {
+    IERC165, 
+    IERC20, 
+    IERC20Metadata, 
+    IERC20Permit, 
+    
+    IERC173, 
+    IERC6372, 
+    IVotes, 
+    IDiamondLoupe,
+    
+    IPlugin,
+    IAuthProvider,
+    IProposal,
+
+    IGovernanceStructure,
+    IMintableGovernanceStructure,
+    IBurnableGovernanceStructure,
+
+    IMembership,
+    IMembershipExtended,
+    ITieredMembershipStructure,
+    IMembershipWhitelisting,
+
+    IVerificationFacet,
+    
+    IPartialVotingProposalFacet,
+    IPartialVotingFacet 
+} from "../utils/InterfaceIds.sol";
+
 
 import {PartialBurnVotingProposalFacetInit} from "../facets/governance/proposal/PartialBurnVotingProposalFacet.sol";
 import {VerificationFacetInit} from "../facets/membership/VerificationFacet.sol";
@@ -21,8 +50,7 @@ import {ERC20TieredTimeClaimableFacetInit} from "../facets/token/ERC20/claiming/
 import {ERC20OneTimeVerificationRewardFacetInit} from "../facets/token/ERC20/claiming/one-time/ERC20OneTimeVerificationRewardFacet.sol";
 import {SearchSECOMonetizationFacetInit} from "../facets/searchseco-monetization/SearchSECOMonetizationFacet.sol";
 import {SearchSECORewardingFacetInit} from "../facets/searchseco-rewarding/SearchSECORewardingFacet.sol";
-
-import {LibDiamond} from "../libraries/LibDiamond.sol";
+import { LibDiamond } from "../libraries/LibDiamond.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
@@ -68,9 +96,10 @@ contract DiamondInit {
 
         ds.supportedInterfaces[type(IMembership).interfaceId] = true;
         ds.supportedInterfaces[type(IMembershipExtended).interfaceId] = true;
-        ds.supportedInterfaces[
-            type(ITieredMembershipStructure).interfaceId
-        ] = true;
+        ds.supportedInterfaces[type(ITieredMembershipStructure).interfaceId] = true;
+        ds.supportedInterfaces[type(IMembershipWhitelisting).interfaceId] = true;
+        
+        ds.supportedInterfaces[type(IVerificationFacet).interfaceId] = true;
 
         ds.supportedInterfaces[
             type(IPartialVotingProposalFacet).interfaceId

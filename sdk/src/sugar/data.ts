@@ -7,6 +7,7 @@
   */
 
 import { IDAO, IPartialVotingProposalFacet } from "../../../typechain-types";
+import { BigNumber } from 'ethers';
 
 export { IDAO };
 export enum VoteOption { Abstain, Yes, No }
@@ -45,7 +46,7 @@ export interface Action {
 // Used as a subtype of Action to make sure that the params are correct
 export type WithdrawAction = Action & {
   params: {
-    amount: BigInt;
+    amount: BigNumber;
     tokenAddress: string;
     to: string;
   }
@@ -57,9 +58,12 @@ export type MintAction = Action & {
     to: [
       {
         to: string;
-        amount: BigInt;
-        tokenId: BigInt;
+        amount: BigNumber;
+        tokenId: BigNumber;
       }
     ]
   }
 }
+
+export type Stamp = [id: string, userHash: string, verifiedAt: BigNumber[]];
+export type VerificationThreshold = [timestamp: BigNumber, threshold: BigNumber];
