@@ -27,6 +27,9 @@ import { IBurnableGovernanceStructure } from "../facets/governance/structure/vot
 import { IMembership } from "@aragon/osx/core/plugin/membership/IMembership.sol";
 import { IMembershipExtended } from "../facets/governance/structure/membership/IMembershipExtended.sol";
 import { ITieredMembershipStructure } from "../facets/governance/structure/membership/ITieredMembershipStructure.sol";
+import { IMembershipWhitelisting } from "../facets/governance/structure/membership/IMembershipWhitelisting.sol";
+
+import { IVerificationFacet } from "../facets/membership/IVerificationFacet.sol";
 
 import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
 import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
@@ -55,6 +58,9 @@ library InterfaceIds {
     bytes4 constant public IMembership_ID = type(IMembership).interfaceId;
     bytes4 constant public IMembershipExtended_ID = type(IMembershipExtended).interfaceId;
     bytes4 constant public ITieredMembershipStructure_ID = type(ITieredMembershipStructure).interfaceId;
+    bytes4 constant public IMembershipWhitelisting_ID = type(IMembershipWhitelisting).interfaceId;
+
+    bytes4 constant public IVerificationFacet_ID = type(IVerificationFacet).interfaceId; 
 
     bytes4 constant public IPartialVotingProposalFacet_ID = type(IPartialVotingProposalFacet).interfaceId;
     bytes4 constant public IPartialVotingFacet_ID = type(IPartialVotingFacet).interfaceId;

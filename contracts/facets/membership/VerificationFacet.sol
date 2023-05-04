@@ -9,8 +9,10 @@ pragma solidity ^0.8.0;
 import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibVerificationStorage} from "../../libraries/storage/LibVerificationStorage.sol";
 import { ITieredMembershipStructure } from "../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
+import { IMembershipWhitelisting } from "../../facets/governance/structure/membership/IMembershipWhitelisting.sol";
 import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { GithubVerification } from "../../verification/GithubVerification.sol";
+import { IVerificationFacet } from "./IVerificationFacet.sol";
 
 // Used for diamond pattern storage
 library VerificationFacetInit {
@@ -38,13 +40,14 @@ library VerificationFacetInit {
 /// @title Verification facet for the Diamond Governance Plugin
 /// @author J.S.C.L. & T.Y.M.W. @ UU
 /// @notice Additionally to the verification functionality, this includes the whitelisting functionality for the DAO membership
-contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
+contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelisting, IVerificationFacet, AuthConsumer {
     // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION_ID = keccak256("UPDATE_TIER_MAPPING_PERMISSION");
     // Permission used by the whitelist function
     bytes32 public constant WHITELIST_MEMBER_PERMISSION_ID = keccak256("WHITELIST_MEMBER_PERMISSION");
 
     /// @notice Whitelist a given account
+    /// @inheritdoc IMembershipWhitelisting
     function whitelist(address _address) external auth(WHITELIST_MEMBER_PERMISSION_ID) {
         LibVerificationStorage.getStorage().whitelistTimestamps[_address] = uint64(block.timestamp);
     }
@@ -71,17 +74,51 @@ contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
         else return bytes1(uint8(b) + 0x57);
     }
     
-    /// @notice Returns stamps of an account at a given timestamp
+    /// @inheritdoc IVerificationFacet
     function getStampsAt(
         address _address,
         uint _timestamp
-    ) public view returns (GithubVerification.Stamp[] memory) {
+    ) public view override returns (GithubVerification.Stamp[] memory) {
         LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
         GithubVerification verificationContract = GithubVerification(ds.verificationContractAddress);
         GithubVerification.Stamp[] memory stamps = verificationContract.getStampsAt(
             _address,
             _timestamp
         );
+
+        // Check if this account was whitelisted and add a "whitelist" stamp if applicable
+        uint64 whitelistTimestamp = ds.whitelistTimestamps[_address];
+        if (whitelistTimestamp == 0) {
+            return stamps;
+        } else {
+            GithubVerification.Stamp[] memory stamps2 = new GithubVerification.Stamp[](
+                stamps.length + 1
+            );
+
+            uint64[] memory verifiedAt = new uint64[](1);
+            verifiedAt[0] = whitelistTimestamp;
+
+            GithubVerification.Stamp memory stamp = GithubVerification.Stamp(
+                "whitelist",
+                toAsciiString(_address),
+                verifiedAt
+            );
+
+            stamps2[0] = stamp;
+
+            for (uint i = 0; i < stamps.length; i++) {
+                stamps2[i + 1] = stamps[i];
+            }
+
+            return stamps2;
+        }
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function getStamps(address _address) external view override returns (GithubVerification.Stamp[] memory) {
+        LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
+        GithubVerification verificationContract = GithubVerification(ds.verificationContractAddress);
+        GithubVerification.Stamp[] memory stamps = verificationContract.getStamps(_address);
 
         // Check if this account was whitelisted and add a "whitelist" stamp if applicable
         uint64 whitelistTimestamp = ds.whitelistTimestamps[_address];
@@ -143,5 +180,10 @@ contract VerificationFacet is ITieredMembershipStructure, AuthConsumer {
     /// @dev This maps a providerId to a uint256 tier
     function updateTierMapping(string calldata providerId, uint256 tier) external auth(UPDATE_TIER_MAPPING_PERMISSION_ID) {
         LibVerificationStorage.getStorage().tierMapping[providerId] = tier;
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function getVerificationContractAddress() external view override returns (address) {
+        return LibVerificationStorage.getStorage().verificationContractAddress;
     }
 }
