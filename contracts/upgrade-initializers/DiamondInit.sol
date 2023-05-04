@@ -13,7 +13,7 @@ pragma solidity ^0.8.0;
 * Implementation of a diamond.
 /******************************************************************************/
 
-import {IERC165, IERC20, IERC20Metadata, IERC20Permit, IERC173, IERC6372, IVotes, IDiamondLoupe, IPlugin, IAuthProvider, IProposal, IGovernanceStructure, IMintableGovernanceStructure, IBurnableGovernanceStructure, IMembership, IMembershipExtended, ITieredMembershipStructure, IPartialVotingProposalFacet, IPartialVotingFacet} from "../utils/InterfaceIds.sol";
+import {IERC165, IERC20, IERC20Metadata, IERC20Permit, IERC173, IERC6372, IVotes, IDiamondLoupe, IPlugin, IAuthProvider, IProposal, IGovernanceStructure, IMintableGovernanceStructure, IBurnableGovernanceStructure, IMembership, IMembershipExtended, ITieredMembershipStructure, IPartialVotingProposalFacet, IPartialVotingFacet, IGithubPullRequestFacet} from "../utils/InterfaceIds.sol";
 
 import {PartialBurnVotingProposalFacetInit} from "../facets/governance/proposal/PartialBurnVotingProposalFacet.sol";
 import {VerificationFacetInit} from "../facets/membership/VerificationFacet.sol";
@@ -76,6 +76,8 @@ contract DiamondInit {
             type(IPartialVotingProposalFacet).interfaceId
         ] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IGithubPullRequestFacet).interfaceId] = true;
 
         // add your own state variables
         // EIP-2535 specifies that the `diamondCut` function takes two optional

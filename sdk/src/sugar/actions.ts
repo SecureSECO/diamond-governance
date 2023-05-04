@@ -42,7 +42,7 @@ export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
 export async function ToAction(toAddress : string, action : Action) : Promise<IDAO.ActionStruct> {
     const contract = await ethers.getContractAt(action.interface, ethers.constants.AddressZero);
     const inputs = await contract.interface.functions[action.method].inputs;
-    const args = inputs.map((input) => action.params[input.name]);
+    const args = inputs.map((input : any) => action.params[input.name]);
     const calldata = await contract.interface.encodeFunctionData(action.method, args);
     return {
       to: toAddress,
@@ -67,17 +67,11 @@ export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> 
       };
     }
 
-    // return {
-    //   interface: "Coming soon",
-    //   method: "Does not work yet :(",
-    //   params: { }
-    // };
-
     const hexBytes = bytesToHex(arrayify(await action.data));
     const contractName = Object.keys(DiamondGovernanceInterfaces)[(action.value as any).toNumber() - 1];
     const contract =  await ethers.getContractAt(contractName, ethers.constants.AddressZero);
-    const method = contract.interface.getFunction(hexBytes.substring(0, 10)); // hexBytes.substring(0, 10) is not correct function name (maybe this interface is different from Interface Aragon uses?)
-    const fullMethodName = method.name + "(" + method.inputs.map((input) => input.type).join(",") + ")";
+    const method = contract.interface.getFunction(hexBytes.substring(0, 10));
+    const fullMethodName = method.name + "(" + method.inputs.map((input : any) => input.type).join(",") + ")";
     const inputData = await contract.interface.decodeFunctionData(method, await action.data)
     const params : { [name: string]: any } = { };
     for (let i = 0; i < inputData.length; i++) {

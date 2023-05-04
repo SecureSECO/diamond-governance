@@ -8,13 +8,13 @@
 
 import { ethers } from "hardhat";
 import { Signer } from "@ethersproject/abstract-signer";
-import { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes } from "../../typechain-types";
+import { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes } from "../../typechain-types";
 
-enum DiamondGovernanceInterfaces { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes }
+enum DiamondGovernanceInterfaces { IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes }
 
 class DiamondGovernancePure {
     public pluginAddress : string;
-    private signer : Signer;
+    public signer : Signer;
     private cache: { [id: string] : any }
 
     public constructor(_pluginAddress : string, _signer : Signer) {
@@ -58,6 +58,10 @@ class DiamondGovernancePure {
 
     public async IERC6372() : Promise<IERC6372> {
         return await this._get<IERC6372>(DiamondGovernanceInterfaces.IERC6372, "0xda287a1d");
+    }
+
+    public async IGithubPullRequestFacet() : Promise<IGithubPullRequestFacet> {
+        return await this._get<IGithubPullRequestFacet>(DiamondGovernanceInterfaces.IGithubPullRequestFacet, "0xa1ff1300");
     }
 
     public async IGovernanceStructure() : Promise<IGovernanceStructure> {
@@ -123,4 +127,4 @@ class DiamondGovernancePure {
     }
 }
 
-export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes }
+export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, IAuthProvider, IBurnableGovernanceStructure, IDiamondLoupe, IERC173, IERC20Metadata, IERC20Permit, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembership, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, ITieredMembershipStructure, IVotes }
