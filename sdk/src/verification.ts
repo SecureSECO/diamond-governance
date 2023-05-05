@@ -4,43 +4,30 @@ import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
 import { BigNumber } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 
-// List:
-// Get threshold history
-// Get stamps?
-// verify/unverify
-
+/**
+ * VerificationSugar is a class that provides methods for interacting with the verification contract.
+ *
+ * @remarks
+ * This class is accessed through the (root) DiamondGovernanceClient object
+ */
 export class VerificationSugar {
+  /**
+   * Cache for the verification contract and threshold history
+   * 
+   * @remarks
+   * This cache is used to reduce the number of calls to the blockchain, the cache is filled on the first call to a method that requires it
+   */
   private cache: {
     verificationContract?: GithubVerification;
     thresholdHistory?: VerificationThreshold[];
-  }
+  };
   private sugar: DiamondGovernanceSugar;
   private signer: Signer;
+
   constructor(sugar: DiamondGovernanceSugar, signer: Signer) {
     this.sugar = sugar;
     this.signer = signer;
     this.cache = {};
-    // TODO
-    // - Retrieve verification contract address from the plugin
-    // - Store verification contract address
-    // const verificationContractAddress = sugar.GetVerificationContractAddress();
-    // this.verificationContract = await ethers.getContractAt("GithubVerification", verificationContractAddress);
-  }
-
-  /**
-   * Gets the verification contract address
-   * @returns The verification contract address
-   */
-  private async GetVerificationContractAddress(): Promise<string> {
-    return this.sugar.GetVerificationContractAddress();
-  }
-
-  /**
-   * 
-   */
-  public async GetStamps(address: string): Promise<Stamp[]> {
-    const verificationContract = await this.GetVerificationContract();
-    return verificationContract.getStamps(address);
   }
 
   /**
@@ -61,13 +48,24 @@ export class VerificationSugar {
   }
 
   /**
+   * Retrieve the stamps of a given address
+   * @param address The address to retrieve stamps for
+   * @returns An array of Stamp objects
+   */
+  public async GetStamps(address: string): Promise<Stamp[]> {
+    const verificationContract = await this.GetVerificationContract();
+    return verificationContract.getStamps(address);
+  }
+
+  /**
    * Gets the threshold history
    * @returns The threshold history as an array of VerificationThreshold objects
    */
   public async GetThresholdHistory(): Promise<VerificationThreshold[]> {
     if (this.cache.thresholdHistory == null) {
       const verificationContract = await this.GetVerificationContract();
-      this.cache.thresholdHistory = await verificationContract.getThresholdHistory();
+      this.cache.thresholdHistory =
+        await verificationContract.getThresholdHistory();
     }
     return this.cache.thresholdHistory;
   }
@@ -105,26 +103,21 @@ export class VerificationSugar {
       thresholdHistory.length > 0 &&
       currentTimestamp >= lastVerifiedAt.toNumber();
 
-    const expirationDate = lastVerifiedAt.add(threshold.mul(24 * 60 * 60)).toNumber();
+    const expirationDate = lastVerifiedAt
+      .add(threshold.mul(24 * 60 * 60))
+      .toNumber();
     const currentBlock = await ethers.provider.getBlockNumber();
     // const blockTimestamp = (await ethers.provider.getBlock(currentBlock)).timestamp;
 
     const verified =
-      preCondition &&
-      stamp != null &&
-      currentTimestamp < expirationDate;
+      preCondition && stamp != null && currentTimestamp < expirationDate;
 
     const expired =
-      preCondition &&
-      stamp != null &&
-      currentTimestamp >
-      expirationDate;
+      preCondition && stamp != null && currentTimestamp > expirationDate;
 
     let timeLeftUntilExpiration = null;
     if (verified) {
-      timeLeftUntilExpiration =
-      expirationDate -
-        currentTimestamp;
+      timeLeftUntilExpiration = expirationDate - currentTimestamp;
     }
 
     return {
@@ -133,23 +126,6 @@ export class VerificationSugar {
       timeLeftUntilExpiration,
       threshold,
     };
-  }
-
-  /**
-   * Gets the threshold for a given timestamp
-   * @param timestamp The timestamp in seconds
-   * @param thresholdHistory The threshold history
-   * @returns The threshold at the given timestamp
-   */
-  private getThresholdForTimestamp(
-    timestamp: number,
-    thresholdHistory: VerificationThreshold[]
-  ) {
-    let threshold = thresholdHistory.reverse().find((threshold) => {
-      return timestamp >= threshold[0].toNumber();
-    });
-
-    return threshold ? threshold[1] : BigNumber.from(0);
   }
 
   /**
@@ -184,5 +160,30 @@ export class VerificationSugar {
   public async Unverify(providerId: string): Promise<void> {
     const verificationContract = await this.GetVerificationContract();
     await verificationContract.unverify(providerId);
+  }
+
+  /**
+   * Gets the verification contract address
+   * @returns The verification contract address
+   */
+  private async GetVerificationContractAddress(): Promise<string> {
+    return this.sugar.GetVerificationContractAddress();
+  }
+
+  /**
+   * Gets the threshold for a given timestamp
+   * @param timestamp The timestamp in seconds
+   * @param thresholdHistory The threshold history
+   * @returns The threshold at the given timestamp
+   */
+  private getThresholdForTimestamp(
+    timestamp: number,
+    thresholdHistory: VerificationThreshold[]
+  ) {
+    let threshold = thresholdHistory.reverse().find((threshold) => {
+      return timestamp >= threshold[0].toNumber();
+    });
+
+    return threshold ? threshold[1] : BigNumber.from(0);
   }
 }
