@@ -16,12 +16,6 @@ export class DiamondGovernanceSugar {
         this.pure = _pure;
     }
 
-    public async GetStamps(address: string) : Promise<Stamp[]> {
-        const IVerificationFacet = await this.pure.IVerificationFacet();
-
-        return IVerificationFacet.getStamps(address);
-    }
-
     public async GetVerificationContractAddress() : Promise<string> {
         const IVerificationFacet = await this.pure.IVerificationFacet();
         return IVerificationFacet.getVerificationContractAddress();
