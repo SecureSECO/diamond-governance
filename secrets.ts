@@ -29,3 +29,9 @@ export function MUMBAI_PRIVATE_KEY() {
     if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }
     return fromEnv;
 }
+
+export function IPFS_PINATA_TOKEN() {
+    const fromEnv = process.env.IPFS_PINATA_TOKEN;
+    if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }
+    return fromEnv;
+}
