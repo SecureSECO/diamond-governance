@@ -9,6 +9,7 @@
  
 pragma solidity ^0.8.0;
 
+import { IERC20TieredTimeClaimableFacet } from "./IERC20TieredTimeClaimableFacet.sol";
 import { ERC20TimeClaimableFacet, ERC20TimeClaimableFacetInit } from "./ERC20TimeClaimableFacet.sol";
 import { ITieredMembershipStructure } from "../../../../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
 
@@ -34,7 +35,7 @@ library ERC20TieredTimeClaimableFacetInit {
     }
 }
 
-contract ERC20TieredTimeClaimableFacet is ERC20TimeClaimableFacet {
+contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20TimeClaimableFacet {
     function setClaimReward(uint256 _tier, uint256 _reward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
         _setClaimReward(_tier, _reward);
     }
