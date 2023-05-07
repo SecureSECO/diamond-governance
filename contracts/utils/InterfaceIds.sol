@@ -34,6 +34,15 @@ import { IVerificationFacet } from "../facets/membership/IVerificationFacet.sol"
 import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
 import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
 
+import { IERC20OneTimeRewardFacet } from "../facets/token/ERC20/claiming/one-time/IERC20OneTimeRewardFacet.sol";
+import { IERC20OneTimeVerificationRewardFacet } from "../facets/token/ERC20/claiming/one-time/IERC20OneTimeVerificationRewardFacet.sol";
+
+import { IERC20PartialBurnVotingRefundFacet } from "../facets/token/ERC20/claiming/refund/IERC20PartialBurnVotingRefundFacet.sol";
+import { IERC20PartialBurnVotingProposalRefundFacet } from "../facets/token/ERC20/claiming/refund/IERC20PartialBurnVotingProposalRefundFacet.sol";
+
+import { IERC20TimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TimeClaimableFacet.sol";
+import { IERC20TieredTimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TieredTimeClaimableFacet.sol";
+
 library InterfaceIds {
     bytes4 constant public IERC165_ID = type(IERC165).interfaceId;
     bytes4 constant public IERC20_ID = type(IERC20).interfaceId;
@@ -62,4 +71,13 @@ library InterfaceIds {
 
     bytes4 constant public IPartialVotingProposalFacet_ID = type(IPartialVotingProposalFacet).interfaceId;
     bytes4 constant public IPartialVotingFacet_ID = type(IPartialVotingFacet).interfaceId;
+
+    bytes4 constant public IERC20OneTimeRewardFacet_ID = type(IERC20OneTimeRewardFacet).interfaceId;
+    bytes4 constant public IERC20OneTimeVerificationRewardFacet_ID = type(IERC20OneTimeVerificationRewardFacet).interfaceId;
+    
+    bytes4 constant public IERC20PartialBurnVotingRefundFacet_ID = type(IERC20PartialBurnVotingRefundFacet).interfaceId;
+    bytes4 constant public IERC20PartialBurnVotingProposalRefundFacet_ID = type(IERC20PartialBurnVotingProposalRefundFacet).interfaceId;
+    
+    bytes4 constant public IERC20TimeClaimableFacet_ID = type(IERC20TimeClaimableFacet).interfaceId;
+    bytes4 constant public IERC20TieredTimeClaimableFacet_ID = type(IERC20TieredTimeClaimableFacet).interfaceId;
 }

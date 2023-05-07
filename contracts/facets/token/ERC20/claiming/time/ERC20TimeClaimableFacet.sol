@@ -11,6 +11,7 @@ pragma solidity ^0.8.0;
 
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
+import { IERC20TimeClaimableFacet } from "./IERC20TimeClaimableFacet.sol";
 import { ERC20ClaimableFacet } from "../ERC20ClaimableFacet.sol";
 import { ITieredMembershipStructure } from "../../../../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
 import { AuthConsumer } from "../../../../../utils/AuthConsumer.sol";
@@ -29,7 +30,7 @@ library ERC20TimeClaimableFacetInit {
     }
 }
 
-contract ERC20TimeClaimableFacet is ERC20ClaimableFacet, AuthConsumer {
+contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, ERC20ClaimableFacet, AuthConsumer {
     /// @notice The permission to update claim reward and period
     bytes32 public constant UPDATE_CLAIM_SETTINGS_PERMISSION_ID = keccak256("UPDATE_CLAIM_SETTINGS_PERMISSION");
 

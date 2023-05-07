@@ -11,6 +11,7 @@ pragma solidity ^0.8.0;
 
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
+import { IERC20OneTimeVerificationRewardFacet } from "./IERC20OneTimeVerificationRewardFacet.sol";
 import { ERC20ClaimableFacet, IMintableGovernanceStructure } from "../ERC20ClaimableFacet.sol";
 import { AuthConsumer } from "../../../../../utils/AuthConsumer.sol";
 
@@ -37,7 +38,7 @@ library ERC20OneTimeVerificationRewardFacetInit {
     }
 }
 
-contract ERC20OneTimeVerificationRewardFacet is ERC20ClaimableFacet, AuthConsumer {
+contract ERC20OneTimeVerificationRewardFacet is IERC20OneTimeVerificationRewardFacet, ERC20ClaimableFacet, AuthConsumer {
     /// @inheritdoc ERC20ClaimableFacet
     function _tokensClaimable(address _claimer) internal view virtual override returns (uint256 amount) {
         // Get data from storage
