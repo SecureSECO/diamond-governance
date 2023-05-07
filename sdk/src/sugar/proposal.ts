@@ -10,7 +10,7 @@ import { ProposalData, ProposalStatus, Action, ProposalMetadata, VoteOption } fr
 import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
 import { asyncMap } from "../utils";
-import { IPartialVotingFacet, IPartialVotingProposalFacet } from "../client";
+import { DiamondGovernancePure, IPartialVotingFacet, IPartialVotingProposalFacet } from "../client";
 import type { ContractTransaction } from "ethers";
 
 /**
@@ -42,18 +42,20 @@ export class Proposal {
         this.voteContract = _voteContract;
     }
 
-    private fromHexString(hexString : string) : Uint8Array { return Uint8Array.from(hexString.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? new Uint8Array()); }
+    private fromHexString(hexString : string) : Uint8Array { 
+      return Uint8Array.from(Buffer.from(hexString, 'hex'));
+    }
     /**
      * New proposal object from the blockchain
      * @param _id The id of the proposal
      * @param _data The data of the proposal
      * @returns {Promise<Proposal>} The proposal with the given id
      */
-    public static async New(_id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) : Promise<Proposal> {
+    public static async New(_pure : DiamondGovernancePure, _id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) : Promise<Proposal> {
         const prop = new Proposal(_id, _data, _proposalContract, _voteContract);
         prop.metadata = await DecodeMetadata(prop.fromHexString(prop.data.metadata.substring(2))); //remove 0x and convert to utf-8 array
         prop.status = prop.getStatus();
-        prop.actions = await asyncMap(prop.data.actions, ParseAction);
+        prop.actions = await asyncMap(prop.data.actions, async (a) => await ParseAction(_pure, a));
         return prop;
     }
 

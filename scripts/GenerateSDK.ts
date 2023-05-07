@@ -8,13 +8,15 @@
 
 import fs from "fs";
 import { generateInterfaceIds } from "./sdk/GenerateInterfaceIds";
+import hre from "hardhat";
 
 const insertInterfaces = "/* interfaces */";
 const insertMethods = "/* interface methods */";
-function generateInterfaceMethod(interfaceName : string, interfaceId : string) {
+async function generateInterfaceMethod(interfaceName : string, interfaceId : string) {
+    const artifact = await hre.artifacts.readArtifact(interfaceName);
     return `
     public async ${interfaceName}() : Promise<${interfaceName}> {
-        return await this._get<${interfaceName}>(DiamondGovernanceInterfaces.${interfaceName}, "${interfaceId}");
+        return await this._get<${interfaceName}>(DiamondGovernanceInterfaces.${interfaceName}, "${interfaceId}", ${JSON.stringify(artifact.abi)});
     }`;
 }
 
@@ -27,7 +29,7 @@ async function main() {
     let interfaceMethodArray = [];
     for (let i = 0; i < interfaceKeys.length; i++) {
         const name = interfaceKeys[i];
-        interfaceMethodArray.push(generateInterfaceMethod(name, interfaceIds[name]));
+        interfaceMethodArray.push(await generateInterfaceMethod(name, interfaceIds[name]));
     }
     
     const interfaces = interfaceKeys.join(", ");
