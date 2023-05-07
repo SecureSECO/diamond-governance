@@ -9,7 +9,7 @@
 import { IDAO, Action } from "./data";
 import { ethers } from "hardhat";
 import { DiamondGovernanceInterfaces } from "../client";
-import { FunctionFragment, Interface } from "@ethersproject/abi";
+import { FunctionFragment, Interface, ParamType } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";
 
 // Source: https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/client/src/client-common/encoding.ts#L63
@@ -42,7 +42,7 @@ export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
 export async function ToAction(toAddress : string, action : Action) : Promise<IDAO.ActionStruct> {
     const contract = await ethers.getContractAt(action.interface, ethers.constants.AddressZero);
     const inputs = await contract.interface.functions[action.method].inputs;
-    const args = inputs.map((input : any) => action.params[input.name]);
+    const args = inputs.map((input : ParamType) => action.params[input.name]);
     const calldata = await contract.interface.encodeFunctionData(action.method, args);
     return {
       to: toAddress,
@@ -61,7 +61,7 @@ export async function ToAction(toAddress : string, action : Action) : Promise<ID
 export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> {
     if (action.value == 0) {
       return {
-        interface: "Unsupported atm",
+        interface: "Unsupported",
         method: "Likely made by Aragon SDK",
         params: { }
       };
@@ -71,7 +71,7 @@ export async function ParseAction(action : IDAO.ActionStruct) : Promise<Action> 
     const contractName = Object.keys(DiamondGovernanceInterfaces)[(action.value as any).toNumber() - 1];
     const contract =  await ethers.getContractAt(contractName, ethers.constants.AddressZero);
     const method = contract.interface.getFunction(hexBytes.substring(0, 10));
-    const fullMethodName = method.name + "(" + method.inputs.map((input : any) => input.type).join(",") + ")";
+    const fullMethodName = method.name + "(" + method.inputs.map((input : ParamType) => input.type).join(",") + ")";
     const inputData = await contract.interface.decodeFunctionData(method, await action.data)
     const params : { [name: string]: any } = { };
     for (let i = 0; i < inputData.length; i++) {
