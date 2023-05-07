@@ -17,7 +17,7 @@ import { Proposal } from "./proposal";
  */
 export class ProposalCache {
     private proposals: Proposal[];
-    private getProposal: (i : number) => Promise<ProposalData>;
+    private getProposal: (i : number) => Promise<Proposal>;
     private getProposalCount: () => Promise<number>;
     //ProposalSorting cast to number as id, same for status (only keep track of indexes, so refreshing is easier)
     //Actually should not be allowed to cache total votes on open proposals... (Refresh all open proposal upon selecting this filter?)
@@ -27,7 +27,10 @@ export class ProposalCache {
      * @param _getProposal Function to get proposal data from the blockchain
      * @param _getProposalCount Function to get the number of proposals from the blockchain
      */
-    constructor(_getProposal : (i : number) => Promise<ProposalData>, _getProposalCount : () => Promise<number>) {
+    constructor(
+        _getProposal : (i : number) => Promise<Proposal>, 
+        _getProposalCount : () => Promise<number>
+    ) {
         this.proposals = [];
         this.getProposal = _getProposal;
         this.getProposalCount = _getProposalCount;
@@ -39,7 +42,7 @@ export class ProposalCache {
      */
     private async FillCacheUntil(until : number) {
         while (this.proposals.length < until) {
-            const prop = await Proposal.New(this.proposals.length, await this.getProposal(this.proposals.length));
+            const prop = await this.getProposal(this.proposals.length);
             this.proposals.push(prop);
         }
     }

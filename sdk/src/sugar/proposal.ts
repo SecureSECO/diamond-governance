@@ -6,10 +6,12 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { ProposalData, ProposalStatus, Action, IDAO, ProposalMetadata } from "./data";
+import { ProposalData, ProposalStatus, Action, ProposalMetadata, VoteOption } from "./data";
 import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
 import { asyncMap } from "../utils";
+import { IPartialVotingFacet, IPartialVotingProposalFacet } from "../client";
+import type { ContractTransaction } from "ethers";
 
 /**
  * Proposal is a class that represents a proposal on the blockchain.
@@ -22,7 +24,10 @@ export class Proposal {
     public status: ProposalStatus;
     public actions: Action[];
 
-    private constructor(_id : number, _data : ProposalData) {
+    private proposalContract: IPartialVotingProposalFacet;
+    private voteContract: IPartialVotingFacet;
+
+    private constructor(_id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) {
         this.id = _id;
         this.data = _data;
         this.metadata = {
@@ -33,6 +38,8 @@ export class Proposal {
         };
         this.status = ProposalStatus.Pending;
         this.actions = [];
+        this.proposalContract = _proposalContract;
+        this.voteContract = _voteContract;
     }
 
     private fromHexString(hexString : string) : Uint8Array { return Uint8Array.from(hexString.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? new Uint8Array()); }
@@ -42,16 +49,12 @@ export class Proposal {
      * @param _data The data of the proposal
      * @returns {Promise<Proposal>} The proposal with the given id
      */
-    public static async New(_id : number, _data : ProposalData) : Promise<Proposal> {
-        const prop = new Proposal(_id, _data);
+    public static async New(_id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) : Promise<Proposal> {
+        const prop = new Proposal(_id, _data, _proposalContract, _voteContract);
         prop.metadata = await DecodeMetadata(prop.fromHexString(prop.data.metadata.substring(2))); //remove 0x and convert to utf-8 array
         prop.status = prop.getStatus();
         prop.actions = await asyncMap(prop.data.actions, ParseAction);
         return prop;
-    }
-
-    public async Refresh() {
-      // Seems like a useful function to support in the future
     }
 
     /**
@@ -68,4 +71,47 @@ export class Proposal {
 
       return ProposalStatus.Defeated;
     }
+
+        /**
+     * Checks if a vote is allowed on a proposal using the IPartialVotingFacet interface/contract
+     * @param _voteOption Which option to vote for (Yes, No, Abstain)
+     * @param _voteAmount Number of tokens to vote with
+     */
+      public async CanVote(_voteOption : VoteOption, _voteAmount : number) : Promise<boolean> {
+        const address = await this.voteContract.signer.getAddress();
+        return await this.voteContract.canVote(this.id, address, { option : _voteOption, amount : _voteAmount });
+      }
+  
+      /**
+       * Casts a vote on a proposal using the IPartialVotingFacet interface/contract
+       * @param _voteOption Which option to vote for (Yes, No, Abstain)
+       * @param _voteAmount Number of tokens to vote with
+       */
+      public async Vote(_voteOption : VoteOption, _voteAmount : number) : Promise<ContractTransaction>  {
+          return await this.voteContract.vote(this.id, { option : _voteOption, amount : _voteAmount });
+      }
+
+      /**
+       * Checks if this proposal can be executed
+       */
+      public async CanExecute() : Promise<boolean> {
+        return await this.proposalContract.canExecute(this.id);
+      }
+      
+      /**
+       * Executes this proposal
+       */
+      public async Execute() : Promise<ContractTransaction> {
+        return await this.proposalContract.execute(this.id);
+      }
+
+      /**
+       * Refreshed the data
+       */
+      public async Refresh() {
+        this.data = await this.proposalContract.getProposal(this.id);
+        // metadata doesn't change
+        this.status = this.getStatus();
+        // actions doesn't change
+      }
 }
