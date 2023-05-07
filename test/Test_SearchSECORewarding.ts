@@ -25,7 +25,7 @@ import { ethers } from "hardhat";
 // Other
 
 describe("SearchSECORewarding", function () {
-  it.only("try deploy/cut rewarding facet", async () => {
+  it("try deploy/cut rewarding facet", async () => {
     const { DiamondGovernance, diamondGovernanceContracts } = await loadFixture(
       deployBaseAragonDAO
     );

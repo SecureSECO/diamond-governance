@@ -14,7 +14,7 @@ enum DiamondGovernanceInterfaces { IERC165, /* interfaces */ }
 
 class DiamondGovernancePure {
     public pluginAddress : string;
-    private signer : Signer;
+    public signer : Signer;
     private cache: { [id: string] : any }
 
     public constructor(_pluginAddress : string, _signer : Signer) {
