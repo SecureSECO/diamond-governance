@@ -40,7 +40,9 @@ import {
     IVerificationFacet,
     
     IPartialVotingProposalFacet,
-    IPartialVotingFacet 
+    IPartialVotingFacet,
+
+    IGithubPullRequestFacet
 } from "../utils/InterfaceIds.sol";
 
 
@@ -105,6 +107,8 @@ contract DiamondInit {
             type(IPartialVotingProposalFacet).interfaceId
         ] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IGithubPullRequestFacet).interfaceId] = true;
 
         // add your own state variables
         // EIP-2535 specifies that the `diamondCut` function takes two optional

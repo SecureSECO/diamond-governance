@@ -83,18 +83,18 @@ export class VerificationSugar {
     timeLeftUntilExpiration: number | null;
     threshold: BigNumber;
   }> {
-    const currentTimestamp = Math.round(Date.now() / 1000) + 30;
+    const currentTimestamp = Math.round(Date.now() / 1000);
+
+    const lastVerifiedAt = stamp
+      ? stamp[2][stamp[2].length -1]
+      : BigNumber.from(0);
 
     // Retrieve the threshold history, and the threshold for the current timestamp
     const thresholdHistory = await this.GetThresholdHistory();
     const threshold = this.getThresholdForTimestamp(
-      currentTimestamp,
+      lastVerifiedAt.toNumber(),
       thresholdHistory
     );
-
-    const lastVerifiedAt = stamp
-      ? stamp[2][stamp[2].length - 1]
-      : BigNumber.from(0);
 
     // Checks conditions that always need to hold
     const preCondition: boolean =
@@ -106,8 +106,6 @@ export class VerificationSugar {
       currentTimestamp >= lastVerifiedAt.toNumber();
 
     const expirationDate = lastVerifiedAt.add(threshold.mul(24 * 60 * 60)).toNumber();
-    const currentBlock = await ethers.provider.getBlockNumber();
-    // const blockTimestamp = (await ethers.provider.getBlock(currentBlock)).timestamp;
 
     const verified =
       preCondition &&

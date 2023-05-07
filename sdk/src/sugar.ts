@@ -5,6 +5,7 @@ import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
+import type { ContractTransaction } from "ethers";
 
 export * from "./sugar/data"; 
 
@@ -46,9 +47,10 @@ export class DiamondGovernanceSugar {
     private async InitProposalCache() : Promise<ProposalCache> {
         const IProposal = await this.pure.IProposal();
         const IPartialVotingProposalFacet = await this.pure.IPartialVotingProposalFacet();
+        const IPartialVotingFacet = await this.pure.IPartialVotingFacet();
 
         const getProposalCount = async () => (await IProposal.proposalCount()).toNumber();
-        const getProposal = async (i : number) => await IPartialVotingProposalFacet.getProposal(i);
+        const getProposal = async (i : number) => await Proposal.New(i, await IPartialVotingProposalFacet.getProposal(i), IPartialVotingProposalFacet, IPartialVotingFacet);
 
         return new ProposalCache(getProposal, getProposalCount);
     }
@@ -96,9 +98,9 @@ export class DiamondGovernanceSugar {
      * @param startDate Date the proposal will start
      * @param endDate Date the proposal will end
      */
-    public async CreateProposal(metadata : ProposalMetadata, actions : Action[], startDate : Date, endDate : Date) {
+    public async CreateProposal(metadata : ProposalMetadata, actions : Action[], startDate : Date, endDate : Date) : Promise<ContractTransaction> {
         const IPartialVotingProposalFacet = await this.pure.IPartialVotingProposalFacet();
-        await IPartialVotingProposalFacet.createProposal(
+        return await IPartialVotingProposalFacet.createProposal(
             EncodeMetadata(metadata), 
             await asyncMap(actions, (action : Action) => ToAction(this.pure.pluginAddress, action)), 
             0, 
@@ -106,18 +108,6 @@ export class DiamondGovernanceSugar {
             ToBlockchainDate(endDate), 
             true
         );
-    }
-
-    /**
-     * Casts a vote on a proposal using the IPartialVotingFacet interface/contract
-     * @param _proposalId Id of the proposal to vote on
-     * @param _voteOption Which option to vote for (Yes, No, Abstain)
-     * @param _voteAmount Number of tokens to vote with
-     */
-    public async PartialVote(_proposalId : number, _voteOption : VoteOption, _voteAmount : number) {
-        const voteContract = await this.pure.IPartialVotingFacet();
-
-        await voteContract.vote(_proposalId, { option : _voteOption, amount : _voteAmount });
     }
 }
 

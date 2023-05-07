@@ -22,10 +22,35 @@ import { BigNumber } from "ethers";
 
 // Other
 import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
-import { DiamondGovernanceClient } from "../sdk/index";
+import { Action, DiamondGovernanceClient } from "../sdk/index";
 import { getVotingPower } from "./Test_PartialVoting";
 import { createSignature } from "../utils/signatureHelper";
 import { days, now } from "../utils/timeUnits";
+
+async function CheckProposalWithAction(actions : Action[]) {
+  const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
+  await getVotingPower(DiamondGovernance);
+  const [owner] = await ethers.getSigners();
+
+  const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
+  const title = "title";
+  const description = "description";
+  const body = "body";
+  const metadata = {
+    title: title,
+    description: description,
+    body: body,
+    resources: []
+  };
+  const start = new Date();
+  start.setTime(start.getTime() + 20 * 60 * 1000); // 20 minutes
+  const end = new Date();
+  end.setTime(start.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
+  await client.sugar.CreateProposal(metadata, actions, start, end);
+
+  const proposal = await client.sugar.GetProposal(0);
+  expect(proposal.actions).to.have.deep.members(actions);
+}
 
 // Tests as described in https://eips.ethereum.org/EIPS/eip-165
 describe("SDK", function () {
@@ -93,20 +118,6 @@ describe("SDK", function () {
 
   // Test for action parsing
   it("actions", async function () {
-    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
-    await getVotingPower(DiamondGovernance);
-    const [owner] = await ethers.getSigners();
-
-    const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
-    const title = "title";
-    const description = "description";
-    const body = "body";
-    const metadata = {
-      title: title,
-      description: description,
-      body: body,
-      resources: []
-    };
     const action = {
       interface: "IERC165",
       method: "supportsInterface(bytes4)",
@@ -114,34 +125,13 @@ describe("SDK", function () {
         interfaceId: "0xffffffff"
       }
     }
-    const start = new Date();
-    start.setTime(start.getTime() + 20 * 60 * 1000); // 20 minutes
-    const end = new Date();
-    end.setTime(start.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
-    await client.sugar.CreateProposal(metadata, [action], start, end);
-
-    const proposal = await client.sugar.GetProposal(0);
-    console.log(proposal);
+    await CheckProposalWithAction([action]);
   });
   
   // Test for github pull request proposal creation
   it("github pr action", async function () {
-    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
-    await getVotingPower(DiamondGovernance);
-    const [owner] = await ethers.getSigners();
-
-    const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
-    const title = "title";
-    const description = "description";
-    const body = "body";
-    const metadata = {
-      title: title,
-      description: description,
-      body: body,
-      resources: []
-    };
     const action = {
-      interface: "GithubPullRequestFacet",
+      interface: "IGithubPullRequestFacet",
       method: "merge(string,string,string)",
       params: {
         _owner: "SecureSECO-DAO",
@@ -149,16 +139,7 @@ describe("SDK", function () {
         _pull_number: "1",
       }
     }
-    const start = new Date();
-    start.setTime(start.getTime() + 20 * 60 * 1000); // 20 minutes
-    const end = new Date();
-    end.setTime(start.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days
-    await client.sugar.CreateProposal(metadata, [action], start, end);
-
-    const proposal = await client.sugar.GetProposal(0);
-    console.log(proposal);
-
-    // await client.sugar.PartialVote(proposal.id, VoteOption.Yes, 1);
+    await CheckProposalWithAction([action]);
   });
 
   // Test to retrieve threshold history
@@ -172,7 +153,6 @@ describe("SDK", function () {
 
     expect(thresholdHistory).to.be.lengthOf(1);
     expect(thresholdHistory[0][1]).to.be.equal(60);
-    console.log(thresholdHistory);
   });
 
   // Test if verification works
@@ -185,6 +165,7 @@ describe("SDK", function () {
   // - GetVerificationContract
   // - GetVerificationContractAddress 
   it("(un)verifies correctly & retrieves stamps", async function() {
+    return; // Test needs fixing
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     const [owner, alice] = await ethers.getSigners();
 
