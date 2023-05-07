@@ -16,7 +16,7 @@ export async function addToIpfs(json: string): Promise<string> {
     //   url: "https://ipfs-0.aragon.network/api/v0/add",
     //   headers: {
     //     "Content-Type": "text/plain", // Incorrect
-    //     "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt"
+    //     "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
     //   },
     //   params: {
     //     "path": json
