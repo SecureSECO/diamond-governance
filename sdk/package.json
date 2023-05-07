@@ -1,0 +1,39 @@
+{
+  "name": "@plopmenz/diamond-governance-sdk",
+  "version": "0.1.1",
+  "description": "SDK for Diamond Governance, a ERC-2535 DAO bridge.",
+  "main": "dist/sdk/index.js",
+  "typings": "dist/sdk/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SecureSECODAO/diamond-governance.git"
+  },
+  "keywords": [
+    "ERC-2535",
+    "DAO",
+    "Diamond Governance",
+    "Aragon",
+    "AragonOSx"
+  ],
+  "author": "Plopmenz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SecureSECODAO/diamond-governance/issues"
+  },
+  "homepage": "https://github.com/SecureSECODAO/diamond-governance#readme",
+  "dependencies": {
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/abstract-signer": "^5.7.0",
+    "@ethersproject/bytes": "^5.7.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.3"
+  }
+}

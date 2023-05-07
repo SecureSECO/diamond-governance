@@ -10,16 +10,16 @@ on:
         required: false
 
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 defaults:
   run:
     working-directory: ./
 
 env:
-  NODE_VERSION: 14.x
+  NODE_VERSION: 18.x
   unit-tests: ${{ github.event.inputs.js || true }}
 
 jobs:
@@ -56,8 +56,6 @@ jobs:
       - name: Install dependencies
         if: steps.restore-node_modules.outputs.cache-hit != 'true'
         run: npm install
-      - name: Compile project
-        run: npm run compile
       - name: Performing unit tests
         run: npm test
 

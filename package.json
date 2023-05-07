@@ -1,23 +1,24 @@
 {
-  "name": "partial-token-burn-voting",
+  "name": "diamond-governance",
   "version": "1.0.0",
-  "description": "Partial Token Burn Voting Aragon OSx Plugin",
+  "description": "A bridge between the Aragon framework and ERC-2535 facets",
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "npx hardhat test --typecheck",
-    "deploy": "npx hardhat run deployments/deploy.ts"
+    "test": "npm run compile && npx hardhat test --typecheck",
+    "deploy": "npm run compile && npx hardhat run deployments/deploy.ts --network mumbai",
+    "generate-sdk": "npm run compile && npx hardhat run scripts/GenerateSDK.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SecureSECODAO/partial-token-burn-voting.git"
+    "url": "git+https://github.com/SecureSECODAO/diamond-governance.git"
   },
   "author": "Utrecht University - SecureSECO DAO",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/SecureSECODAO/partial-token-burn-voting/issues"
+    "url": "https://github.com/SecureSECODAO/diamond-governance/issues"
   },
-  "homepage": "https://github.com/SecureSECODAO/partial-token-burn-voting#readme",
+  "homepage": "https://github.com/SecureSECODAO/diamond-governance#readme",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@openzeppelin/hardhat-upgrades": "^1.22.1",
@@ -26,7 +27,10 @@
   "dependencies": {
     "@aragon/osx": "^1.0.1",
     "@ensdomains/ens-contracts": "^0.0.20",
+    "@ethersproject/abstract-signer": "^5.7.0",
     "@openzeppelin/contracts": "^4.8.2",
-    "@openzeppelin/contracts-upgradeable": "^4.8.2"
+    "@openzeppelin/contracts-upgradeable": "^4.8.2",
+    "axios": "^1.4.0",
+    "dotenv": "^16.0.3"
   }
 }

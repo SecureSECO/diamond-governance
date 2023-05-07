@@ -1,3 +1,11 @@
+/**
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  *
+  * This source code is licensed under the MIT license found in the
+  * LICENSE file in the root directory of this source tree.
+  */
+
 // Framework
 import { ethers, upgrades  } from "hardhat";
 
@@ -5,13 +13,29 @@ import { ethers, upgrades  } from "hardhat";
 import { toEnsNode } from "../utils/ensHelper";
 
 // Types
-import { DAO, ENSRegistry } from "../typechain-types";
+import { DAO, DAOFactory, DAORegistry, ENS, ENSRegistry, ENSSubdomainRegistrar, PluginRepoFactory, PluginRepoRegistry, PluginSetupProcessor, PublicResolver } from "../typechain-types";
 
 // Other
 import { deployENS, deployResolver } from "./deploy_ENS";
 
+interface AragonOSxFrameworkContracts {
+    ManagingDAO : DAO;
+    DAO_ENSSubdomainRegistrar: ENSSubdomainRegistrar;
+    Plugin_ENSSubdomainRegistrar: ENSSubdomainRegistrar;
+    DAORegistry: DAORegistry;
+    PluginRepoRegistry: PluginRepoRegistry; 
+    PluginRepoFactory : PluginRepoFactory;
+    PluginSetupProcessor: PluginSetupProcessor;
+    DAOFactory: DAOFactory;
+}
 
-async function setupENS() {
+interface ENSFrameworkContracts {
+    ens: ENS;
+    daoResolver: PublicResolver;
+    pluginResolver: PublicResolver;
+}
+
+async function setupENS() : Promise<ENSFrameworkContracts> {
     const ens = await deployENS();
     const [owner] = await ethers.getSigners();
 
@@ -21,12 +45,24 @@ async function setupENS() {
     return { ens, daoResolver, pluginResolver };
 }
 
+/**
+ * Grants permissions to an address in a DAO
+ * @param dao The DAO that the permissions will be granted in
+ * @param where The address of the contract that the permissions will be granted to
+ * @param who The address of the account that the permissions will be granted to
+ * @param permissionId The ID of the permission that will be granted
+ */
 async function grant(dao : DAO, where : any, who : any, permissionId : string) {
     await dao.grant(where.address, who.address, ethers.utils.keccak256(ethers.utils.toUtf8Bytes(permissionId)));
     console.log(`Granted ${permissionId} to ${who.address} at ${where.address}`);
 }
 
-async function deployAragonFramework(ens : ENSRegistry) {
+/**
+ * Deploys the AragonOSxFramework contracts
+ * @param ens Deployed ENSRegistry
+ * @returns Deployed AragonOSxFramework contracts
+ */
+async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrameworkContracts> {
     const [owner] = await ethers.getSigners();
 
     // ManagingDAO: "0x005098056a837c2c4F99C7eCeE976F8D90bdFFF8", https://github.com/aragon/osx/blob/develop/packages/contracts/src/core/dao/DAO.sol
@@ -123,43 +159,26 @@ async function deployAragonFramework(ens : ENSRegistry) {
     await grant(ManagingDAO, PluginRepoRegistry, ManagingDAO, "UPGRADE_REGISTRY_PERMISSION");
 
     return { 
-        ManagingDAO, 
-        DAO_ENSSubdomainRegistrar, 
-        Plugin_ENSSubdomainRegistrar, 
-        DAORegistry, 
-        PluginRepoRegistry, 
-        PluginRepoFactory, 
-        PluginSetupProcessor, 
-        DAOFactory 
+        ManagingDAO: ManagingDAO, 
+        DAO_ENSSubdomainRegistrar: DAO_ENSSubdomainRegistrar as ENSSubdomainRegistrar, 
+        Plugin_ENSSubdomainRegistrar: Plugin_ENSSubdomainRegistrar as ENSSubdomainRegistrar, 
+        DAORegistry: DAORegistry as DAORegistry, 
+        PluginRepoRegistry: PluginRepoRegistry as PluginRepoRegistry, 
+        PluginRepoFactory: PluginRepoFactory, 
+        PluginSetupProcessor: PluginSetupProcessor, 
+        DAOFactory: DAOFactory,
     };
 }
 
+/**
+ * Deploys the AragonOS framework with the ENS framework
+ * @returns The deployed contracts for the AragonOS framework and the ENS framework
+ */
 async function deployAragonFrameworkWithEns() {
-    const { ens, daoResolver, pluginResolver } = await setupENS();
-    const { 
-        ManagingDAO, 
-        DAO_ENSSubdomainRegistrar, 
-        Plugin_ENSSubdomainRegistrar, 
-        DAORegistry, 
-        PluginRepoRegistry, 
-        PluginRepoFactory, 
-        PluginSetupProcessor, 
-        DAOFactory 
-    } = await deployAragonFramework(ens);
+    const ensFramework = await setupENS();
+    const aragonOSxFramework = await deployAragonFramework(ensFramework.ens);
 
-    return {
-        ens,
-        daoResolver,
-        pluginResolver,
-        ManagingDAO, 
-        DAO_ENSSubdomainRegistrar, 
-        Plugin_ENSSubdomainRegistrar, 
-        DAORegistry, 
-        PluginRepoRegistry, 
-        PluginRepoFactory, 
-        PluginSetupProcessor, 
-        DAOFactory 
-    };
+    return { ensFramework, aragonOSxFramework };
 }
 
-export { deployAragonFramework, deployAragonFrameworkWithEns }
+export { deployAragonFramework, deployAragonFrameworkWithEns, AragonOSxFrameworkContracts, ENSFrameworkContracts }
