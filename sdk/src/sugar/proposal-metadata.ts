@@ -7,34 +7,15 @@
   */
 
 import { ProposalMetadata } from "./data";
-const sep = "#@$!"
+import { addToIpfs, getFromIpfs } from "../../../utils/ipfsHelper";
 
-
-// This should upload and download from IPFS in the future
 export async function EncodeMetadata(metadata : ProposalMetadata) : Promise<Uint8Array> {
-    let resources = "";
-    metadata.resources.forEach(r => resources += sep + r.name + sep + r.url);
-
-    const encoded = metadata.title + sep + metadata.description + sep + metadata.body + resources;
-    return new TextEncoder().encode(encoded);
+    const cid = await addToIpfs(JSON.stringify(metadata));
+    return new TextEncoder().encode("ipfs://" + cid);
 }
 
 export async function DecodeMetadata(metadata : Uint8Array) : Promise<ProposalMetadata> {
     const decoded = new TextDecoder().decode(metadata);
-    const split = decoded.split(sep);
-
-    let resources = [];
-    for (let i = 3; i < split.length; i+=2) {
-        resources.push({
-            name: split[i],
-            url: split[i+1]
-        });
-    }
-
-    return {
-        title: split[0],
-        description: split[1],
-        body: split[2],
-        resources: resources
-    };
+    const cid = decoded.replace("ipfs://", "");
+    return JSON.parse(await getFromIpfs(cid));
 }
