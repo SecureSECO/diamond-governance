@@ -10,7 +10,7 @@
 import { ethers, network } from "hardhat";
 
 // Utils
-import { addToIpfs, pinTpIpfs } from "../utils/ipfsHelper";
+import { addToIpfs, getFromIpfs, pinTpIpfs } from "../utils/ipfsHelper";
 import { toBytes, getEvents } from "../utils/utils";
 
 // Types

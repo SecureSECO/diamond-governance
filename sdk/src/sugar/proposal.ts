@@ -9,7 +9,6 @@
 import { ProposalData, ProposalStatus, Action, IDAO, ProposalMetadata } from "./data";
 import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
-import { ethers } from "hardhat";
 import { asyncMap } from "../utils";
 
 /**
