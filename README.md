@@ -44,7 +44,7 @@ Multiple governance structures have been defined for plugins to interact with ea
 #### Membership
 These structures are related to what wallets are considered members of the DAO and other member-related information, such as ranks.
 ##### Base
-All these plugins are based on the IMembership of Aragon.
+All these plugins are based on the [`IMembership`](https://github.com/aragon/osx/blob/develop/packages/contracts/src/core/plugin/membership/IMembership.sol) of Aragon.
 ##### Extended
 This interface requires the implementer to be able to tell if a wallet is a member at a certain timestamp and be able to provide a list of wallets that have been members at some point. This information can be used to loop over all members at a given timestamp on chain.
 ##### Tiered
@@ -80,7 +80,7 @@ The permission management defines which wallets are allowed to do certain action
 Currently, this is the only permission provider using the grant functionality of the DAO. However, the implementation allows for more providers to be added easily in the future and also allows members to use their own custom permission provider if wanted.
 ## Other
 ### Verification
-First plugin to implement [Secure SECO Verification](https://github.com/SecureSECODAO/SecureSECOVerification). Allowing wallets to become members of the DAO by verifying with their 1-year-old GitHub account or proof of humanity.
+Diamond Governance is the plugin to implement [Secure SECO Verification](https://github.com/SecureSECODAO/SecureSECOVerification), allowing wallets to become members of the DAO by verifying with their 1-year-old GitHub account or proof of humanity.
 ### GitHub Pull Request Merger
 Allows the plugin to merge pull requests on GitHub. This means that DAO members will be able to maintain the GitHub without needing to trust a centralized team of reviewers. This does however require some setup, which can be found on [their GitHub](https://github.com/SecureSECODAO/SecureSECOPullRequestMerger).
 ## Planned
@@ -99,11 +99,13 @@ NodeJS (>=14.x.x)  
 npm (>=6.x.x)  
 
 ## Build process
+```
 npm i  
 npm run compile  
+```
 
 ## Secrets
-Copy the .env.example file to a file called .env (located in the same folder). In this file you are required to add the secrets for any of the features you would like to use (MUMBAI_PRIVATE_KEY if you would like to deploy to Mumbai for example).
+Copy the [`.env.example`](./.env.example) file to a file called `.env` (located in the same folder). In this file you are required to add the secrets for any of the features you would like to use (`MUMBAI_PRIVATE_KEY` if you would like to deploy to Mumbai for example).
 
 # Commands available
 ## npm run compile
