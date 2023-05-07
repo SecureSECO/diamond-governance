@@ -44,7 +44,7 @@ export class DiamondGovernanceSugar {
         const IPartialVotingFacet = await this.pure.IPartialVotingFacet();
 
         const getProposalCount = async () => (await IProposal.proposalCount()).toNumber();
-        const getProposal = async (i : number) => await Proposal.New(i, await IPartialVotingProposalFacet.getProposal(i), IPartialVotingProposalFacet, IPartialVotingFacet);
+        const getProposal = async (i : number) => await Proposal.New(this.pure, i, await IPartialVotingProposalFacet.getProposal(i), IPartialVotingProposalFacet, IPartialVotingFacet);
 
         return new ProposalCache(getProposal, getProposalCount);
     }
@@ -61,7 +61,9 @@ export class DiamondGovernanceSugar {
         count : number = 10, 
         refreshSorting : boolean = false
     ) : Promise<Proposal[]> {
-        this.proposalCache = this.proposalCache ?? await this.InitProposalCache();
+        if (this.proposalCache == null) {
+            this.proposalCache = await this.InitProposalCache();
+        }
         return await this.proposalCache.GetProposals(status, sorting, order, fromIndex, count, refreshSorting);
     }
 
@@ -71,7 +73,9 @@ export class DiamondGovernanceSugar {
      * @returns {Promise<Proposal>} Proposal object
      */
     public async GetProposal(id : number) : Promise<Proposal> {
-        this.proposalCache = this.proposalCache ?? await this.InitProposalCache();
+        if (this.proposalCache == null) {
+            this.proposalCache = await this.InitProposalCache();
+        }
         return await this.proposalCache.GetProposal(id);
     }
 
@@ -80,11 +84,12 @@ export class DiamondGovernanceSugar {
      * @returns {Promise<number>} Number of proposals (in the cache) -> are these all proposals or only the ones that are open?
      */
     public async GetProposalCount() : Promise<number> {
-        this.proposalCache = this.proposalCache ?? await this.InitProposalCache();
+        if (this.proposalCache == null) {
+            this.proposalCache = await this.InitProposalCache();
+        }
         return await this.proposalCache.GetProposalCount()
     }
 
-    // maybe add return type proposal id?
     /**
      * Creates a proposal using the IPartialVotingProposalFacet interface/contract
      * @param metadata Proposal metadata object (IPFS related)
@@ -96,7 +101,7 @@ export class DiamondGovernanceSugar {
         const IPartialVotingProposalFacet = await this.pure.IPartialVotingProposalFacet();
         return await IPartialVotingProposalFacet.createProposal(
             EncodeMetadata(metadata), 
-            await asyncMap(actions, (action : Action) => ToAction(this.pure.pluginAddress, action)), 
+            await asyncMap(actions, (action : Action) => ToAction(this.pure, this.pure.pluginAddress, action)), 
             0, 
             ToBlockchainDate(startDate), 
             ToBlockchainDate(endDate), 

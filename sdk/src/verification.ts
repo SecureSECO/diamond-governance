@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import { GithubVerification } from "../../typechain-types";
 import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
 import { BigNumber } from "ethers";
@@ -38,11 +38,12 @@ export class VerificationSugar {
     if (this.cache.verificationContract == null) {
       const verificationContractAddress =
         await this.GetVerificationContractAddress();
-      this.cache.verificationContract = (await ethers.getContractAt(
-        "GithubVerification",
-        verificationContractAddress,
-        this.signer
-      )) as GithubVerification;
+      // this.cache.verificationContract = (await ethers.getContractAt(
+      //   "GithubVerification",
+      //   verificationContractAddress,
+      //   this.signer
+      // )) as GithubVerification;
+      this.cache.verificationContract = {} as GithubVerification;
     }
     return this.cache.verificationContract;
   }

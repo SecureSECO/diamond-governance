@@ -6,7 +6,7 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import { IERC165, /* interfaces */ } from "../../typechain-types";
 
@@ -25,17 +25,17 @@ class DiamondGovernancePure {
     }
 
     public async IERC165() : Promise<IERC165> {
-        return await this._get<IERC165>(DiamondGovernanceInterfaces.IERC165, "");
+        return await this._get<IERC165>(DiamondGovernanceInterfaces.IERC165, "", [{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"constant":true,"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"}]);
     }
     /* interface methods */
 
-    private async _get<Type>(_interface : DiamondGovernanceInterfaces, _interfaceId : string) : Promise<Type> {
+    private async _get<Type>(_interface : DiamondGovernanceInterfaces, _interfaceId : string, abi : any[]) : Promise<Type> {
         if (this.cache.hasOwnProperty(_interface)) {
             return this.cache[_interface] as Type;
         }
         
         const name = DiamondGovernanceInterfaces[_interface];
-        const contract = await ethers.getContractAt(name, this.pluginAddress, this.signer) as Type;
+        const contract = new ethers.Contract(this.pluginAddress, abi, this.signer) as Type;
         if (_interface !== DiamondGovernanceInterfaces.IERC165) {
             if (_interfaceId === null || _interfaceId === undefined) {
                 throw new Error("Invalid interfaceId");
