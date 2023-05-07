@@ -42,6 +42,8 @@ import {
     IPartialVotingProposalFacet,
     IPartialVotingFacet,
 
+    IGithubPullRequestFacet,
+
     IERC20OneTimeVerificationRewardFacet,
     IERC20TieredTimeClaimableFacet
 } from "../utils/InterfaceIds.sol";
@@ -102,6 +104,8 @@ contract DiamondInit {
 
         ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
+        
+        ds.supportedInterfaces[type(IGithubPullRequestFacet).interfaceId] = true;
 
         ds.supportedInterfaces[type(IERC20OneTimeVerificationRewardFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IERC20TieredTimeClaimableFacet).interfaceId] = true;

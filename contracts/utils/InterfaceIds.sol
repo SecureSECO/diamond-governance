@@ -34,6 +34,8 @@ import { IVerificationFacet } from "../facets/membership/IVerificationFacet.sol"
 import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
 import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
 
+import { IGithubPullRequestFacet } from "../facets/github-pr/IGitHubPullRequestFacet.sol";
+
 import { IERC20OneTimeRewardFacet } from "../facets/token/ERC20/claiming/one-time/IERC20OneTimeRewardFacet.sol";
 import { IERC20OneTimeVerificationRewardFacet } from "../facets/token/ERC20/claiming/one-time/IERC20OneTimeVerificationRewardFacet.sol";
 
@@ -71,6 +73,8 @@ library InterfaceIds {
 
     bytes4 constant public IPartialVotingProposalFacet_ID = type(IPartialVotingProposalFacet).interfaceId;
     bytes4 constant public IPartialVotingFacet_ID = type(IPartialVotingFacet).interfaceId;
+    
+    bytes4 constant public IGithubPullRequestFacet_ID = type(IGithubPullRequestFacet).interfaceId;
 
     bytes4 constant public IERC20OneTimeRewardFacet_ID = type(IERC20OneTimeRewardFacet).interfaceId;
     bytes4 constant public IERC20OneTimeVerificationRewardFacet_ID = type(IERC20OneTimeVerificationRewardFacet).interfaceId;
