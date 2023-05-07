@@ -89,7 +89,7 @@ class DiamondGovernancePure {
     }
 
     public async IPartialVotingProposalFacet() : Promise<IPartialVotingProposalFacet> {
-        return await this._get<IPartialVotingProposalFacet>(DiamondGovernanceInterfaces.IPartialVotingProposalFacet, "0x823113d4");
+        return await this._get<IPartialVotingProposalFacet>(DiamondGovernanceInterfaces.IPartialVotingProposalFacet, "0x753cf0af");
     }
 
     public async IPlugin() : Promise<IPlugin> {

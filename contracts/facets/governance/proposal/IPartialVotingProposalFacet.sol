@@ -20,12 +20,14 @@ interface IPartialVotingProposalFacet {
     /// @param votingMode If users are allowed to vote partially and if so, if they are allowed to vote multiple times.
     /// @param supportThreshold The support threshold value. Its value has to be in the interval [0, 10^6] defined by `RATIO_BASE = 10**6`.
     /// @param minParticipation The minimum participation value. Its value has to be in the interval [0, 10^6] defined by `RATIO_BASE = 10**6`.
+    /// @param maxSingleWalletPower The maximum voting power percentage usable by a single wallet on a single proposal. Its value has to be in the interval [0, 10^6] defined by `RATIO_BASE = 10**6`.
     /// @param minDuration The minimum duration of the proposal vote in seconds.
     /// @param minProposerVotingPower The minimum voting power required to create a proposal.
     struct VotingSettings {
         IPartialVotingFacet.VotingMode votingMode;
         uint32 supportThreshold;
         uint32 minParticipation;
+        uint32 maxSingleWalletPower;
         uint64 minDuration;
         uint256 minProposerVotingPower;
     }
@@ -57,16 +59,17 @@ interface IPartialVotingProposalFacet {
     /// @param startDate The start date of the proposal vote.
     /// @param endDate The end date of the proposal vote.
     /// @param snapshotBlock The number of the block prior to the proposal creation.
-    /// @param minVotingPower The minimum voting power needed.
+    /// @param minParticipationThresholdPower The minimum total voting power needed for the proposal to hit the participation threshold.
+    /// @param maxSingleWalletPower The maximum total voting power allowed to be used by a single wallet on this proposal.
     struct ProposalParameters {
         IPartialVotingFacet.VotingMode votingMode;
         bool earlyExecution;
         uint32 supportThreshold;
-        uint32 minParticipation;
         uint64 startDate;
         uint64 endDate;
         uint64 snapshotBlock;
-        uint256 minVotingPower;
+        uint256 minParticipationThresholdPower;
+        uint256 maxSingleWalletPower;
     }
 
     /// @notice A container for the proposal vote tally.
@@ -86,6 +89,10 @@ interface IPartialVotingProposalFacet {
     /// @notice Returns the minimum participation parameter stored in the voting settings.
     /// @return The minimum participation parameter.
     function minParticipation() external view returns (uint32);
+
+    /// @notice Returns the max single wallet power parameter stored in the voting settings.
+    /// @return The max single wallet power parameter.
+    function maxSingleWalletPower() external view returns (uint32);
 
     /// @notice Checks if the support value defined as $$\texttt{support} = \frac{N_\text{yes}}{N_\text{yes}+N_\text{no}}$$ for a proposal vote is greater than the support threshold.
     /// @param _proposalId The ID of the proposal.
