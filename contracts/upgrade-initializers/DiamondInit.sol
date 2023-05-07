@@ -42,7 +42,10 @@ import {
     IPartialVotingProposalFacet,
     IPartialVotingFacet,
 
-    IGithubPullRequestFacet
+    IGithubPullRequestFacet,
+
+    IERC20OneTimeVerificationRewardFacet,
+    IERC20TieredTimeClaimableFacet
 } from "../utils/InterfaceIds.sol";
 
 
@@ -89,12 +92,8 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IProposal).interfaceId] = true;
 
         ds.supportedInterfaces[type(IGovernanceStructure).interfaceId] = true;
-        ds.supportedInterfaces[
-            type(IMintableGovernanceStructure).interfaceId
-        ] = true;
-        ds.supportedInterfaces[
-            type(IBurnableGovernanceStructure).interfaceId
-        ] = true;
+        ds.supportedInterfaces[type(IMintableGovernanceStructure).interfaceId] = true;
+        ds.supportedInterfaces[type(IBurnableGovernanceStructure).interfaceId] = true;
 
         ds.supportedInterfaces[type(IMembership).interfaceId] = true;
         ds.supportedInterfaces[type(IMembershipExtended).interfaceId] = true;
@@ -103,12 +102,13 @@ contract DiamondInit {
         
         ds.supportedInterfaces[type(IVerificationFacet).interfaceId] = true;
 
-        ds.supportedInterfaces[
-            type(IPartialVotingProposalFacet).interfaceId
-        ] = true;
+        ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
-
+        
         ds.supportedInterfaces[type(IGithubPullRequestFacet).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IERC20OneTimeVerificationRewardFacet).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC20TieredTimeClaimableFacet).interfaceId] = true;
 
         // add your own state variables
         // EIP-2535 specifies that the `diamondCut` function takes two optional
