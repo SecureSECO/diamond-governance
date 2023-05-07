@@ -1,0 +1,4 @@
+secret:
+  ignored-matches:
+    - name: Publicly known Aragon IPFS node API key
+      match: b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt

@@ -7,9 +7,10 @@
   */
 
 // Framework
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 
 // Utils
+import { addToIpfs } from "../utils/ipfsHelper";
 import { toBytes, getEvents } from "../utils/utils";
 
 // Types
@@ -66,11 +67,27 @@ async function deployAragonDAO(aragonOSxFramework: AragonOSxFrameworkContracts) 
  * @returns The parameters/settings needed to create a DAO
  */
 async function GetDaoCreationParams() {
+  let metadataUri = "https://plopmenz.com/daoMetadata";
+  if (network.name != "hardhat") {
+    const metadata = {
+      name: "Diamond Governance DAO",
+      description: "This DAO was created using the Diamond Governance project",
+      links: [{
+        name: "Diamond Governance GitHub",
+        url: "https://github.com/SecureSECODAO/diamond-governance"
+      }],
+      avatar: "https://secureseco.org/wp-content/uploads/2020/07/Asset-14.png"
+    };
+    const cid = await addToIpfs(JSON.stringify(metadata));
+    console.log(`Uploaded DAO metadata to ipfs://${cid}`);
+    metadataUri = `ipfs://${cid}`;
+  }
+
   const DAOSettings = {
     trustedForwarder: ethers.constants.AddressZero, //address
     daoURI: "https://plopmenz.com", //string
     subdomain: "my-dao" + Math.round(Math.random() * 100000), //string
-    metadata: toBytes("https://plopmenz.com/daoMetadata") //bytes
+    metadata: toBytes(metadataUri) //bytes
   };
 
   return DAOSettings;
