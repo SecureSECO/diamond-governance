@@ -245,6 +245,7 @@ async function createDiamondGovernanceRepo(
         votingMode: VotingMode.MultiplePartialVote, //IPartialVotingFacet.VotingMode
         supportThreshold: 1, //uint32
         minParticipation: 1, //uint32
+        maxSingleWalletPower: 10**6, //uint32
         minDuration: 1, //uint64
         minProposerVotingPower: 1, //uint256
       },

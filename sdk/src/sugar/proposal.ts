@@ -66,7 +66,7 @@ export class Proposal {
       if (this.data.parameters.startDate.toNumber() < Date.now()) return ProposalStatus.Pending;
 
       if (this.data.tally.yes.div(this.data.tally.yes.add(this.data.tally.no)).toNumber() > this.data.parameters.supportThreshold
-        && this.data.tally.yes.add(this.data.tally.no).toNumber() > this.data.parameters.minParticipation)
+        && this.data.tally.yes.add(this.data.tally.no) > this.data.parameters.minParticipationThresholdPower)
         return ProposalStatus.Succeeded;
 
       return ProposalStatus.Defeated;

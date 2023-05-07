@@ -118,7 +118,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         // `N_yes + N_no + N_abstain >= minVotingPower = minParticipation * N_total`
         return
             proposal_.tally.yes + proposal_.tally.no + proposal_.tally.abstain >=
-            proposal_.parameters.minVotingPower;
+            proposal_.parameters.minParticipationThresholdPower;
     }
     
 
@@ -136,6 +136,11 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
     /// @inheritdoc IPartialVotingProposalFacet
     function minParticipation() public view virtual returns (uint32) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.minParticipation;
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function maxSingleWalletPower() public view virtual returns (uint32) {
+        return LibPartialVotingProposalStorage.getStorage().votingSettings.maxSingleWalletPower;
     }
 
     /// @notice Returns the minimum duration parameter stored in the voting settings.
@@ -268,9 +273,13 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         );
         proposal_.parameters.snapshotBlock = snapshotBlock.toUint64();
         proposal_.parameters.supportThreshold = supportThreshold();
-        proposal_.parameters.minVotingPower = _applyRatioCeiled(
+        proposal_.parameters.minParticipationThresholdPower = _applyRatioCeiled(
             totalVotingPower_,
             minParticipation()
+        );
+        proposal_.parameters.maxSingleWalletPower = _applyRatioCeiled(
+            totalVotingPower_,
+            maxSingleWalletPower()
         );
         proposal_.proposalType = _proposalType;
         proposal_.metadata = _metadata;
