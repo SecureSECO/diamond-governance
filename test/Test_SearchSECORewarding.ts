@@ -10,6 +10,7 @@
 import { deployBaseAragonDAO } from "../deployments/deploy_BaseAragonDAO";
 import {
   DiamondDeployedContractsBase,
+  addFacetToDiamond,
   addFacetToDiamondWithInit,
 } from "../deployments/deploy_DGSelection";
 
@@ -24,35 +25,39 @@ import { ethers } from "hardhat";
 
 // Other
 
+async function deployDiamondWithTest1Facet() {
+  const { DiamondGovernance, diamondGovernanceContracts } = await loadFixture(
+    deployBaseAragonDAO
+  );
+  return { DiamondGovernance, diamondGovernanceContracts };
+}
+
 describe("SearchSECORewarding", function () {
-  it("try deploy/cut rewarding facet", async () => {
+  let SearchSECORewardingFacet: any;
+  let diamondData: any;
+
+  beforeEach(async () => {
     const { DiamondGovernance, diamondGovernanceContracts } = await loadFixture(
-      deployBaseAragonDAO
+      deployDiamondWithTest1Facet
     );
-
-    // Contract names
-    const contractNames = {
-      facetContractName: "SearchSECORewardingFacet",
-      facetInitContractName: "SearchSECORewardingFacetInit",
-      diamondInitName: "DISearchSECORewarding",
-    };
-
-    // Deploy facet contract
-    const rewardingSettings = {
-      users: [],
-      hashCounts: [],
-    };
-
-    await addFacetToDiamondWithInit(
+    diamondData = { DiamondGovernance, diamondGovernanceContracts };
+    await addFacetToDiamond(
       diamondGovernanceContracts,
       DiamondGovernance.address,
-      contractNames,
-      rewardingSettings
+      "SearchSECORewardingFacet"
     );
 
-    const SearchSECORewardingFacet = await ethers.getContractAt(
+    SearchSECORewardingFacet = await ethers.getContractAt(
       "SearchSECORewardingFacet",
       DiamondGovernance.address
+    );
+  });
+
+  it("try deploy/cut rewarding facet", async () => {
+    await addFacetToDiamond(
+      diamondData.diamondGovernanceContracts,
+      diamondData.DiamondGovernance.address,
+      "SearchSECORewardingMockFacet"
     );
 
     const hashCount = await SearchSECORewardingFacet.getHashCount(
@@ -60,5 +65,24 @@ describe("SearchSECORewarding", function () {
     );
 
     expect(hashCount).to.equal(0);
+  });
+
+  it("sets the hash reward", async () => {
+    await addFacetToDiamond(
+      diamondData.diamondGovernanceContracts,
+      diamondData.DiamondGovernance.address,
+      "SearchSECORewardingMockFacet"
+    );
+
+    const SearchSECORewardingMockFacetContract = await ethers.getContractAt(
+      "SearchSECORewardingMockFacet",
+      diamondData.DiamondGovernance.address
+    );
+
+    await SearchSECORewardingMockFacetContract._setHashReward(12345);
+
+    const hashReward = await SearchSECORewardingFacet.getHashReward();
+
+    expect(hashReward).to.equal(12345);
   });
 });
