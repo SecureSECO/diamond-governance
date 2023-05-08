@@ -146,7 +146,6 @@ describe("SDK", function () {
 
   // Test to retrieve threshold history
   it("get verification threshold history", async function () {
-    return; // Verification part of SDK needs update
     const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
     await getVotingPower(DiamondGovernance);
     const [owner] = await ethers.getSigners();
