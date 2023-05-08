@@ -25,7 +25,7 @@ contract SearchSECORewardingMockFacet {
     /// @param _nonce A nonce
     /// @param _repFrac The fraction (0 - 1_000_000) of the reward that should be paid in REP. The rest is paid in monetary tokens
     /// @param _proof The proof that the user received from the server
-    function reward(
+    function _reward(
         address _toReward,
         uint _hashCount,
         uint _nonce,
