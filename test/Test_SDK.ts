@@ -166,29 +166,28 @@ describe("SDK", function () {
   // - GetExpiration
   // - GetVerificationContract
   // - GetVerificationContractAddress 
-  it("(un)verifies correctly & retrieves stamps", async function() {
-    return; // Test needs fixing
-    const { DiamondGovernance } = await loadFixture(deployAragonDAOAndVerifyFixture);
-    const [owner, alice] = await ethers.getSigners();
+  it.only("(un)verifies correctly & retrieves stamps", async function() {
+    const { DiamondGovernance } = await loadFixture(deployAragonDAOWithFramework);
+    const [owner] = await ethers.getSigners();
 
     const client = new DiamondGovernanceClient(DiamondGovernance.address, owner);
 
     // Manually verify owner with github
-    const timestamp = now();
+    const timestamp = now() + 1 * days; // Add a day to this because hardhat adds a second to their block time for every contract deployed
     const userHash =
       "x";
-    const dataHexString = await createSignature(timestamp, alice.address, userHash, owner);
+    const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
 
     // This is technically a reverification, because the initial deployment already verifies the user with github but with another userHash
     await client.verification.Verify(
-      alice.address,
+      owner.address,
       userHash,
       timestamp,
       "github",
       dataHexString
     );
 
-    const stamps: Stamp[] = await client.verification.GetStamps(alice.address);
+    const stamps: Stamp[] = await client.verification.GetStamps(owner.address);
     const expectedStamp: Stamp = ["github", userHash, [BigNumber.from(timestamp)]];
 
     // Check if the stamp is correct
@@ -203,11 +202,14 @@ describe("SDK", function () {
       timeLeftUntilExpiration: ((timestamp + 60 * days) - now()),
       threshold: BigNumber.from(60), // 60 days
     };
+    expect(expiration.verified).to.be.equal(expectedExpiration.verified);
+    expect(expiration.expired).to.be.equal(expectedExpiration.expired);
     expect(expiration.timeLeftUntilExpiration).to.be.closeTo(expectedExpiration.timeLeftUntilExpiration, 60); // Arbitrary 60 seconds tolerance
+    expect(expiration.threshold).to.be.equal(expectedExpiration.threshold);
 
     // Unverify
     await client.verification.Unverify("github");
-    const newStamps: Stamp[] = await client.verification.GetStamps(alice.address);
+    const newStamps: Stamp[] = await client.verification.GetStamps(owner.address);
 
     // Check if the stamp is correct
     expect(newStamps).to.be.lengthOf(0);
