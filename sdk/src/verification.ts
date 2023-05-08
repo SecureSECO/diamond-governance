@@ -101,8 +101,7 @@ export class VerificationSugar {
       stamp[2] != null &&
       stamp[2].length > 0 &&
       thresholdHistory != null &&
-      thresholdHistory.length > 0; /* &&
-      currentTimestamp >= lastVerifiedAt.toNumber(); */
+      thresholdHistory.length > 0; 
 
     const expirationDate = lastVerifiedAt
       .add(threshold.mul(24 * 60 * 60))
