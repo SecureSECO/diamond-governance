@@ -36,6 +36,8 @@ library SearchSECORewardingFacetInit {
                 i++;
             }
         }
+
+        s.hashReward = 1;
     }
 }
 
@@ -43,15 +45,21 @@ library SearchSECORewardingFacetInit {
 /// @author J.S.C.L & T.Y.M.W.
 /// @notice This contract is used to reward users for submitting new hashes
 contract SearchSECORewardingFacet is AuthConsumer, Ownable, SignatureHelper {
+    // Permission used by the setHashReward function
+    bytes32 public constant UPDATE_HASH_REWARD_PERMISSION_ID =
+        keccak256("UPDATE_HASH_REWARD_PERMISSION_ID");
+
     /// @notice Rewards the user for submitting new hashes
     /// @param _toReward The address of the user to reward
     /// @param _hashCount The number of new hashes the user has submitted
     /// @param _nonce A nonce
+    /// @param _repFrac The fraction (0 - 1_000_000) of the reward that should be paid in REP. The rest is paid in monetary tokens
     /// @param _proof The proof that the user received from the server
     function reward(
         address _toReward,
         uint _hashCount,
         uint _nonce,
+        uint _repFrac,
         bytes calldata _proof
     ) public {
         // Validate the given proof
@@ -72,6 +80,17 @@ contract SearchSECORewardingFacet is AuthConsumer, Ownable, SignatureHelper {
 
         s.hashCount[_toReward] += _hashCount;
 
+        require(
+            _repFrac >= 0 && _repFrac <= 1_000_000,
+            "REP fraction must be between 0 and 1_000_000"
+        );
+
+        // Calculate the reward
+        uint repReward = ((_hashCount * s.hashReward) * _repFrac) / 1_000_000;
+        uint coinReward = (_hashCount * s.hashReward) - repReward;
+
+        assert(repReward + coinReward == s.hashReward);
+
         // TODO: Reward the user
         // ...
     }
@@ -81,5 +100,19 @@ contract SearchSECORewardingFacet is AuthConsumer, Ownable, SignatureHelper {
     /// @return The hash count
     function getHashCount(address _user) public view returns (uint) {
         return LibSearchSECORewardingStorage.getStorage().hashCount[_user];
+    }
+
+    /// @notice Returns the hash reward (REP)
+    /// @return The hash reward: how many tokens a user receives for submitting a new hash
+    function getHashReward() public view returns (uint) {
+        return LibSearchSECORewardingStorage.getStorage().hashReward;
+    }
+
+    /// @notice Sets the hash reward (REP)
+    /// @param _hashReward The new hash reward
+    function setHashReward(
+        uint _hashReward
+    ) public auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
+        LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
     }
 }
