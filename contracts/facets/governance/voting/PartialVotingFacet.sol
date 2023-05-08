@@ -120,12 +120,27 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
             return false;
         }
 
-        // The voter is trying to vote with more voting power than they have avaliable.
-        if (_voteData.amount > votingPower) {
-            return false;
+        if (_proposal.parameters.votingMode == VotingMode.MultiplePartialVote) {
+            uint alreadyUsedPower;
+            for (uint i; i < _proposal.voters[_voter].length; ) {
+                alreadyUsedPower += _proposal.voters[_voter][i].amount;
+                unchecked {
+                    i++;
+                }
+            }
+            
+            if (_voteData.amount + alreadyUsedPower > votingPower) {
+                return false;
+            }
+        }
+        else {
+            // The voter is trying to vote with more voting power than they have avaliable.
+            if (_voteData.amount > votingPower) {
+                return false;
+            }
         }
 
-        // In multi vote the voter is not allowed to vote with more voting power than the maximum
+        // In partial vote the voter is not allowed to vote with more voting power than the maximum
         if (_voteData.amount > _proposal.parameters.maxSingleWalletPower &&
             _proposal.parameters.votingMode != VotingMode.SingleVote
         ) {
