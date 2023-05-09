@@ -26,26 +26,14 @@ library ERC20SearchSECOFacetInit {
 }
 
 contract ERC20SearchSECOFacet {
-    /// @notice Function to trigger the initial coin offering
-    /// @param _moneyReceivers The addresses to receive the coin offerings
-    /// @param _money The number of coins to send to the respective addresses (in order of _moneyReceivers)
-    function ico(
-        address[] memory _moneyReceivers,
-        uint[] memory _money
-    ) external {
+    /// @notice Function to mint SECOIN tokens
+    /// @param _receiver The address to receive the minted tokens
+    /// @param _amount The amount of tokens to mint
+    function mintMonetaryToken(address _receiver, uint _amount) external {
         // Get ERC20 contract
         address erc20ContractAddress = LibERC20SearchSECOStorage.getStorage().erc20ContractAddress;
         ERC20SearchSECOToken erc20Contract = ERC20SearchSECOToken(erc20ContractAddress);
-        require(
-            _moneyReceivers.length == _money.length,
-            "Money receivers and money array lengths do not match"
-        );
-        for (uint i; i < _moneyReceivers.length; ) {
-            erc20Contract.mint(_moneyReceivers[i], _money[i]);
-            unchecked {
-                i++;
-            }
-        }
+        erc20Contract.mint(_receiver, _amount);
     }
 
     /// @notice This returns the contract address of the ERC20 token contract used
