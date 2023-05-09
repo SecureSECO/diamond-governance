@@ -11,7 +11,7 @@ library LibERC20SearchSECOStorage {
         keccak256("searchseco.erc20.diamond.storage.position");
 
     struct Storage {
-      address erc20ContractAddress;
+      address monetaryTokenContractAddress;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

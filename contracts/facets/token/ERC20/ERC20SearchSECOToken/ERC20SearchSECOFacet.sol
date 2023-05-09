@@ -12,53 +12,50 @@ import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {ERC20SearchSECOToken} from "./ERC20SearchSECOToken.sol";
 import {LibERC20SearchSECOStorage} from "../../../../libraries/storage/LibERC20SearchSECOStorage.sol";
 import {IMonetaryTokenMintable} from "./IMonetaryTokenMintable.sol";
+import {IChangeableTokenContract} from "./IChangeableTokenContract.sol";
 
 // Used for diamond pattern storage
 library ERC20SearchSECOFacetInit {
     struct InitParams {
-        address erc20ContractAddress;
+        address monetaryTokenContractAddress;
     }
 
     function init(InitParams calldata _params) external {
         LibERC20SearchSECOStorage.Storage storage s = LibERC20SearchSECOStorage
             .getStorage();
 
-        s.erc20ContractAddress = _params.erc20ContractAddress;
+        s.monetaryTokenContractAddress = _params.monetaryTokenContractAddress;
     }
 }
 
-contract ERC20SearchSECOFacet is IMonetaryTokenMintable, AuthConsumer {
+contract ERC20SearchSECOFacet is IMonetaryTokenMintable, IChangeableTokenContract, AuthConsumer {
     // Permission used by the setERC20ContractAddress function
     bytes32 public constant SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID =
         keccak256("SET_MONETARY_TOKEN_CONTRACT_PERMISSION");
 
-    /// @notice Function to mint SECOIN tokens
-    /// @param _account The address to receive the minted tokens
-    /// @param _amount The amount of tokens to mint
+    /// @inheritdoc IMonetaryTokenMintable
     function mintMonetaryToken(address _account, uint _amount) external {
         // Get ERC20 contract
-        address erc20ContractAddress = LibERC20SearchSECOStorage
+        address monetaryTokenContractAddress = LibERC20SearchSECOStorage
             .getStorage()
-            .erc20ContractAddress;
+            .monetaryTokenContractAddress;
         ERC20SearchSECOToken erc20Contract = ERC20SearchSECOToken(
-            erc20ContractAddress
+            monetaryTokenContractAddress
         );
         erc20Contract.mint(_account, _amount);
     }
 
-    /// @notice This returns the contract address of the ERC20 token contract used
-    /// @return address The contract address of the ERC20 token contract
-    function getMonetaryTokenContractAddress() external view returns (address) {
-        return LibERC20SearchSECOStorage.getStorage().erc20ContractAddress;
+    /// @inheritdoc IChangeableTokenContract
+    function getTokenContractAddress() external view returns (address) {
+        return LibERC20SearchSECOStorage.getStorage().monetaryTokenContractAddress;
     }
 
-    /// @notice Sets the contract address of the ERC20 token contract used
-    /// @param contractAddress The contract address of the ERC20 token contract
-    function setMonetaryTokenContractAddress(
+    /// @inheritdoc IChangeableTokenContract
+    function setTokenContractAddress(
         address contractAddress
     ) external auth(SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID) {
         LibERC20SearchSECOStorage
             .getStorage()
-            .erc20ContractAddress = contractAddress;
+            .monetaryTokenContractAddress = contractAddress;
     }
 }
