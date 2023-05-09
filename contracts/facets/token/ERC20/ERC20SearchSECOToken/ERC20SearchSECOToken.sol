@@ -12,7 +12,7 @@ import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMintable} from "./IMintable.sol";
 
 contract ERC20SearchSECOToken is ERC20, IMintable, AuthConsumer {
-    // Permission used by the updateTierMapping function
+    // Permission used by the mint function
     bytes32 public constant SECOIN_MINT_PERMISSION_ID =
         keccak256("SECOIN_MINT_PERMISSION");
 
