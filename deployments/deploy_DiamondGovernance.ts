@@ -51,7 +51,7 @@ interface DiamondDeployedContracts {
  * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
  * @returns The PluginSettings for installation in a DAO
  */
-async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginRepoRegistry : PluginRepoRegistry, verificationContractAddress: string) {
+async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory, pluginRepoRegistry : PluginRepoRegistry, verificationContractAddress: string, monetaryTokenContractAddress: string) {
   const buildMetadata = fs.readFileSync("./contracts/build-metadata.json", "utf8");
   const releaseMetadata = fs.readFileSync("./contracts/release-metadata.json", "utf8");
   const diamondGovernanceContracts = await deployDiamondGovernance();
@@ -193,7 +193,7 @@ async function createDiamondGovernanceRepo(pluginRepoFactory : PluginRepoFactory
     hashCost: 1,
   }
   const erc20SearchSecoSettings = {
-    erc20ContractAddress: ethers.constants.AddressZero,
+    monetaryTokenContractAddress: ethers.constants.AddressZero,
   }
   const constructionArgs = {
     _diamondCut: cut,

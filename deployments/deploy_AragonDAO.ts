@@ -18,6 +18,7 @@ import { toBytes, getEvents } from "../utils/utils";
 import { deployAragonFrameworkWithEns, AragonOSxFrameworkContracts } from "./deploy_AragonOSxFramework";
 import { createDiamondGovernanceRepo } from "./deploy_DiamondGovernance";
 import {deployStandaloneVerificationContract} from "./deploy_StandaloneVerificationContract";
+import { deployMonetaryTokenContract } from "./deploy_MonetaryTokenContract";
 
 async function deployAragonDAOWithFramework() {
   const { aragonOSxFramework } = await deployAragonFrameworkWithEns();
@@ -32,9 +33,10 @@ async function deployAragonDAOWithFramework() {
 async function deployAragonDAO(aragonOSxFramework: AragonOSxFrameworkContracts) {
   // Deploy verification contract
   const { address: standaloneVerificationContractAddress } = await deployStandaloneVerificationContract();
+  const { address: monetaryTokenContractAddress } = await deployMonetaryTokenContract();
 
-  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress } = 
-    await createDiamondGovernanceRepo(aragonOSxFramework.PluginRepoFactory, aragonOSxFramework.PluginRepoRegistry, standaloneVerificationContractAddress);
+  const { diamondGovernancePluginSettings, diamondGovernanceContracts, verificationContractAddress} = 
+    await createDiamondGovernanceRepo(aragonOSxFramework.PluginRepoFactory, aragonOSxFramework.PluginRepoRegistry, standaloneVerificationContractAddress, monetaryTokenContractAddress);
   const DAOSettings = await GetDaoCreationParams();
 
   // Create DAO
