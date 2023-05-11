@@ -57,7 +57,7 @@ import {ERC20TieredTimeClaimableFacetInit} from "../facets/token/ERC20/claiming/
 import {ERC20OneTimeVerificationRewardFacetInit} from "../facets/token/ERC20/claiming/one-time/ERC20OneTimeVerificationRewardFacet.sol";
 import {SearchSECOMonetizationFacetInit} from "../facets/searchseco-monetization/SearchSECOMonetizationFacet.sol";
 import {SearchSECORewardingFacetInit} from "../facets/searchseco-rewarding/SearchSECORewardingFacet.sol";
-import { ERC20SearchSECOFacetInit } from "../facets/token/ERC20/ERC20SearchSECOToken/ERC20SearchSECOFacet.sol";
+import { MonetaryTokenFacetInit } from "../facets/token/ERC20/monetary-token/MonetaryTokenFacet.sol";
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
@@ -74,7 +74,7 @@ contract DiamondInit {
         ERC20OneTimeVerificationRewardFacetInit.InitParams memory _onetimeClaimSettings,
         SearchSECOMonetizationFacetInit.InitParams memory _searchSECOMonetizationSettings,
         SearchSECORewardingFacetInit.InitParams memory _searchSECORewardingSettings,
-        ERC20SearchSECOFacetInit.InitParams memory _erc20SearchSECOSettings
+        MonetaryTokenFacetInit.InitParams memory _monetaryTokenSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -127,6 +127,6 @@ contract DiamondInit {
         ERC20OneTimeVerificationRewardFacetInit.init(_onetimeClaimSettings);
         SearchSECOMonetizationFacetInit.init(_searchSECOMonetizationSettings);
         SearchSECORewardingFacetInit.init(_searchSECORewardingSettings);
-        ERC20SearchSECOFacetInit.init(_erc20SearchSECOSettings);
+        MonetaryTokenFacetInit.init(_monetaryTokenSettings);
     }
 }

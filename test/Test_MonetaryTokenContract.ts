@@ -40,8 +40,8 @@ const monetaryToken = async (diamondGovernanceContracts: DiamondDeployedContract
 
   // Contract names
   const contractNames = {
-    facetContractName: "ERC20SearchSECOFacet",
-    facetInitContractName: "ERC20SearchSECOFacetInit",
+    facetContractName: "MonetaryTokenFacet",
+    facetInitContractName: "MonetaryTokenFacetInit",
     diamondInitName: "DIMonetaryTokenContract",
   }
 

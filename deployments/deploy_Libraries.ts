@@ -27,7 +27,7 @@ interface Libraries {
   ERC20OneTimeVerificationRewardFacetInit: string;
   SearchSECOMonetizationFacetInit: string;
   SearchSECORewardingFacetInit: string;
-  ERC20SearchSECOFacetInit: string;
+  MonetaryTokenFacetInit: string;
 }
 
 async function deployLibraries(): Promise<Libraries> {
@@ -92,8 +92,8 @@ async function deployLibraries(): Promise<Libraries> {
   const SearchSECORewardingFacetInit =
     await SearchSECORewardingFacetInitContract.deploy();
 
-  const ERC20SearchSECOFacetInitContract = await ethers.getContractFactory("ERC20SearchSECOFacetInit");
-  const ERC20SearchSECOFacetInit= await ERC20SearchSECOFacetInitContract.deploy();
+  const MonetaryTokenFacetInitContract = await ethers.getContractFactory("MonetaryTokenFacetInit");
+  const MonetaryTokenFacetInit= await MonetaryTokenFacetInitContract.deploy();
 
   return {
     DAOReferenceFacetInit: DAOReferenceFacetInit.address,
@@ -109,7 +109,7 @@ async function deployLibraries(): Promise<Libraries> {
       ERC20OneTimeVerificationRewardFacetInit.address,
     SearchSECOMonetizationFacetInit: SearchSECOMonetizationFacetInit.address,
     SearchSECORewardingFacetInit: SearchSECORewardingFacetInit.address,
-    ERC20SearchSECOFacetInit: ERC20SearchSECOFacetInit.address,
+    MonetaryTokenFacetInit: MonetaryTokenFacetInit.address,
   };
 }
 

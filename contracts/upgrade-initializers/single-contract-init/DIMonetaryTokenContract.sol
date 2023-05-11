@@ -18,7 +18,7 @@ import {
     IChangeableTokenContract
 } from "../../utils/InterfaceIds.sol";
 
-import { ERC20SearchSECOFacetInit } from "../../facets/token/ERC20/ERC20SearchSECOToken/ERC20SearchSECOFacet.sol";
+import { MonetaryTokenFacetInit } from "../../facets/token/ERC20/monetary-token/MonetaryTokenFacet.sol";
 
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 
@@ -30,7 +30,7 @@ contract DIMonetaryTokenContract {
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        ERC20SearchSECOFacetInit.InitParams memory _erc20SearchSECOSettings
+        MonetaryTokenFacetInit.InitParams memory _monetaryTokenSettings
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -44,6 +44,6 @@ contract DIMonetaryTokenContract {
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
 
-        ERC20SearchSECOFacetInit.init(_erc20SearchSECOSettings);
+        MonetaryTokenFacetInit.init(_monetaryTokenSettings);
     }
 }

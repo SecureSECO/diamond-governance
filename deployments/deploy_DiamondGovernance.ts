@@ -38,7 +38,7 @@ import {
   SearchSECOMonetizationFacet,
   VerificationFacet,
   SearchSECORewardingFacet,
-  ERC20SearchSECOFacet,
+  MonetaryTokenFacet,
 } from "../typechain-types";
 
 // Other
@@ -64,7 +64,7 @@ interface DiamondDeployedContracts {
     ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet;
     SearchSECOMonetization: SearchSECOMonetizationFacet;
     SearchSECORewarding: SearchSECORewardingFacet;
-    ERC20SearchSECO: ERC20SearchSECOFacet;
+    MonetaryToken: MonetaryTokenFacet;
   };
 }
 
@@ -222,9 +222,9 @@ async function createDiamondGovernanceRepo(
     ),
   });
   cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.ERC20SearchSECO.address,
+    facetAddress: diamondGovernanceContracts.Facets.MonetaryToken.address,
     action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.ERC20SearchSECO)
+    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.MonetaryToken)
   })
   cut.push({
     facetAddress: diamondGovernanceContracts.Facets.GithubPullRequest.address,
@@ -284,7 +284,7 @@ async function createDiamondGovernanceRepo(
     hashCounts: [],
   };
 
-  const erc20SearchSecoSettings = {
+  const monetaryTokenSettings = {
     monetaryTokenContractAddress: monetaryTokenContractAddress,
   }
   const constructionArgs = {
@@ -300,7 +300,7 @@ async function createDiamondGovernanceRepo(
           onetimeClaimSettings,
           searchSECOMonetizationSettings,
           searchSECORewardingSettings,
-          erc20SearchSecoSettings
+          monetaryTokenSettings
         ]
       ),
   };
@@ -368,7 +368,7 @@ async function deployDiamondGovernance(): Promise<DiamondDeployedContracts> {
       SearchSECOMonetizationFacetInit:
         libraries.SearchSECOMonetizationFacetInit,
       SearchSECORewardingFacetInit: libraries.SearchSECORewardingFacetInit,
-      ERC20SearchSECOFacetInit: libraries.ERC20SearchSECOFacetInit,
+      MonetaryTokenFacetInit: libraries.MonetaryTokenFacetInit,
     },
   });
   const DiamondInit = await DiamondInitContract.deploy();
@@ -496,9 +496,9 @@ async function deployDiamondGovernance(): Promise<DiamondDeployedContracts> {
     `SearchSECORewardingFacet deployed at ${SearchSECORewardingFacet.address}`
   );
 
-  const ERC20SearchSECOFacetContract = await ethers.getContractFactory("ERC20SearchSECOFacet");
-  const ERC20SearchSECOFacet = await ERC20SearchSECOFacetContract.deploy();
-  console.log(`ERC20SearchSECOFacet deployed at ${ERC20SearchSECOFacet.address}`);
+  const MonetaryTokenFacetContract = await ethers.getContractFactory("MonetaryTokenFacet");
+  const MonetaryTokenFacet = await MonetaryTokenFacetContract.deploy();
+  console.log(`MonetaryTokenFacet deployed at ${MonetaryTokenFacet.address}`);
 
   return {
     DiamondGovernanceSetup: DiamondGovernanceSetup,
@@ -521,7 +521,7 @@ async function deployDiamondGovernance(): Promise<DiamondDeployedContracts> {
       Verification: VerificationFacet,
       SearchSECOMonetization: SearchSECOMonetizationFacet,
       SearchSECORewarding: SearchSECORewardingFacet,
-      ERC20SearchSECO: ERC20SearchSECOFacet,
+      MonetaryToken: MonetaryTokenFacet,
     },
   };
 }

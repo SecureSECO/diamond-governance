@@ -12,7 +12,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMintable} from "./IMintable.sol";
 
-contract ERC20SearchSECOToken is ERC20, IMintable, Ownable {
+contract ERC20MonetaryToken is ERC20, IMintable, Ownable {
     constructor(
         string memory name_,
         string memory symbol_

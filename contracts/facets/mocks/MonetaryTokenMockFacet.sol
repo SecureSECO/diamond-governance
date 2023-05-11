@@ -11,8 +11,8 @@ pragma solidity ^0.8.0;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
-import {IMonetaryTokenMintable} from "../token/ERC20/ERC20SearchSECOToken/IMonetaryTokenMintable.sol";
-import {IChangeableTokenContract} from "../token/ERC20/ERC20SearchSECOToken/IChangeableTokenContract.sol";
+import {IMonetaryTokenMintable} from "../token/ERC20/monetary-token/IMonetaryTokenMintable.sol";
+import {IChangeableTokenContract} from "../token/ERC20/monetary-token/IChangeableTokenContract.sol";
 
 contract MonetaryTokenMockFacet {
     function _mintMonetaryToken(address _account, uint _amount) external {

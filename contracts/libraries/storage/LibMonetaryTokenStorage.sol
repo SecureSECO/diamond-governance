@@ -6,7 +6,7 @@
 
 pragma solidity ^0.8.0;
 
-library LibERC20SearchSECOStorage {
+library LibMonetaryTokenStorage {
     bytes32 constant ERC20_SEARCHSECO_STORAGE_POSITION =
         keccak256("searchseco.erc20.diamond.storage.position");
 

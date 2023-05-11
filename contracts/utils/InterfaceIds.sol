@@ -45,8 +45,8 @@ import { IERC20PartialBurnVotingProposalRefundFacet } from "../facets/token/ERC2
 import { IERC20TimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TimeClaimableFacet.sol";
 import { IERC20TieredTimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TieredTimeClaimableFacet.sol";
 
-import { IMonetaryTokenMintable } from "../facets/token/ERC20/ERC20SearchSECOToken/IMonetaryTokenMintable.sol";
-import { IChangeableTokenContract } from "../facets/token/ERC20/ERC20SearchSECOToken/IChangeableTokenContract.sol";
+import { IMonetaryTokenMintable } from "../facets/token/ERC20/monetary-token/IMonetaryTokenMintable.sol";
+import { IChangeableTokenContract } from "../facets/token/ERC20/monetary-token/IChangeableTokenContract.sol";
 
 library InterfaceIds {
     bytes4 constant public IERC165_ID = type(IERC165).interfaceId;

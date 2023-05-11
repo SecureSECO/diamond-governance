@@ -12,12 +12,12 @@ import { ethers } from "hardhat";
 // Utils
 
 // Types
-import {ERC20SearchSECOToken} from "../typechain-types";
+import {MonetaryToken} from "../typechain-types";
 
 // Other
 
-export const deployMonetaryTokenContract = async () : Promise<ERC20SearchSECOToken> => {
-  const MonetaryTokenContract = await ethers.getContractFactory("ERC20SearchSECOToken");
+export const deployMonetaryTokenContract = async () : Promise<MonetaryToken> => {
+  const MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
   const MonetaryToken = await MonetaryTokenContract.deploy("SecureSECOCoin", "SECOIN");
   console.log(`Monetary token contract deployed at ${MonetaryToken.address}`);
 
