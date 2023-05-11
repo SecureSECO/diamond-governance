@@ -36,7 +36,10 @@ import {
     ITieredMembershipStructure,
     
     IPartialVotingProposalFacet,
-    IPartialVotingFacet 
+    IPartialVotingFacet,
+
+    IMonetaryTokenMintable,
+    IChangeableTokenContract
 } from "../utils/InterfaceIds.sol";
 
 import { PartialBurnVotingProposalFacetInit } from "../facets/governance/proposal/PartialBurnVotingProposalFacet.sol";
@@ -88,6 +91,9 @@ contract DiamondInit {
 
         ds.supportedInterfaces[type(IPartialVotingProposalFacet).interfaceId] = true;
         ds.supportedInterfaces[type(IPartialVotingFacet).interfaceId] = true;
+
+        ds.supportedInterfaces[type(IMonetaryTokenMintable).interfaceId] = true;
+        ds.supportedInterfaces[type(IChangeableTokenContract).interfaceId] = true;
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

@@ -30,6 +30,9 @@ import { ITieredMembershipStructure } from "../facets/governance/structure/membe
 import { IPartialVotingProposalFacet } from "../facets/governance/proposal/IPartialVotingProposalFacet.sol";
 import { IPartialVotingFacet } from "../facets/governance/voting/IPartialVotingFacet.sol";
 
+import { IMonetaryTokenMintable } from "../facets/token/ERC20/ERC20SearchSECOToken/IMonetaryTokenMintable.sol";
+import { IChangeableTokenContract } from "../facets/token/ERC20/ERC20SearchSECOToken/IChangeableTokenContract.sol";
+
 library InterfaceIds {
     bytes4 constant public IERC165_ID = type(IERC165).interfaceId;
     bytes4 constant public IERC20_ID = type(IERC20).interfaceId;
@@ -54,4 +57,7 @@ library InterfaceIds {
 
     bytes4 constant public IPartialVotingProposalFacet_ID = type(IPartialVotingProposalFacet).interfaceId;
     bytes4 constant public IPartialVotingFacet_ID = type(IPartialVotingFacet).interfaceId;
+
+    bytes4 constant public IMonetaryTokenMintable_ID = type(IMonetaryTokenMintable).interfaceId;
+    bytes4 constant public IChangeableTokenContract_ID = type(IChangeableTokenContract).interfaceId;
 }
