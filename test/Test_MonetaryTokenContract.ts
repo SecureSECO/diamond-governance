@@ -62,8 +62,8 @@ const monetaryTokenMock = async (diamondGovernanceContracts: DiamondDeployedCont
 }
 
 describe("Monetary token contract (facet)", () => {
-  it("try deploy/cut monetaryToken facet", async () => {
-    const { DiamondGovernance, diamondGovernanceContracts, monetaryTokenContractAddress } = await loadFixture(deployDiamondWithMonetary);
+  it("should not access authed functions without permissions", async () => {
+    const { DiamondGovernance, monetaryTokenContractAddress } = await loadFixture(deployDiamondWithMonetary);
 
     // Interfaces for exposed functions
     const IMonetaryTokenMintable = await ethers.getContractAt("IMonetaryTokenMintable", DiamondGovernance.address);
@@ -82,7 +82,7 @@ describe("Monetary token contract (facet)", () => {
     expect(IMonetaryTokenMintable.mintMonetaryToken(ethers.constants.AddressZero, 1)).to.be.reverted;
   });
 
-  it("try authed functions using monetaryToken mock facet", async () => {
+  it("should access authed function with permissions", async () => {
     const { DiamondGovernance, diamondGovernanceContracts, monetaryTokenContractAddress } = await loadFixture(deployDiamondWithMonetary);
     const [ deployer ] = await ethers.getSigners();
 
