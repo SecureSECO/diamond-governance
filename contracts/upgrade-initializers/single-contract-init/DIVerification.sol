@@ -16,7 +16,9 @@ pragma solidity ^0.8.0;
 import { 
     IMembership,
     IMembershipExtended,
-    ITieredMembershipStructure
+    ITieredMembershipStructure,
+    IMembershipWhitelisting,
+    IVerificationFacet
 } from "../../utils/InterfaceIds.sol";
 
 import { VerificationFacetInit } from "../../facets/membership/VerificationFacet.sol";
@@ -38,6 +40,9 @@ contract DIVerification {
         ds.supportedInterfaces[type(IMembership).interfaceId] = true;
         ds.supportedInterfaces[type(IMembershipExtended).interfaceId] = true;
         ds.supportedInterfaces[type(ITieredMembershipStructure).interfaceId] = true;
+        ds.supportedInterfaces[type(IMembershipWhitelisting).interfaceId] = true;
+        
+        ds.supportedInterfaces[type(IVerificationFacet).interfaceId] = true;
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

@@ -9,12 +9,13 @@
  
 pragma solidity ^0.8.0;
 
+import { IERC20PartialBurnVotingProposalRefundFacet } from "./IERC20PartialBurnVotingProposalRefundFacet.sol";
 import { IMintableGovernanceStructure } from "../../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 import { PartialVotingProposalFacet } from "../../../../governance/proposal/PartialVotingProposalFacet.sol";
 
 import { LibPartialBurnVotingProposalStorage } from "../../../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
 
-contract ERC20PartialBurnVotingProposalRefundFacet {
+contract ERC20PartialBurnVotingProposalRefundFacet is IERC20PartialBurnVotingProposalRefundFacet {
     function tokensRefundableFromProposalCreation(uint256 _proposalId, address _claimer) public view virtual returns (uint256) {
         if (!_proposalRefundable(_proposalId)) return 0;
         LibPartialBurnVotingProposalStorage.Storage storage s = LibPartialBurnVotingProposalStorage.getStorage();
@@ -24,7 +25,7 @@ contract ERC20PartialBurnVotingProposalRefundFacet {
 
     function _proposalRefundable(uint256 _proposalId) internal view virtual returns (bool) {
         PartialVotingProposalFacet proposalFacet = PartialVotingProposalFacet(address(this));
-        (bool open, , , , , ) = proposalFacet.getProposal(_proposalId);
+        (bool open, , , , , , ) = proposalFacet.getProposal(_proposalId);
         return !open && proposalFacet.isSupportThresholdReached(_proposalId);
     }
 

@@ -125,6 +125,13 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
             return false;
         }
 
+        // In multi vote the voter is not allowed to vote with more voting power than the maximum
+        if (_voteData.amount > _proposal.parameters.maxSingleWalletPower &&
+            _proposal.parameters.votingMode != VotingMode.SingleVote
+        ) {
+            return false;
+        }
+
         // In single vote the voter is required to vote with all their voting power
         if (_voteData.amount < votingPower &&
             _proposal.parameters.votingMode == VotingMode.SingleVote

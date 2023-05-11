@@ -25,7 +25,8 @@ import { DiamondGovernance, IPartialVotingFacet, PartialVotingFacet, PartialVoti
 
 enum VoteOption { Abstain, Yes, No }
 
-async function getVotingPower(DiamondGovernance : DiamondGovernance) {
+// This should be moved to utils
+export async function getVotingPower(DiamondGovernance : DiamondGovernance) {
   const ERC20TimeClaimableFacet = await ethers.getContractAt("ERC20TimeClaimableFacet", DiamondGovernance.address);
   await ERC20TimeClaimableFacet.claimTime();
 }
