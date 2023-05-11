@@ -32,9 +32,13 @@ contract ERC20SearchSECOFacet is IMonetaryTokenMintable, IChangeableTokenContrac
     // Permission used by the setERC20ContractAddress function
     bytes32 public constant SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID =
         keccak256("SET_MONETARY_TOKEN_CONTRACT_PERMISSION");
+    // Permission used by the mint function
+    bytes32 public constant SECOIN_MINT_PERMISSION_ID =
+        keccak256("SECOIN_MINT_PERMISSION");
+
 
     /// @inheritdoc IMonetaryTokenMintable
-    function mintMonetaryToken(address _account, uint _amount) external {
+    function mintMonetaryToken(address _account, uint _amount) external auth(SECOIN_MINT_PERMISSION_ID) {
         // Get ERC20 contract
         address monetaryTokenContractAddress = LibERC20SearchSECOStorage
             .getStorage()

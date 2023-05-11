@@ -8,14 +8,11 @@
 pragma solidity ^0.8.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMintable} from "./IMintable.sol";
 
-contract ERC20SearchSECOToken is ERC20, IMintable, AuthConsumer {
-    // Permission used by the mint function
-    bytes32 public constant SECOIN_MINT_PERMISSION_ID =
-        keccak256("SECOIN_MINT_PERMISSION");
-
+contract ERC20SearchSECOToken is ERC20, IMintable, Ownable {
     constructor(
         string memory name_,
         string memory symbol_
@@ -24,7 +21,7 @@ contract ERC20SearchSECOToken is ERC20, IMintable, AuthConsumer {
     /// @notice External function to call the internal inherited _mint function to mint tokens (ERC20)
     /// @param _account Recipient of the mint
     /// @param _amount Amount of tokens to mint
-    function mint(address _account, uint _amount) external auth(SECOIN_MINT_PERMISSION_ID) {
+    function mint(address _account, uint _amount) external onlyOwner {
         _mint(_account, _amount);
     }
 }

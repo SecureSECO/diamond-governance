@@ -35,6 +35,9 @@ const monetaryToken = async (diamondGovernanceContracts: DiamondDeployedContract
   // Deploy standalone contract
   const MonetaryTokenContract = await deployMonetaryTokenContract();
 
+  // Transfer ownership of (standalone) monetary token contract to DiamondGovernance
+  await MonetaryTokenContract.transferOwnership(diamondGovernanceAddress);
+
   // Contract names
   const contractNames = {
     facetContractName: "ERC20SearchSECOFacet",
@@ -59,11 +62,11 @@ const monetaryTokenMock = async (diamondGovernanceContracts: DiamondDeployedCont
 }
 
 describe("Monetary token contract (facet)", () => {
-  it.only("try deploy/cut monetaryToken facet", async () => {
+  it("try deploy/cut monetaryToken facet", async () => {
     const { DiamondGovernance, diamondGovernanceContracts, monetaryTokenContractAddress } = await loadFixture(deployDiamondWithMonetary);
 
     // Interfaces for exposed functions
-    const IMintable = await ethers.getContractAt("IMintable", DiamondGovernance.address);
+    const IMonetaryTokenMintable = await ethers.getContractAt("IMonetaryTokenMintable", DiamondGovernance.address);
     const IChangeableTokenContract = await ethers.getContractAt("IChangeableTokenContract", DiamondGovernance.address);
 
     /* try allowed function calls */
@@ -76,10 +79,10 @@ describe("Monetary token contract (facet)", () => {
     expect(IChangeableTokenContract.setTokenContractAddress(ethers.constants.AddressZero)).to.be.reverted;
 
     // mint
-    expect(IMintable.mint(ethers.constants.AddressZero, 1)).to.be.reverted;
+    expect(IMonetaryTokenMintable.mintMonetaryToken(ethers.constants.AddressZero, 1)).to.be.reverted;
   });
 
-  it.only("try authed functions using monetaryToken mock facet", async () => {
+  it("try authed functions using monetaryToken mock facet", async () => {
     const { DiamondGovernance, diamondGovernanceContracts, monetaryTokenContractAddress } = await loadFixture(deployDiamondWithMonetary);
     const [ deployer ] = await ethers.getSigners();
 
@@ -88,16 +91,21 @@ describe("Monetary token contract (facet)", () => {
 
     const IChangeableTokenContract = await ethers.getContractAt("IChangeableTokenContract", DiamondGovernance.address);
     const MonetaryTokenMockFacet = await ethers.getContractAt("MonetaryTokenMockFacet", DiamondGovernance.address);
-    const ERC20 = await ethers.getContractAt("ERC20", monetaryTokenContractAddress);
+    const ERC20 = await ethers.getContractAt("IERC20", monetaryTokenContractAddress);
+    const Ownable = await ethers.getContractAt("Ownable", monetaryTokenContractAddress);
     
+    console.log("owner:" + await Ownable.owner());
+    console.log("diamond:" + DiamondGovernance.address);
+    console.log("deployer:" + deployer.address);
+
+    // mint
+    await MonetaryTokenMockFacet._mintMonetaryToken(deployer.address, 1);
+    const newBalance = await ERC20.balanceOf(deployer.address);
+    expect(newBalance).to.equal(1);
+
     // setTokenContractAddress
     await MonetaryTokenMockFacet._setTokenContractAddress(ethers.constants.AddressZero);
     const newTokenAddress = await IChangeableTokenContract.getTokenContractAddress();
     expect(newTokenAddress).to.equal(ethers.constants.AddressZero);
-
-    // mint
-    await MonetaryTokenMockFacet._mintMonetaryToken(ERC20.address, 1);
-    const newBalance = await ERC20.balanceOf(deployer.address);
-    expect(newBalance).to.equal(1);
   });
 });

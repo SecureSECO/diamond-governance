@@ -62,6 +62,13 @@ async function deployAragonDAO(aragonOSxFramework: AragonOSxFrameworkContracts) 
   // Link plugin addresses to Contracts
   const DiamondGovernanceContract = await ethers.getContractFactory("DiamondGovernance");
   const DiamondGovernance = await DiamondGovernanceContract.attach(pluginAddresses[0]);
+
+  // Transfer ownership of (standalone) monetary token contract to DiamondGovernance
+  const MonetaryTokenContract = await ethers.getContractAt("Ownable", monetaryTokenContractAddress);
+  const oldOwner = await MonetaryTokenContract.owner();
+  console.log(`Transferring ownership of monetary token contract ${monetaryTokenContractAddress} from ${oldOwner} to DiamondGovernance ${DiamondGovernance.address}`);
+  await MonetaryTokenContract.transferOwnership(DiamondGovernance.address);
+
   return { DAO, DiamondGovernance, diamondGovernanceContracts, verificationContractAddress };
 }
 
