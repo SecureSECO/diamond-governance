@@ -40,7 +40,6 @@ export async function defaultDiamondCut(diamondGovernance : any) : Promise<Diamo
 }
 
 export async function createTestingDao(diamondCut : DiamondCut[]) : Promise<DiamondGovernanceClient> {
-  await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const cut : DiamondCut[] = diamondCut.concat(await defaultDiamondCut(diamondGovernance));
