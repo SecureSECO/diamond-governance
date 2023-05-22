@@ -53,6 +53,8 @@ import { IERC20TieredTimeClaimableFacet } from "../facets/token/ERC20/claiming/t
 import { IMonetaryTokenMintable } from "../facets/token/ERC20/monetary-token/IMonetaryTokenMintable.sol";
 import { IChangeableTokenContract } from "../facets/token/ERC20/monetary-token/IChangeableTokenContract.sol";
 
+import { IRewardMultiplierFacet } from "../facets/multiplier/IRewardMultiplierFacet.sol";
+
 library InterfaceIds {
     bytes4 constant public IERC165_ID = type(IERC165).interfaceId;
     bytes4 constant public IERC20_ID = type(IERC20).interfaceId;
@@ -98,4 +100,6 @@ library InterfaceIds {
 
     bytes4 constant public IMonetaryTokenMintable_ID = type(IMonetaryTokenMintable).interfaceId;
     bytes4 constant public IChangeableTokenContract_ID = type(IChangeableTokenContract).interfaceId;
+
+    bytes4 constant public IRewardMultiplierFacet_ID = type(IRewardMultiplierFacet).interfaceId;
 }

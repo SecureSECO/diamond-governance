@@ -13,23 +13,22 @@ abstract contract IRewardMultiplierFacet {
     /* The following structs are used to store the multiplier information for each reward multiplier. */
     struct MultiplierInfo {
         uint startBlock;
-        uint initialAmount;
+        int128 initialAmount;
         MultiplierType multiplierType; 
     }
 
     struct LinearParams {
-        uint slope;
+        int128 slope;
     }
 
     struct ExponentialParams {
-        uint baseN;
-        uint baseD;
+        int128 base;
     }
 
     /// @dev Returns the multiplier for a given reward multiplier variable (name)
     /// @param _name The name of the multiplier variable
     /// @return uint The multiplier
-    function getMultiplier(string memory _name) internal view virtual returns (uint);
+    function getMultiplier(string memory _name) public view virtual returns (uint);
 
     /* ========== SETTER FUNCTIONS ========== */
     /* The following functions are used to set the multiplier type of a reward multiplier variable.
@@ -42,7 +41,7 @@ abstract contract IRewardMultiplierFacet {
      */
     function setMultiplierTypeConstant(string memory _name, uint _startBlock, uint _initialAmount) external virtual;
 
-    function setMultiplierTypeLinear(string memory _name, uint _startBlock, uint _initialAmount, uint _slope) external virtual;
+    function setMultiplierTypeLinear(string memory _name, uint _startBlock, uint _initialAmount, uint _slopeN, uint _slopeD) external virtual;
 
     function setMultiplierTypeExponential(string memory _name, uint _startBlock, uint _initialAmount, uint _baseN, uint _baseD) external virtual;
 }
