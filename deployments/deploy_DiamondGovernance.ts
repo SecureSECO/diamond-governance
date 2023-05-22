@@ -7,523 +7,176 @@
  */
 
 // Framework
-import { ethers } from "hardhat";
+import hre from "hardhat";
+import { ethers, network } from "hardhat";
 import fs from "fs";
+import { createDiamondGovernanceRepo } from "../utils/diamondGovernanceHelper";
 
 // Utils
-import { getSelectors, FacetCutAction } from "../utils/diamondHelper";
-import { resolveENS } from "../utils/ensHelper";
-import { days } from "../utils/timeUnits";
-import { toBytes, getEvents } from "../utils/utils";
 
 // Types
-import {
-  AragonAuth,
-  DAOReferenceFacet,
-  DiamondGovernanceSetup,
-  DiamondInit,
-  DiamondLoupeFacet,
-  GithubPullRequestFacet,
-  ERC20OneTimeVerificationRewardFacet,
-  ERC20PartialBurnVotingProposalRefundFacet,
-  ERC20PartialBurnVotingRefundFacet,
-  ERC20TieredTimeClaimableFacet,
-  GovernanceERC20BurnableFacet,
-  GovernanceERC20DisabledFacet,
-  PartialBurnVotingFacet,
-  PartialBurnVotingProposalFacet,
-  PluginFacet,
-  PluginRepoFactory,
-  PluginRepoRegistry,
-  SearchSECOMonetizationFacet,
-  VerificationFacet,
-  SearchSECORewardingFacet,
-  MonetaryTokenFacet,
-} from "../typechain-types";
 
 // Other
-import { deployLibraries } from "./deploy_Libraries";
+import deployedDiamondGovernanceJson from "../generated/deployed_DiamondGovernance.json";
+import diamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
 
-interface DiamondDeployedContracts {
-  DiamondGovernanceSetup: DiamondGovernanceSetup;
-  DiamondInit: DiamondInit;
-  Facets: {
-    DiamondLoupe: DiamondLoupeFacet;
-    DAOReference: DAOReferenceFacet;
-    Plugin: PluginFacet;
-    AragonAuth: AragonAuth;
-    PartialBurnVotingProposal: PartialBurnVotingProposalFacet;
-    PartialBurnVoting: PartialBurnVotingFacet;
-    GithubPullRequest: GithubPullRequestFacet;
-    GovernanceERC20Disabled: GovernanceERC20DisabledFacet;
-    GovernanceERC20Burnable: GovernanceERC20BurnableFacet;
-    ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet;
-    ERC20PartialBurnVotingProposalRefund: ERC20PartialBurnVotingProposalRefundFacet;
-    ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet;
-    Verification: VerificationFacet;
-    ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet;
-    SearchSECOMonetization: SearchSECOMonetizationFacet;
-    SearchSECORewarding: SearchSECORewardingFacet;
-    MonetaryToken: MonetaryTokenFacet;
-  };
-}
+const deployJsonFile = "./generated/deployed_DiamondGovernance.json";
+const repoJsonFile = "./generated/diamondGovernanceRepo.json";
 
-/**
- * Deploys the PartialTokenBurnVotingSetup contract and registers it with the pluginRepoFactory
- * @param pluginRepoFactory The PluginRepoFactory to register with
- * @param pluginResolver The ENS resolver to get the plugin contract from afterwards
- * @returns The PluginSettings for installation in a DAO
- */
-async function createDiamondGovernanceRepo(
-  pluginRepoFactory: PluginRepoFactory,
-  pluginRepoRegistry: PluginRepoRegistry,
-  verificationContractAddress: string,
-  monetaryTokenContractAddress: string,
-) {
-  const buildMetadata = fs.readFileSync(
-    "./contracts/build-metadata.json",
-    "utf8"
-  );
-  const releaseMetadata = fs.readFileSync(
-    "./contracts/release-metadata.json",
-    "utf8"
-  );
-  const diamondGovernanceContracts = await deployDiamondGovernance();
-  const [owner] = await ethers.getSigners();
+const additionalContracts = [
+  "DiamondGovernanceSetup",
+  "SignVerification",
+  "ERC20MonetaryToken",
+];
 
-  const tx = await pluginRepoFactory.createPluginRepoWithFirstVersion(
-    "my-plugin" + Math.round(Math.random() * 100000),
-    diamondGovernanceContracts.DiamondGovernanceSetup.address,
-    owner.address,
-    toBytes("https://plopmenz.com/buildMetadata"),
-    toBytes("https://plopmenz.com/releaseMetadata")
-  );
-  const receipt = await tx.wait();
-  const PluginRepoAddress = getEvents(
-    pluginRepoRegistry,
-    "PluginRepoRegistered",
-    receipt
-  )[0].args.pluginRepo;
+const specialDeployment : { [contractName : string]: () => Promise<string> } = 
+{ 
+  SignVerification: async () => { 
+    const SignVerificationContract = await ethers.getContractFactory("SignVerification");
+    const SignVerification = await SignVerificationContract.deploy(60, 30);
+    await SignVerification.deployed();
 
-  const ERC20Disabled = [
-    "transfer(address, uint256)",
-    "approve(address, uint256)",
-    "transferFrom(address, address, uint256)",
-    "increaseAllowance(address, uint256)",
-    "decreaseAllowance(address, uint256)",
-    "permit(address, address, uint256, uint256, uint8, bytes32, bytes32)",
-    "delegate(address)",
-    "delegateBySig(address, uint256, uint256, uint8, bytes32, bytes32)",
-  ];
-  let cut = [];
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.DiamondLoupe.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.DiamondLoupe
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.DAOReference.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.DAOReference
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.AragonAuth.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.AragonAuth
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.Plugin.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.Plugin),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.PartialBurnVotingProposal.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.PartialBurnVotingProposal
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.PartialBurnVoting.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.PartialBurnVoting
-    ),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.GovernanceERC20Disabled.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.GovernanceERC20Disabled
-    ).get(ERC20Disabled),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.GovernanceERC20Burnable.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.GovernanceERC20Burnable
-    ).remove(ERC20Disabled),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.ERC20PartialBurnVotingRefund
-    ),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.ERC20PartialBurnVotingProposalRefund
-        .address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.ERC20PartialBurnVotingProposalRefund
-    ),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.ERC20TieredTimeClaimable
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.Verification.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.Verification
-    ),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.ERC20OneTimeVerificationReward.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.ERC20OneTimeVerificationReward
-    ),
-  });
-  cut.push({
-    facetAddress:
-      diamondGovernanceContracts.Facets.SearchSECOMonetization.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.SearchSECOMonetization
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.MonetaryToken.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(diamondGovernanceContracts.Facets.MonetaryToken)
-  })
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.GithubPullRequest.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.GithubPullRequest
-    ),
-  });
-  cut.push({
-    facetAddress: diamondGovernanceContracts.Facets.SearchSECORewarding.address,
-    action: FacetCutAction.Add,
-    functionSelectors: getSelectors(
-      diamondGovernanceContracts.Facets.SearchSECORewarding
-    ),
-  });
-
-  enum VotingMode {
-    SingleVote,
-    SinglePartialVote,
-    MultiplePartialVote,
-  }
-  const votingSettings = {
-    proposalCreationCost: 1,
-    partialVotingProposalInit: {
-      votingSettings: {
-        votingMode: VotingMode.MultiplePartialVote, //IPartialVotingFacet.VotingMode
-        supportThreshold: 1, //uint32
-        minParticipation: 1, //uint32
-        maxSingleWalletPower: 10**6, //uint32
-        minDuration: 1, //uint64
-        minProposerVotingPower: 1, //uint256
-      },
-    },
-  };
-  const verificationSettings = {
-    verificationContractAddress: verificationContractAddress, //address
-    providers: ["github", "proofofhumanity"], //string[]
-    rewards: [3, 10], //uint256[]
-  };
-  const timeClaimSettings = {
-    tiers: [1, 2, 3], //uint256[]
-    rewards: [50, 100, 1], //uint256[]
-    timeClaimableInit: {
-      timeTillReward: 1 * days, //uint256
-      maxTimeRewarded: 10 * days, //uint256
-    },
-  };
-  const onetimeClaimSettings = {
-    providers: ["github", "proofofhumanity"], //string[]
-    rewards: [20, 50], //uint256[]
-  };
-  const searchSECOMonetizationSettings = {
-    hashCost: 1,
-  };
-  const searchSECORewardingSettings = {
-    users: [],
-    hashCounts: [],
-  };
-
-  const monetaryTokenSettings = {
-    monetaryTokenContractAddress: monetaryTokenContractAddress,
-  }
-  const constructionArgs = {
-    _diamondCut: cut,
-    _init: diamondGovernanceContracts.DiamondInit.address,
-    _calldata:
-      diamondGovernanceContracts.DiamondInit.interface.encodeFunctionData(
-        "init",
-        [
-          votingSettings,
-          verificationSettings,
-          timeClaimSettings,
-          onetimeClaimSettings,
-          searchSECOMonetizationSettings,
-          searchSECORewardingSettings,
-          monetaryTokenSettings
-        ]
-      ),
-  };
-  const constructionFormat =
-    JSON.parse(buildMetadata).pluginSetupABI.prepareInstallation;
-  const pluginConstructionBytes = ethers.utils.defaultAbiCoder.encode(
-    constructionFormat,
-    [
-      constructionArgs._diamondCut,
-      constructionArgs._init,
-      constructionArgs._calldata,
-    ]
-  );
-
-  const tag = {
-    release: 1, //uint8
-    build: 1, //uint16
-  };
-
-  const pluginSetupRef = {
-    versionTag: tag, //PluginRepo.Tag
-    pluginSetupRepo: PluginRepoAddress, //PluginRepo
-  };
-
-  const diamondGovernancePluginSettings = {
-    pluginSetupRef: pluginSetupRef, //PluginSetupRef
-    data: pluginConstructionBytes, //bytes
-  };
-
-  return {
-    diamondGovernancePluginSettings,
-    diamondGovernanceContracts,
-    verificationContractAddress,
-  };
-}
-
-async function deployDiamondGovernance(): Promise<DiamondDeployedContracts> {
-  const libraries = await deployLibraries();
-
-  const DiamondGovernanceSetupContract = await ethers.getContractFactory(
-    "DiamondGovernanceSetup",
-    {
-      libraries: {
-        DAOReferenceFacetInit: libraries.DAOReferenceFacetInit,
-      },
+    if (!testing()) {
+      await hre.run("verify:verify", {
+        address: SignVerification.address,
+        constructorArguments: [60, 30],
+      });
     }
-  );
-  const DiamondGovernanceSetup = await DiamondGovernanceSetupContract.deploy();
-  console.log(
-    `DiamondGovernanceSetup deployed at ${DiamondGovernanceSetup.address}`
-  );
 
-  // Deploy DiamondInit
-  // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const DiamondInitContract = await ethers.getContractFactory("DiamondInit", {
-    libraries: {
-      PartialBurnVotingProposalFacetInit:
-        libraries.PartialBurnVotingProposalFacetInit,
-      VerificationFacetInit: libraries.VerificationFacetInit,
-      ERC20TieredTimeClaimableFacetInit:
-        libraries.ERC20TieredTimeClaimableFacetInit,
-      ERC20OneTimeVerificationRewardFacetInit:
-        libraries.ERC20OneTimeVerificationRewardFacetInit,
-      SearchSECOMonetizationFacetInit:
-        libraries.SearchSECOMonetizationFacetInit,
-      SearchSECORewardingFacetInit: libraries.SearchSECORewardingFacetInit,
-      MonetaryTokenFacetInit: libraries.MonetaryTokenFacetInit,
-    },
-  });
-  const DiamondInit = await DiamondInitContract.deploy();
-  console.log(`DiamondInit deployed at ${DiamondInit.address}`);
+    return SignVerification.address;
+  },
+  ERC20MonetaryToken: async () => {
+    const ERC20MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
+    const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("SecureSECOCoin", "SECOIN");
+    await ERC20MonetaryToken.deployed();
 
-  // Facets
-  const DiamondLoupeFacetContract = await ethers.getContractFactory(
-    "DiamondLoupeFacet"
-  );
-  const DiamondLoupeFacet = await DiamondLoupeFacetContract.deploy();
-  console.log(`DiamondLoupeFacet deployed at ${DiamondLoupeFacet.address}`);
+    if (!testing()) {
+      await hre.run("verify:verify", {
+        address: ERC20MonetaryToken.address,
+        constructorArguments: ["SecureSECOCoin", "SECOIN"],
+      });
+    }
 
-  const DAOReferenceFacetContract = await ethers.getContractFactory(
-    "DAOReferenceFacet"
-  );
-  const DAOReferenceFacet = await DAOReferenceFacetContract.deploy();
-  console.log(`DAOReferenceFacet deployed at ${DAOReferenceFacet.address}`);
-
-  const PluginFacetContract = await ethers.getContractFactory("PluginFacet");
-  const PluginFacet = await PluginFacetContract.deploy();
-  console.log(`PluginFacet deployed at ${PluginFacet.address}`);
-
-  const AragonAuthContract = await ethers.getContractFactory("AragonAuth");
-  const AragonAuth = await AragonAuthContract.deploy();
-  console.log(`AragonAuth deployed at ${AragonAuth.address}`);
-
-  const PartialBurnVotingProposalFacetContract =
-    await ethers.getContractFactory("PartialBurnVotingProposalFacet");
-  const PartialBurnVotingProposalFacet =
-    await PartialBurnVotingProposalFacetContract.deploy();
-  console.log(
-    `PartialBurnVotingProposalFacet deployed at ${PartialBurnVotingProposalFacet.address}`
-  );
-
-  const PartialBurnVotingFacetContract = await ethers.getContractFactory(
-    "PartialBurnVotingFacet"
-  );
-  const PartialBurnVotingFacet = await PartialBurnVotingFacetContract.deploy();
-  console.log(
-    `PartialBurnVotingFacet deployed at ${PartialBurnVotingFacet.address}`
-  );
-
-  const GovernanceERC20DisabledFacetContract = await ethers.getContractFactory(
-    "GovernanceERC20DisabledFacet"
-  );
-  const GovernanceERC20DisabledFacet =
-    await GovernanceERC20DisabledFacetContract.deploy();
-  console.log(
-    `GovernanceERC20DisabledFacet deployed at ${GovernanceERC20DisabledFacet.address}`
-  );
-
-  const GovernanceERC20BurnableFacetContract = await ethers.getContractFactory(
-    "GovernanceERC20BurnableFacet"
-  );
-  const GovernanceERC20BurnableFacet =
-    await GovernanceERC20BurnableFacetContract.deploy("my-token", "TOK");
-  console.log(
-    `GovernanceERC20BurnableFacet deployed at ${GovernanceERC20BurnableFacet.address}`
-  );
-
-  const ERC20PartialBurnVotingRefundFacetContract =
-    await ethers.getContractFactory("ERC20PartialBurnVotingRefundFacet");
-  const ERC20PartialBurnVotingRefundFacet =
-    await ERC20PartialBurnVotingRefundFacetContract.deploy();
-  console.log(
-    `ERC20PartialBurnVotingRefundFacet deployed at ${ERC20PartialBurnVotingRefundFacet.address}`
-  );
-
-  const ERC20PartialBurnVotingProposalRefundFacetContract =
-    await ethers.getContractFactory(
-      "ERC20PartialBurnVotingProposalRefundFacet"
-    );
-  const ERC20PartialBurnVotingProposalRefundFacet =
-    await ERC20PartialBurnVotingProposalRefundFacetContract.deploy();
-  console.log(
-    `ERC20PartialBurnVotingProposalRefundFacet deployed at ${ERC20PartialBurnVotingProposalRefundFacet.address}`
-  );
-
-  const ERC20TieredTimeClaimableFacetContract = await ethers.getContractFactory(
-    "ERC20TieredTimeClaimableFacet"
-  );
-  const ERC20TieredTimeClaimableFacet =
-    await ERC20TieredTimeClaimableFacetContract.deploy();
-  console.log(
-    `ERC20TieredTimeClaimableFacet deployed at ${ERC20TieredTimeClaimableFacet.address}`
-  );
-
-  const VerificationFacetContract = await ethers.getContractFactory(
-    "VerificationFacet"
-  );
-  const VerificationFacet = await VerificationFacetContract.deploy();
-  console.log(`VerificationFacet deployed at ${VerificationFacet.address}`);
-
-  const ERC20OneTimeVerificationRewardFacetContract =
-    await ethers.getContractFactory("ERC20OneTimeVerificationRewardFacet");
-  const ERC20OneTimeVerificationRewardFacet =
-    await ERC20OneTimeVerificationRewardFacetContract.deploy();
-  console.log(
-    `ERC20OneTimeVerificationRewardFacet deployed at ${ERC20OneTimeVerificationRewardFacet.address}`
-  );
-
-  const SearchSECOMonetizationFacetContract = await ethers.getContractFactory(
-    "SearchSECOMonetizationFacet"
-  );
-  const SearchSECOMonetizationFacet =
-    await SearchSECOMonetizationFacetContract.deploy();
-  console.log(
-    `SearchSECOMonetizationFacet deployed at ${SearchSECOMonetizationFacet.address}`
-  );
-
-  const GithubPullRequestFacetContract = await ethers.getContractFactory(
-    "GithubPullRequestFacet"
-  );
-  const GithubPullRequestFacet = await GithubPullRequestFacetContract.deploy();
-  console.log(
-    `GithubPullRequestFacet deployed at ${GithubPullRequestFacet.address}`
-  );
-
-  const SearchSECORewardingFacetContract = await ethers.getContractFactory(
-    "SearchSECORewardingFacet"
-  );
-  const SearchSECORewardingFacet =
-    await SearchSECORewardingFacetContract.deploy();
-  console.log(
-    `SearchSECORewardingFacet deployed at ${SearchSECORewardingFacet.address}`
-  );
-
-  const MonetaryTokenFacetContract = await ethers.getContractFactory("MonetaryTokenFacet");
-  const MonetaryTokenFacet = await MonetaryTokenFacetContract.deploy();
-  console.log(`MonetaryTokenFacet deployed at ${MonetaryTokenFacet.address}`);
-
-  return {
-    DiamondGovernanceSetup: DiamondGovernanceSetup,
-    DiamondInit: DiamondInit,
-    Facets: {
-      DiamondLoupe: DiamondLoupeFacet,
-      DAOReference: DAOReferenceFacet,
-      Plugin: PluginFacet,
-      AragonAuth: AragonAuth,
-      PartialBurnVotingProposal: PartialBurnVotingProposalFacet,
-      PartialBurnVoting: PartialBurnVotingFacet,
-      GithubPullRequest: GithubPullRequestFacet,
-      GovernanceERC20Disabled: GovernanceERC20DisabledFacet,
-      GovernanceERC20Burnable: GovernanceERC20BurnableFacet,
-      ERC20PartialBurnVotingRefund: ERC20PartialBurnVotingRefundFacet,
-      ERC20PartialBurnVotingProposalRefund:
-        ERC20PartialBurnVotingProposalRefundFacet,
-      ERC20TieredTimeClaimable: ERC20TieredTimeClaimableFacet,
-      ERC20OneTimeVerificationReward: ERC20OneTimeVerificationRewardFacet,
-      Verification: VerificationFacet,
-      SearchSECOMonetization: SearchSECOMonetizationFacet,
-      SearchSECORewarding: SearchSECORewardingFacet,
-      MonetaryToken: MonetaryTokenFacet,
-    },
-  };
+    return ERC20MonetaryToken.address;
+  }
 }
 
-export { deployDiamondGovernance, createDiamondGovernanceRepo };
+export async function deployDiamondGovernance() : Promise<{ [contractName: string]: { address: string, fileHash: number } }> {
+  const testDeploy = testing();
+  const artifactNames = await hre.artifacts.getAllFullyQualifiedNames();
+  const contractsToDeploy = artifactNames.filter(name => shouldDeploy(name));
+  let allDeployments = getDeployment();
+  let deployments : { [contractName : string]: { address: string, fileHash: number } } = { };
+  if (allDeployments.hasOwnProperty(network.name)) {
+    deployments = allDeployments[network.name];
+  }
+  for (let i = 0; i < contractsToDeploy.length; i++) {
+    const contractName = getContractName(contractsToDeploy[i]);
+    if (!testDeploy) {
+      console.log("Deploying", contractName);
+    }
+
+    let address = ethers.constants.AddressZero;
+    if (specialDeployment.hasOwnProperty(contractName)) {
+      address = await specialDeployment[contractName]();
+    }
+    else {
+      const contract = await ethers.getContractFactory(contractName);
+      const deployment = await contract.deploy();
+      await deployment.deployed();
+      address = deployment.address;
+
+      if (!testDeploy) {
+        console.log("Starting verification");
+        // Wait for etherscan to process the deployment
+        await new Promise(f => setTimeout(f, 10 * 1000));
+        await hre.run("verify:verify", {
+          address: deployment.address,
+          constructorArguments: [],
+          contract: contractsToDeploy[i],
+        });
+      }
+    }
+
+    const artifact = await hre.artifacts.readArtifact(contractsToDeploy[i]);
+    deployments[contractName] = { address: address, fileHash: getHash(artifact.bytecode) };
+
+    if (!testDeploy) {
+      console.log("Deployed", contractName, "at", address);
+      
+      allDeployments[network.name] = deployments;
+      fs.writeFileSync(deployJsonFile, JSON.stringify(allDeployments));
+    }
+  }
+  return deployments;
+}
+
+export async function createDiamondGovernanceRepoIfNotExists() {
+  let existingRepos: { [networkName: string]: { repo: string } } = diamondGovernanceRepoJson;
+  if (existingRepos.hasOwnProperty(network.name)) { return; }
+
+  const [owner] = await ethers.getSigners();
+  const repo = await createDiamondGovernanceRepo("plugin" + Math.round(Math.random() * 100000), owner);
+  existingRepos[network.name] = { repo: repo };
+  fs.writeFileSync(repoJsonFile, JSON.stringify(existingRepos));
+}
+
+function testing() {
+  return network.name == "hardhat";
+}
+
+function getDeployment() : { [networkName: string]: { [contractName : string]: { address: string, fileHash: number } } } {
+  return deployedDiamondGovernanceJson;
+}
+
+// source: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+function getHash(str : string) : number {
+  return str.split('').reduce((prevHash, currVal) =>
+    (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0);
+}
+
+function getContractName(artifactName : string) : string {
+  return artifactName.split(":")[1];
+}
+
+function shouldDeploy(artifactName : string) : boolean {
+  return  ( 
+            (
+              isDeployable(artifactName) &&
+              isFacet(artifactName) &&
+              !isExample(artifactName) &&
+              (testing() || !isTestOnly(artifactName))
+            )
+            || additionalContracts.includes(getContractName(artifactName))
+          ) &&
+          (testing() || !alreadyDeployed(artifactName));
+}
+
+function isFacet(artifactName : string) : boolean {
+  return artifactName.endsWith("Facet");
+}
+
+// Examples should not be deployed in DiamondGoverance, in case they need to be deployed for testing, create your onw deploy script
+function isExample(artifactName : string) : boolean {
+  return artifactName.includes("examples");
+}
+
+function isTestOnly(artifactNames : string) : boolean {
+  return artifactNames.includes("testing");
+}
+
+// Interfaces and abstract contract should start with an I followed by a capital letter
+function isDeployable(artifactName : string) : boolean {
+  const interfaceRegex = new RegExp("^I[A-Z]");
+  return !interfaceRegex.test(getContractName(artifactName));
+}
+
+// Check if the contract is already deployed on this network
+// Note: redeployed anyway if on local hardhat network
+function alreadyDeployed(artifactName : string) : boolean {
+  const deployment = getDeployment();
+  if (!deployment.hasOwnProperty(network.name)) {
+    return false;
+  }
+  return deployment[network.name].hasOwnProperty(getContractName(artifactName));
+}

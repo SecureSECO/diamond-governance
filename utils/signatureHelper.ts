@@ -8,7 +8,7 @@
  
 // Framework
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 
 /**
  *

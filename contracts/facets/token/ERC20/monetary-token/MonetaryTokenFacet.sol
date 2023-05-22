@@ -13,28 +13,39 @@ import {LibMonetaryTokenStorage} from "../../../../libraries/storage/LibMonetary
 import {IMonetaryTokenMintable} from "./IMonetaryTokenMintable.sol";
 import {IChangeableTokenContract} from "./IChangeableTokenContract.sol";
 import {IMintable} from "./IMintable.sol";
+import {IFacet} from "../../../IFacet.sol";
 
-// Used for diamond pattern storage
-library MonetaryTokenFacetInit {
-    struct InitParams {
-        address monetaryTokenContractAddress;
-    }
-
-    function init(InitParams calldata _params) external {
-        LibMonetaryTokenStorage.Storage storage s = LibMonetaryTokenStorage
-            .getStorage();
-
-        s.monetaryTokenContractAddress = _params.monetaryTokenContractAddress;
-    }
-}
-
-contract MonetaryTokenFacet is IMonetaryTokenMintable, IChangeableTokenContract, AuthConsumer {
+contract MonetaryTokenFacet is IMonetaryTokenMintable, IChangeableTokenContract, AuthConsumer, IFacet {
     // Permission used by the setERC20ContractAddress function
     bytes32 public constant SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID =
         keccak256("SET_MONETARY_TOKEN_CONTRACT_PERMISSION");
     // Permission used by the mint function
     bytes32 public constant SECOIN_MINT_PERMISSION_ID =
         keccak256("SECOIN_MINT_PERMISSION");
+
+    struct MonetaryTokenFacetInitParams {
+        address monetaryTokenContractAddress;
+    }
+
+    /// @inheritdoc IFacet
+    function init(bytes memory _initParams) public virtual override {
+        MonetaryTokenFacetInitParams memory _params = abi.decode(_initParams, (MonetaryTokenFacetInitParams));
+        __MonetaryTokenFacet_init(_params);
+    }
+
+    function __MonetaryTokenFacet_init(MonetaryTokenFacetInitParams memory _params) public virtual {
+        LibMonetaryTokenStorage.getStorage().monetaryTokenContractAddress = _params.monetaryTokenContractAddress;
+
+        registerInterface(type(IMonetaryTokenMintable).interfaceId);
+        registerInterface(type(IChangeableTokenContract).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IMonetaryTokenMintable).interfaceId);
+        unregisterInterface(type(IChangeableTokenContract).interfaceId);
+        super.deinit();
+    }
 
 
     /// @inheritdoc IMonetaryTokenMintable

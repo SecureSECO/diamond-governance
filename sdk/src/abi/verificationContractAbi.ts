@@ -1,5 +1,18 @@
 export const verificationContractAbi = [
   {
+    inputs: [],
+    name: "reverifyThreshold",
+    outputs: [
+      {
+        internalType: "uint64",
+        name: "",
+        type: "uint64",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",

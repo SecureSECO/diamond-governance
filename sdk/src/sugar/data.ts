@@ -6,7 +6,7 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { IDAO, IPartialVotingProposalFacet } from "../../../typechain-types";
+import { IDAO, IPartialVotingFacet, IPartialVotingProposalFacet } from "../../../typechain-types";
 import { BigNumber } from 'ethers';
 
 export { IDAO };
@@ -17,12 +17,15 @@ export enum SortingOrder { Asc, Desc }
 
 export interface ProposalData {
     open: boolean;
-    executed: boolean;
+    executed: BigNumber;
     parameters: IPartialVotingProposalFacet.ProposalParametersStructOutput;
     tally: IPartialVotingProposalFacet.TallyStructOutput;
     actions: IDAO.ActionStructOutput[];
-    allowFailureMap: any; //bigNumber
+    allowFailureMap: BigNumber;
     metadata: string;
+    creator: string;
+    voterList: string[];
+    executor: string;
 }
 
 export interface ProposalResource {
@@ -43,27 +46,10 @@ export interface Action {
   params: { [name: string]: any };
 }
 
-// Used as a subtype of Action to make sure that the params are correct
-export type WithdrawAction = Action & {
-  params: {
-    amount: BigNumber;
-    tokenAddress: string;
-    to: string;
-  }
-}
-
-// Used as a subtype of Action to make sure that the params are correct
-export type MintAction = Action & {
-  params: {
-    to: [
-      {
-        to: string;
-        amount: BigNumber;
-        tokenId: BigNumber;
-      }
-    ]
-  }
-}
-
 export type Stamp = [id: string, userHash: string, verifiedAt: BigNumber[]];
 export type VerificationThreshold = [timestamp: BigNumber, threshold: BigNumber];
+
+export interface AddressVotes {
+  address: string;
+  votes: IPartialVotingFacet.PartialVoteStructOutput[];
+}

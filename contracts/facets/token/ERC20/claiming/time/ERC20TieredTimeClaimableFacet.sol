@@ -10,19 +10,28 @@
 pragma solidity ^0.8.0;
 
 import { IERC20TieredTimeClaimableFacet } from "./IERC20TieredTimeClaimableFacet.sol";
-import { ERC20TimeClaimableFacet, ERC20TimeClaimableFacetInit } from "./ERC20TimeClaimableFacet.sol";
+import { ERC20TimeClaimableFacet } from "./ERC20TimeClaimableFacet.sol";
 import { ITieredMembershipStructure } from "../../../../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
 
 import { LibERC20TieredTimeClaimableStorage } from "../../../../../libraries/storage/LibERC20TieredTimeClaimableStorage.sol";
+import { IFacet } from "../../../../../facets/IFacet.sol";
 
-library ERC20TieredTimeClaimableFacetInit {
-    struct InitParams {
+contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20TimeClaimableFacet {
+    struct ERC20TieredTimeClaimableFacetInitParams {
         uint256[] tiers;
         uint256[] rewards;
-        ERC20TimeClaimableFacetInit.InitParams timeClaimableInit;
+        ERC20TimeClaimableFacetInitParams _ERC20TimeClaimableFacetInitParams;
     }
 
-    function init(InitParams calldata _params) external {
+    /// @inheritdoc IFacet
+    function init(bytes memory _initParams) public virtual override {
+        ERC20TieredTimeClaimableFacetInitParams memory _params = abi.decode(_initParams, (ERC20TieredTimeClaimableFacetInitParams));
+        __ERC20TieredTimeClaimableFacet_init(_params);
+    }
+
+    function __ERC20TieredTimeClaimableFacet_init(ERC20TieredTimeClaimableFacetInitParams memory _params) public virtual {
+        __ERC20TimeClaimableFacet_init(_params._ERC20TimeClaimableFacetInitParams);
+
         require (_params.tiers.length == _params.rewards.length, "Tiers and rewards should be same length");
 
         for (uint i; i < _params.tiers.length; ) {
@@ -31,11 +40,16 @@ library ERC20TieredTimeClaimableFacetInit {
                 i++;
             }
         }
-        ERC20TimeClaimableFacetInit.init(_params.timeClaimableInit);
+        
+        registerInterface(type(IERC20TieredTimeClaimableFacet).interfaceId);
     }
-}
 
-contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20TimeClaimableFacet {
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IERC20TieredTimeClaimableFacet).interfaceId);
+        super.deinit();
+    }
+
     function setClaimReward(uint256 _tier, uint256 _reward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
         _setClaimReward(_tier, _reward);
     }

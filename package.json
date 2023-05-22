@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "test": "npm run compile && npx hardhat test --typecheck",
-    "deploy": "npm run compile && npx hardhat run deployments/deploy.ts --network mumbai",
-    "generate-sdk": "npm run compile && npx hardhat run scripts/GenerateSDK.ts"
+    "test": "npm run generate-sdk && npx hardhat test --typecheck",
+    "deploy": "npm run generate-abis && npx hardhat run scripts/Deploy.ts --network mumbai",
+    "generate-sdk": "npm run generate-abis && npx hardhat run scripts/GenerateSDK.ts",
+    "generate-abis": "npm run compile && npx hardhat run scripts/GenerateAbis.ts"
   },
   "repository": {
     "type": "git",
@@ -25,12 +26,13 @@
     "hardhat": "^2.13.0"
   },
   "dependencies": {
-    "@aragon/osx": "^1.0.1",
+    "@aragon/osx": "^1.2.0",
     "@ensdomains/ens-contracts": "^0.0.20",
     "@ethersproject/abstract-signer": "^5.7.0",
     "@openzeppelin/contracts": "^4.8.2",
     "@openzeppelin/contracts-upgradeable": "^4.8.2",
     "axios": "^1.4.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "form-data": "^4.0.0"
   }
 }

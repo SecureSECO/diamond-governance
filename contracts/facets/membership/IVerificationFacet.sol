@@ -7,7 +7,7 @@
 
 pragma solidity ^0.8.0;
 
-import { GithubVerification } from "../../verification/GithubVerification.sol";
+import { SignVerification } from "../../other/verification/SignVerification.sol";
 
 /// @title IVerificationFacet
 /// @author Utrecht University - 2023
@@ -16,13 +16,13 @@ abstract contract IVerificationFacet {
     /// @notice Returns all stamps of an account.
     /// @param _address The address to get stamps from.
     /// @return stamps The stamps of the account.
-    function getStamps(address _address) external view virtual returns (GithubVerification.Stamp[] memory);
+    function getStamps(address _address) external view virtual returns (SignVerification.Stamp[] memory);
 
     /// @notice Returns stamps of an account at a given timestamp
     /// @param _address The address to get stamps from
     /// @param _timestamp The timestamp to get stamps at
     /// @return stamps The stamps of the account.
-    function getStampsAt(address _address, uint _timestamp) public view virtual returns (GithubVerification.Stamp[] memory);
+    function getStampsAt(address _address, uint _timestamp) public view virtual returns (SignVerification.Stamp[] memory);
 
     /// @notice Returns the current verification contract address
     /// @return address of the verification contract

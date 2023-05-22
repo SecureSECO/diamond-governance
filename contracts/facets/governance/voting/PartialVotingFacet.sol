@@ -11,6 +11,7 @@ import { IPartialVotingFacet } from "./IPartialVotingFacet.sol";
 import { IPartialVotingProposalFacet } from "../proposal/IPartialVotingProposalFacet.sol";
 import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
 import { AuthConsumer } from "../../../utils/AuthConsumer.sol";
+import { IFacet } from "../../IFacet.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
 
@@ -18,17 +19,21 @@ import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibP
 /// @author Utrecht University - 2023
 /// @notice The partial implementation of partial voting plugins.
 /// @dev This contract implements the `IPartialVotingFacet` interface.
-contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
-{
-    /// @notice Thrown if an account is not allowed to cast a vote. This can be because the vote
-    /// - has not started,
-    /// - has ended,
-    /// - was executed, or
-    /// - the account doesn't have the chosen voting power or more.
-    /// @param proposalId The ID of the proposal.
-    /// @param account The address of the _account.
-    /// @param voteData The chosen vote option and chosen voting power.
-    error VoteCastForbidden(uint256 proposalId, address account, PartialVote voteData);
+contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer, IFacet {
+    /// @inheritdoc IFacet
+    function init(bytes memory/* _initParams*/) public virtual override {
+        __PartialVotingFacet_init();
+    }
+
+    function __PartialVotingFacet_init() public virtual {
+        registerInterface(type(IPartialVotingFacet).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IPartialVotingFacet).interfaceId);
+        super.deinit();
+    }
 
     /// @inheritdoc IPartialVotingFacet
     function vote(
@@ -77,6 +82,10 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
             _proposal.tally.abstain = _proposal.tally.abstain + _voteData.amount;
         }
 
+        if (_proposal.voters[_voter].length == 0) {
+            // New voter
+            _proposal.voterList.push(_voter);
+        }
         _proposal.voters[_voter].push(_voteData);
         
         emit VoteCast({
@@ -100,7 +109,8 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
         IGovernanceStructure _structure
     ) internal view virtual returns (bool) {
         // The proposal vote hasn't started or has already ended.
-        if (!IPartialVotingProposalFacet(address(this)).IsProposalOpen(_proposalId)) {
+        (bool open,,,,,,,,,) = IPartialVotingProposalFacet(address(this)).getProposal(_proposalId);
+        if (!open) {
             return false;
         }
 
@@ -120,12 +130,27 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer
             return false;
         }
 
-        // The voter is trying to vote with more voting power than they have avaliable.
-        if (_voteData.amount > votingPower) {
-            return false;
+        if (_proposal.parameters.votingMode == VotingMode.MultiplePartialVote) {
+            uint alreadyUsedPower;
+            for (uint i; i < _proposal.voters[_voter].length; ) {
+                alreadyUsedPower += _proposal.voters[_voter][i].amount;
+                unchecked {
+                    i++;
+                }
+            }
+            
+            if (_voteData.amount + alreadyUsedPower > votingPower) {
+                return false;
+            }
+        }
+        else {
+            // The voter is trying to vote with more voting power than they have avaliable.
+            if (_voteData.amount > votingPower) {
+                return false;
+            }
         }
 
-        // In multi vote the voter is not allowed to vote with more voting power than the maximum
+        // In partial vote the voter is not allowed to vote with more voting power than the maximum
         if (_voteData.amount > _proposal.parameters.maxSingleWalletPower &&
             _proposal.parameters.votingMode != VotingMode.SingleVote
         ) {
