@@ -6,14 +6,28 @@
 
 pragma solidity ^0.8.0;
 
-import { PartialVotingFacet, IPartialVotingProposalFacet, IGovernanceStructure } from "./PartialVotingFacet.sol";
+import { PartialVotingFacet, IPartialVotingProposalFacet, IGovernanceStructure, IFacet } from "./PartialVotingFacet.sol";
 import { IBurnableGovernanceStructure } from "../structure/voting-power/IBurnableGovernanceStructure.sol";
 import "../shared/IPartialBurnVotingShared.sol";
 
 import { LibDiamond } from "../../../libraries/LibDiamond.sol";
-import { LibPartialBurnVotingProposalStorage } from "../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
+import { LibBurnVotingProposalStorage } from "../../../libraries/storage/LibBurnVotingProposalStorage.sol";
 
 contract PartialBurnVotingFacet is PartialVotingFacet {
+    /// @inheritdoc IFacet
+    function init(bytes memory/* _initParams*/) public virtual override {
+        __PartialBurnVotingFacet_init();
+    }
+
+    function __PartialBurnVotingFacet_init() public virtual {
+        __PartialVotingFacet_init();
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        super.deinit();
+    }
+
     /// @inheritdoc PartialVotingFacet
     function _vote(
         uint256 _proposalId,
@@ -31,7 +45,7 @@ contract PartialBurnVotingFacet is PartialVotingFacet {
             _voteData.option != VoteOption.Abstain
         ) {
             IBurnableGovernanceStructure(address(this)).burnVotingPower(_voter, _voteData.amount);
-            LibPartialBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_voter] += _voteData.amount;
+            LibBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_voter] += _voteData.amount;
         }
     }
     

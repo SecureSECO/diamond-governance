@@ -7,52 +7,36 @@
   */
 
 // Framework
+import { ethers } from "hardhat";
 
 // Tests
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
 // Utils
+import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
+import { createTestingDao } from "./utils/testDeployer";
+import { DiamondCut } from "../utils/diamondGovernanceHelper";
 
 // Types
 
 // Other
-import { deployBaseAragonDAO } from "../deployments/deploy_BaseAragonDAO";
-import { addFacetToDiamond } from "../deployments/deploy_DGSelection";
-import { ethers } from "hardhat";
 
-async function deployDiamondWithTest1Facet() {
-    const { DiamondGovernance, diamondGovernanceContracts } = await loadFixture(deployBaseAragonDAO);
-    return { DiamondGovernance, diamondGovernanceContracts };
-}
+async function getClient() {
+    const [owner] = await ethers.getSigners();
+    const diamondGovernance = await getDeployedDiamondGovernance(owner);
+    const cut : DiamondCut[] = [
+        await DiamondCut.All(diamondGovernance.GithubPullRequestFacet),
+    ];
+    return createTestingDao(cut);
+  }
 
-describe("Github Pull Requests", () => {
-
-  let GithubPullRequestFacetContract: any;
-  let diamondData: any;
-
-  beforeEach(async () => {
-    const { DiamondGovernance, diamondGovernanceContracts } = await loadFixture(deployDiamondWithTest1Facet);
-    diamondData = { DiamondGovernance, diamondGovernanceContracts };
-    await addFacetToDiamond(diamondGovernanceContracts, DiamondGovernance.address, "GithubPullRequestFacet");
-
-    GithubPullRequestFacetContract = await ethers.getContractAt("GithubPullRequestFacet", DiamondGovernance.address);
-  });
-
-
-  it("try call function to emit event as an outsider", async () => {
-    await expect(GithubPullRequestFacetContract.merge("owner", "repo", "0")).to.be.reverted;
-  });
-
-  it("call function to emit event as the dao", async () => {
-    await addFacetToDiamond(
-        diamondData.diamondGovernanceContracts, 
-        diamondData.DiamondGovernance.address, 
-        "GithubPullRequestMockFacet"
-    );
-    const GithubPullRequestMockFacetContract = await ethers.getContractAt("GithubPullRequestMockFacet", diamondData.DiamondGovernance.address);
-    await expect(GithubPullRequestMockFacetContract._merge("owner", "repo", "0"))
-        .to.emit(GithubPullRequestFacetContract, "MergePullRequest")
+describe("GithubPullRequest", () => {
+  it("should emit the MergePullRequest event on calling merge", async () => {
+    const client = await loadFixture(getClient);
+    const IGithubPullRequestFacet = await client.pure.IGithubPullRequestFacet();
+    await expect(IGithubPullRequestFacet.merge("owner", "repo", "0"))
+        .to.emit(IGithubPullRequestFacet, "MergePullRequest")
         .withArgs("owner", "repo", "0");
   });  
 });

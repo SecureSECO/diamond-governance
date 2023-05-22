@@ -18,20 +18,8 @@ export function POLYGONSCAN_API_KEY() {
     return fromEnv;
 }
 
-export function MUMBAI_API_KEY() {
-    const fromEnv = process.env.MUMBAI_API_KEY;
-    if (fromEnv === undefined) { return "NO_MUMBAI_API_KEY_FOUND"; }
-    return fromEnv;
-}
-
 export function MUMBAI_PRIVATE_KEY() {
     const fromEnv = process.env.MUMBAI_PRIVATE_KEY;
-    if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }
-    return fromEnv;
-}
-
-export function IPFS_PINATA_TOKEN() {
-    const fromEnv = process.env.IPFS_PINATA_TOKEN;
     if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }
     return fromEnv;
 }

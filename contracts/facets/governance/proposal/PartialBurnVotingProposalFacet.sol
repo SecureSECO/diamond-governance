@@ -6,26 +6,46 @@
 
 pragma solidity ^0.8.0;
 
-import { PartialVotingProposalFacet, IPartialVotingProposalFacet, IDAO, PartialVotingProposalFacetInit } from "./PartialVotingProposalFacet.sol";
+import { PartialVotingProposalFacet, IPartialVotingProposalFacet, IDAO } from "./PartialVotingProposalFacet.sol";
+import { IBurnVotingProposalFacet } from "./IBurnVotingProposalFacet.sol";
 import { IBurnableGovernanceStructure } from "../structure/voting-power/IBurnableGovernanceStructure.sol";
 import "../shared/IPartialBurnVotingShared.sol";
 
-import { LibPartialBurnVotingProposalStorage } from "../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
+import { LibBurnVotingProposalStorage } from "../../../libraries/storage/LibBurnVotingProposalStorage.sol";
 import { LibDiamond } from "../../../libraries/LibDiamond.sol";
+import { IFacet } from "../../IFacet.sol";
 
-library PartialBurnVotingProposalFacetInit {
-    struct InitParams {
+contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet, IBurnVotingProposalFacet {
+    struct PartialBurnVotingProposalFacetInitParams {
         uint256 proposalCreationCost;
-        PartialVotingProposalFacetInit.InitParams partialVotingProposalInit;
+        PartialVotingProposalFacetInitParams _PartialVotingProposalFacetInitParams;
     }
 
-    function init(InitParams calldata _params) external {
-        LibPartialBurnVotingProposalStorage.getStorage().proposalCreationCost = _params.proposalCreationCost;
-        PartialVotingProposalFacetInit.init(_params.partialVotingProposalInit);
+    /// @inheritdoc IFacet
+    function init(bytes memory initParams) public virtual override {
+        PartialBurnVotingProposalFacetInitParams memory _params = abi.decode(initParams, (PartialBurnVotingProposalFacetInitParams));
+        __PartialBurnVotingProposalFacet_init(_params);
     }
-}
 
-contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet {
+    function __PartialBurnVotingProposalFacet_init(PartialBurnVotingProposalFacetInitParams memory _params) public virtual {
+        __PartialVotingProposalFacet_init(_params._PartialVotingProposalFacetInitParams);
+
+        LibBurnVotingProposalStorage.getStorage().proposalCreationCost = _params.proposalCreationCost;
+
+        registerInterface(type(IBurnVotingProposalFacet).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IBurnVotingProposalFacet).interfaceId);
+        super.deinit();
+    }
+
+    /// @inheritdoc IBurnVotingProposalFacet
+    function getProposalCreationCost() external view virtual returns (uint256) {
+        return LibBurnVotingProposalStorage.getStorage().proposalCreationCost;
+    }
+
     /// @inheritdoc PartialVotingProposalFacet
     function createProposal(
         bytes calldata _metadata,
@@ -47,9 +67,8 @@ contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet {
 
         // Check if the diamond supports burning
         if (LibDiamond.diamondStorage().supportedInterfaces[type(IBurnableGovernanceStructure).interfaceId]) {
-            LibPartialBurnVotingProposalStorage.Storage storage s = LibPartialBurnVotingProposalStorage.getStorage();
+            LibBurnVotingProposalStorage.Storage storage s = LibBurnVotingProposalStorage.getStorage();
             IBurnableGovernanceStructure(address(this)).burnVotingPower(msg.sender, s.proposalCreationCost);
-            s.proposalCreator[proposalId] = msg.sender;
             s.proposalCost[proposalId] = s.proposalCreationCost;
         }
     }

@@ -13,6 +13,7 @@ library LibSearchSECORewardingStorage {
     struct Storage {
         /// @notice The total number of hashes a user has submitted
         mapping(address => uint) hashCount;
+        address signer;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

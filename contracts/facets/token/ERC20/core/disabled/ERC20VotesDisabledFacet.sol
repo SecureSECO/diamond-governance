@@ -12,6 +12,7 @@ pragma solidity ^0.8.0;
 import { ERC20PermitDisabledFacet } from "./ERC20PermitDisabledFacet.sol";
 import { IERC5805, IERC6372, IVotes } from "../../../../../additional-contracts/IERC5805.sol";
 import { ERC20VotesFacet } from "../ERC20VotesFacet.sol";
+import { IFacet } from "../../../../IFacet.sol";
 
 contract ERC20VotesDisabledFacet is ERC20PermitDisabledFacet, IERC5805 {
     /// @inheritdoc IERC6372

@@ -8,7 +8,7 @@
 
 import { IDAO, Action } from "./data";
 import { ethers } from "ethers";
-import { DiamondGovernanceInterfaces, DiamondGovernancePure } from "../client";
+import { DiamondGovernanceInterfaces, DiamondGovernancePure } from "../../../generated/client";
 import { ParamType } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";
 

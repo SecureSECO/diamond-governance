@@ -7,7 +7,7 @@
   */
 
 // Framework
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 
 //Utils
 

@@ -1,5 +1,5 @@
-import { DiamondGovernancePure } from "./client";
-import { ProposalStatus, ProposalSorting, SortingOrder, VoteOption, ProposalMetadata, Action, Stamp } from "./sugar/data";
+import { DiamondGovernancePure } from "../../generated/client";
+import { ProposalStatus, ProposalSorting, SortingOrder, ProposalMetadata, Action } from "./sugar/data";
 import { ProposalCache } from "./sugar/proposal-cache";
 import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
@@ -8,6 +8,7 @@ import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
 import type { ContractTransaction } from "ethers";
 
 export * from "./sugar/data"; 
+export * from "./sugar/proposal";
 
 export class DiamondGovernanceSugar { 
     private pure: DiamondGovernancePure;

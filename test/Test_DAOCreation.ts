@@ -7,22 +7,29 @@
   */
 
 // Framework
-import { ethers } from "hardhat";
 
 // Tests
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
+import { createTestingDao } from "./utils/testDeployer";
+import { GetTypedContractAt } from "../utils/contractHelper";
 
 // Types
+import { DAO } from "../typechain-types";
 
 // Other
-import { deployAragonDAOWithFramework } from "../deployments/deploy_AragonDAO";
+
+async function getClient() {
+  return createTestingDao([]);
+}
 
 describe("DAO", function () {
-  it("should deploy", async function () {
-    const { DAO } = await loadFixture(deployAragonDAOWithFramework);
+  it("should have the correct testing uri", async function () {
+    const client = await loadFixture(getClient);
+    const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
+    const DAO = await GetTypedContractAt<DAO>("DAO", await IDAOReferenceFacet.dao(), client.pure.signer);
     expect(await DAO.daoURI()).to.be.equal("https://plopmenz.com");
   });
 });

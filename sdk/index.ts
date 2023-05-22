@@ -1,6 +1,6 @@
 import { Signer } from "@ethersproject/abstract-signer";
 
-import { DiamondGovernancePure } from "./src/client";
+import { DiamondGovernancePure } from "../generated/client";
 import { DiamondGovernanceSugar } from "./src/sugar";
 import { VerificationSugar } from "./src/verification";
 
@@ -16,5 +16,5 @@ export class DiamondGovernanceClient {
     }
 }
 
-export * from "./src/client";
+export * from "../generated/client";
 export * from "./src/sugar";

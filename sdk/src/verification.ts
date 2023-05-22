@@ -1,8 +1,8 @@
-import { ethers } from "ethers";
-import { GithubVerification } from "../../typechain-types";
+import { SignVerification } from "../../typechain-types";
 import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
 import { BigNumber } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
+import { GetTypedContractAt } from "../../utils/contractHelper";
 
 /**
  * VerificationSugar is a class that provides methods for interacting with the verification contract.
@@ -18,7 +18,7 @@ export class VerificationSugar {
    * This cache is used to reduce the number of calls to the blockchain, the cache is filled on the first call to a method that requires it
    */
   private cache: {
-    verificationContract?: GithubVerification;
+    verificationContract?: SignVerification;
     thresholdHistory?: VerificationThreshold[];
   };
   private sugar: DiamondGovernanceSugar;
@@ -34,16 +34,10 @@ export class VerificationSugar {
    * Gets the verification contract object
    * @returns The verification contract object
    */
-  public async GetVerificationContract(): Promise<GithubVerification> {
+  public async GetVerificationContract(): Promise<SignVerification> {
     if (this.cache.verificationContract == null) {
-      const verificationContractAddress =
-        await this.GetVerificationContractAddress();
-      // this.cache.verificationContract = (await ethers.getContractAt(
-      //   "GithubVerification",
-      //   verificationContractAddress,
-      //   this.signer
-      // )) as GithubVerification;
-      this.cache.verificationContract = {} as GithubVerification;
+      const verificationContractAddress = await this.GetVerificationContractAddress();
+      this.cache.verificationContract = await GetTypedContractAt<SignVerification>("SignVerification", verificationContractAddress, this.signer);
     }
     return this.cache.verificationContract;
   }

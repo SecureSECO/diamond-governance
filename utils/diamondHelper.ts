@@ -7,7 +7,8 @@
   */
 
 // Framework
-import { ethers } from "hardhat"
+import { ethers } from "ethers"
+import { IDiamondLoupe } from "../typechain-types";
 
 // Utils
 
@@ -15,65 +16,65 @@ import { ethers } from "hardhat"
 
 // Other
 
-enum FacetCutAction { Add, Replace, Remove }
+enum FacetCutAction { Add, Replace, Remove, AddWithInit, RemoveWithDeinit }
+
+class Selectors {
+  public selectors : string[];
+  private contract : ethers.Contract | undefined;
+
+
+  constructor(selectors : string[], contract : ethers.Contract | undefined) {
+    this.selectors = selectors;
+    this.contract = contract;
+  }
+
+  public copy (this : Selectors) : Selectors {
+    return new Selectors(this.selectors, this.contract);
+  }
+
+  // used with getSelectors to remove selectors from an array of selectors
+  // functionNames argument is an array of function signatures
+  public remove (this : Selectors, functionNames : string[]) : Selectors {
+    this.selectors = this.selectors.filter((v : string) => {
+      for (const functionName of functionNames) {
+        if (v === this.contract?.interface.getSighash(functionName)) {
+          return false;
+        }
+      }
+      return true;
+    });
+    return this;
+  }
+
+  // used with getSelectors to get selectors from an array of selectors
+  // functionNames argument is an array of function signatures
+  public get (this : Selectors, functionNames : string[]) : Selectors{
+    this.selectors = this.selectors.filter((v : any) => {
+      for (const functionName of functionNames) {
+        if (v === this.contract?.interface.getSighash(functionName)) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return this;
+  }
+}
 
 // get function selectors from ABI
-function getSelectors (contract : any) {
+function getSelectors (contract : ethers.Contract) : Selectors {
   const signatures = Object.keys(contract.interface.functions);
   const selectors = signatures.reduce<any>((acc, val) => {
-    if (val !== 'init(bytes)') {
+    if (val !== 'init(bytes)' && val !== 'deinit()' && !val.startsWith("__")) {
       acc.push(contract.interface.getSighash(val));
     }
     return acc;
   }, []);
-  selectors.contract = contract;
-  selectors.remove = remove;
-  selectors.get = get;
-  return selectors;
-}
-
-// get function selector from function signature
-function getSelector (func : any) {
-  const abiInterface = new ethers.utils.Interface([func]);
-  return abiInterface.getSighash(ethers.utils.Fragment.from(func));
-}
-
-// used with getSelectors to remove selectors from an array of selectors
-// functionNames argument is an array of function signatures
-function remove (this : any, functionNames : any) {
-  const selectors = this.filter((v : any) => {
-    for (const functionName of functionNames) {
-      if (v === this.contract.interface.getSighash(functionName)) {
-        return false;
-      }
-    }
-    return true;
-  });
-  selectors.contract = this.contract;
-  selectors.remove = this.remove;
-  selectors.get = this.get;
-  return selectors;
-}
-
-// used with getSelectors to get selectors from an array of selectors
-// functionNames argument is an array of function signatures
-function get (this : any, functionNames : any) {
-  const selectors = this.filter((v : any) => {
-    for (const functionName of functionNames) {
-      if (v === this.contract.interface.getSighash(functionName)) {
-        return true;
-      }
-    }
-    return false;
-  });
-  selectors.contract = this.contract;
-  selectors.remove = this.remove;
-  selectors.get = this.get;
-  return selectors;
+  return new Selectors(selectors, contract);
 }
 
 // remove selectors using an array of signatures
-function removeSelectors (selectors : any, signatures : any) {
+function removeSelectors (selectors : string[], signatures : string[]) {
   const iface = new ethers.utils.Interface(signatures.map((v : any) => 'function ' + v));
   const removeSelectors = signatures.map((v : any) => iface.getSighash(v));
   selectors = selectors.filter((v : any) => !removeSelectors.includes(v));
@@ -81,7 +82,7 @@ function removeSelectors (selectors : any, signatures : any) {
 }
 
 // find a particular address position in the return value of diamondLoupeFacet.facets()
-function findAddressPositionInFacets (facetAddress : any, facets : any) : number {
+function findAddressPositionInFacets (facetAddress : string, facets : IDiamondLoupe.FacetStructOutput[]) : number {
   for (let i = 0; i < facets.length; i++) {
     if (facets[i].facetAddress === facetAddress) {
       return i;
@@ -90,4 +91,4 @@ function findAddressPositionInFacets (facetAddress : any, facets : any) : number
   return -1;
 }
 
-export { FacetCutAction, getSelectors, getSelector, remove, get, removeSelectors, findAddressPositionInFacets }
+export { Selectors, FacetCutAction, getSelectors, removeSelectors, findAddressPositionInFacets }

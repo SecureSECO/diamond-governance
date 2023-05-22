@@ -9,12 +9,14 @@ pragma solidity ^0.8.0;
 
 import { IERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+// import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import { IEIP712Facet } from "../../EIP712/IEIP712Facet.sol";
 import { Counters } from "@openzeppelin/contracts/utils/Counters.sol";
 
 import { ERC20Facet } from "./ERC20Facet.sol";
 
 import { LibERC20PermitStorage } from "../../../../libraries/storage/LibERC20PermitStorage.sol";
+import { IFacet } from "../../../../facets/IFacet.sol";
 
 /**
  * @dev Implementation of the ERC20 Permit extension allowing approvals to be made via signatures, as defined in
@@ -26,27 +28,35 @@ import { LibERC20PermitStorage } from "../../../../libraries/storage/LibERC20Per
  *
  * _Available since v3.4._
  */
-contract ERC20PermitFacet is ERC20Facet, IERC20Permit, EIP712 {
+contract ERC20PermitFacet is ERC20Facet, IERC20Permit, IEIP712Facet {
     using Counters for Counters.Counter;
 
-    // solhint-disable-next-line var-name-mixedcase
     bytes32 private constant _PERMIT_TYPEHASH =
         keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
-    /**
-     * @dev In previous versions `_PERMIT_TYPEHASH` was declared as `immutable`.
-     * However, to ensure consistency with the upgradeable transpiler, we will continue
-     * to reserve a slot.
-     * @custom:oz-renamed-from _PERMIT_TYPEHASH
-     */
-    // solhint-disable-next-line var-name-mixedcase
-    bytes32 private _PERMIT_TYPEHASH_DEPRECATED_SLOT;
 
-    /**
-     * @dev Initializes the {EIP712} domain separator using the `name` parameter, and setting `version` to `"1"`.
-     *
-     * It's a good idea to use the same `name` that is defined as the ERC20 token name.
-     */
-    constructor(string memory name_, string memory symbol_) EIP712(name_, "1") ERC20Facet(name_, symbol_) {}
+    struct ERC20PermitFacetInitParams {
+        ERC20FacetInitParams _ERC20FacetInitParams;
+    }
+
+    /// @inheritdoc IFacet
+    function init(bytes memory _initParams) public virtual override(ERC20Facet, IEIP712Facet) {
+        ERC20PermitFacetInitParams memory _params = abi.decode(_initParams, (ERC20PermitFacetInitParams));
+        __ERC20PermitFacet_init(_params);
+    }
+
+    function __ERC20PermitFacet_init(ERC20PermitFacetInitParams memory _params) public virtual {
+        __ERC20Facet_init(_params._ERC20FacetInitParams);
+        __IEIP712Facet_init(IEIP712FacetInitParams(_params._ERC20FacetInitParams.name, "1"));
+
+        registerInterface(type(IERC20Permit).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override(ERC20Facet, IEIP712Facet) {
+        unregisterInterface(type(IERC20Permit).interfaceId);
+        ERC20Facet.deinit();
+        IEIP712Facet.deinit();
+    }
 
     /**
      * @dev See {IERC20Permit-permit}.

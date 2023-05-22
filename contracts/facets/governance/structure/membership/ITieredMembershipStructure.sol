@@ -6,7 +6,7 @@
 
 pragma solidity ^0.8.0;
 
-import { IMembershipExtended } from "./IMembershipExtended.sol";
+import { IMembershipExtended, IMembership } from "./IMembershipExtended.sol";
 
 abstract contract ITieredMembershipStructure is IMembershipExtended {
     /// @inheritdoc IMembershipExtended

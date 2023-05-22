@@ -8,10 +8,12 @@ pragma solidity ^0.8.0;
 
 import { DiamondGovernance } from "./DiamondGovernance.sol";
 import { IDiamondCut } from "./additional-contracts/IDiamondCut.sol";
-import { DAOReferenceFacetInit, IDAO } from "./facets/aragon/DAOReferenceFacet.sol";
+import { IDAO } from "./facets/aragon/DAOReferenceFacet.sol";
+
+import { LibDAOReferenceStorage } from "./libraries/storage/LibDAOReferenceStorage.sol";
 
 contract DiamondGovernanceAragon is DiamondGovernance {
-    constructor(IDAO _dao, IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) payable DiamondGovernance(_diamondCut, _init, _calldata) {    
-        DAOReferenceFacetInit.init(DAOReferenceFacetInit.InitParams(_dao));
+    constructor(IDAO _dao, IDiamondCut.FacetCut[] memory _diamondCut) payable DiamondGovernance(_diamondCut) {    
+      LibDAOReferenceStorage.getStorage().dao = _dao;
     }
 }

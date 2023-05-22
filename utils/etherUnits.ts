@@ -7,7 +7,8 @@
   */
 
 // Various ether units per Solidity spec
+import { BigNumber } from "ethers";
 
-export const wei = 1;
-export const gwei = 1e9;
-export const ether = 1e18;
+export const wei = BigNumber.from(1);
+export const gwei = BigNumber.from(10).pow(9);
+export const ether = BigNumber.from(10).pow(18);

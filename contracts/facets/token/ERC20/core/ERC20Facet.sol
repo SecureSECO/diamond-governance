@@ -10,6 +10,7 @@ pragma solidity ^0.8.0;
 import { Context } from "@openzeppelin/contracts/utils/Context.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import { IFacet } from "../../../IFacet.sol";
 
 import { LibERC20Storage } from "../../../../libraries/storage/LibERC20Storage.sol";
 
@@ -41,17 +42,36 @@ import { LibERC20Storage } from "../../../../libraries/storage/LibERC20Storage.s
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20Facet is Context, IERC20, IERC20Metadata {
+contract ERC20Facet is Context, IERC20, IERC20Metadata, IFacet {
     /**
      * @dev Sets the values for {name} and {symbol}.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
      */
-    constructor(string memory name_, string memory symbol_) {
+
+    struct ERC20FacetInitParams {
+        string name;
+        string symbol;
+    }
+
+    /// @inheritdoc IFacet
+    function init(bytes memory _initParams) public virtual override {
+        ERC20FacetInitParams memory _params = abi.decode(_initParams, (ERC20FacetInitParams));
+        __ERC20Facet_init(_params);
+    }
+
+    function __ERC20Facet_init(ERC20FacetInitParams memory _params) public virtual {
         LibERC20Storage.Storage storage s = LibERC20Storage.getStorage();
-        s.name = name_;
-        s.symbol = symbol_;
+        s.name = _params.name;
+        s.symbol = _params.symbol;
+
+        registerInterface(type(IERC20).interfaceId);
+        registerInterface(type(IERC20Metadata).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IERC20).interfaceId);
+        unregisterInterface(type(IERC20Metadata).interfaceId);
+        super.deinit();
     }
 
     /**

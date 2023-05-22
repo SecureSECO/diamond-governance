@@ -13,60 +13,53 @@ import { DaoAuthorizable } from "@aragon/osx/core/plugin/dao-authorizable/DaoAut
 import { IPartialVotingProposalFacet, IPartialVotingFacet, IDAO } from "./IPartialVotingProposalFacet.sol";
 import { IGovernanceStructure } from "../structure/voting-power/IGovernanceStructure.sol";
 import "../../../utils/Ratio.sol";
-import { ProposalFacet } from "./ProposalFacet.sol";
+import { IProposalFacet, IProposal } from "./IProposalFacet.sol";
 import { AuthConsumer } from "../../../utils/AuthConsumer.sol";
+import { IFacet } from "../../IFacet.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
-
-library PartialVotingProposalFacetInit {
-    struct InitParams {
-        IPartialVotingProposalFacet.VotingSettings votingSettings;
-    }
-
-    function init(InitParams calldata _params) external {
-        LibPartialVotingProposalStorage.getStorage().votingSettings = _params.votingSettings;
-    }
-}
 
 /// @title PartialVotingProposalFacet
 /// @author Utrecht University - 2023
 /// @notice The partial implementation of partial voting proposal plugins.
 /// @dev This contract implements the `IPartialVotingProposalFacet` interface.
-contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFacet, AuthConsumer
+contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFacet, AuthConsumer
 {
     using SafeCast for uint256;
-
+    
     /// @notice The permission identifier to mint new tokens
     bytes32 public constant UPDATE_VOTING_SETTINGS_PERMISSION_ID = keccak256("UPDATE_VOTING_SETTINGS_PERMISSION");
 
-    /// @notice Thrown if a date is out of bounds.
-    /// @param limit The limit value.
-    /// @param actual The actual value.
-    error DateOutOfBounds(uint64 limit, uint64 actual);
+    struct PartialVotingProposalFacetInitParams {
+        IPartialVotingProposalFacet.VotingSettings votingSettings;
+    }
 
-    /// @notice Thrown if the minimal duration value is out of bounds (less than one hour or greater than 1 year).
-    /// @param limit The limit value.
-    /// @param actual The actual value.
-    error MinDurationOutOfBounds(uint64 limit, uint64 actual);
+    /// @inheritdoc IFacet
+    function init(bytes memory initParams) public virtual override {
+        PartialVotingProposalFacetInitParams memory _params = abi.decode(initParams, (PartialVotingProposalFacetInitParams));
+        __PartialVotingProposalFacet_init(_params);
+    }
 
-    /// @notice Thrown when a sender is not allowed to create a proposal.
-    /// @param sender The sender address.
-    error ProposalCreationForbidden(address sender);
+    function __PartialVotingProposalFacet_init(PartialVotingProposalFacetInitParams memory _params) public virtual {
+        LibPartialVotingProposalStorage.getStorage().votingSettings = _params.votingSettings;
 
-    /// @notice Thrown if the proposal execution is forbidden.
-    /// @param proposalId The ID of the proposal.
-    error ProposalExecutionForbidden(uint256 proposalId);
+        registerInterface(type(IPartialVotingProposalFacet).interfaceId);
+        registerInterface(type(IProposal).interfaceId);
+    }
 
-    /// @notice Emitted when the voting settings are updated.
-    /// @param votingSettings The new voting settings.
-    event VotingSettingsUpdated(VotingSettings votingSettings);
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IPartialVotingProposalFacet).interfaceId);
+        unregisterInterface(type(IProposal).interfaceId);
+        super.deinit();
+    }
 
     /// @inheritdoc IPartialVotingProposalFacet
     function execute(uint256 _proposalId) public virtual {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }
-        _execute(_proposalId);
+        _execute(_proposalId, msg.sender);
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
@@ -121,8 +114,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
             proposal_.parameters.minParticipationThresholdPower;
     }
     
-
-    /// @notice Returns the vote mode stored in the voting settings.
+    /// @notice Returns the voting settings.
     /// @return The vote mode parameter.
     function votingMode() public view virtual returns (IPartialVotingFacet.VotingMode) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.votingMode;
@@ -171,12 +163,15 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         virtual
         returns (
             bool open,
-            bool executed,
+            uint64 executed,
             ProposalParameters memory parameters,
             Tally memory tally,
             IDAO.Action[] memory actions,
             uint256 allowFailureMap,
-            bytes memory metadata
+            bytes memory metadata,
+            address creator,
+            address[] memory voterList,
+            address executor
         )
     {
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
@@ -188,6 +183,9 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         actions = proposal_.actions;
         allowFailureMap = proposal_.allowFailureMap;
         metadata = proposal_.metadata;
+        creator = proposal_.creator;
+        voterList = proposal_.voterList;
+        executor = proposal_.executor;
     }
 
     /// @notice Updates the voting settings.
@@ -283,6 +281,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         );
         proposal_.proposalType = _proposalType;
         proposal_.metadata = _metadata;
+        proposal_.creator = msg.sender;
 
         // Reduce costs
         if (_allowFailureMap != 0) {
@@ -299,9 +298,10 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
 
     /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
-    function _execute(uint256 _proposalId) internal virtual {
+    function _execute(uint256 _proposalId, address _executor) internal virtual {
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
-        proposal_.executed = true;
+        proposal_.executed = block.number.toUint64();
+        proposal_.executor = _executor;
 
         _executeProposal(
             DaoAuthorizable(address(this)).dao(),
@@ -319,7 +319,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         // Verify that the vote has not been executed already.
-        if (proposal_.executed) {
+        if (proposal_.executed > 0) {
             return false;
         }
 
@@ -344,10 +344,6 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         return true;
     }
 
-    function IsProposalOpen(uint256 _proposalId) external view returns (bool) {
-        return _isProposalOpen(LibPartialVotingProposalStorage.getStorage().proposals[_proposalId]);
-    }
-
     /// @notice Internal function to check if a proposal vote is still open.
     /// @param proposal_ The proposal struct.
     /// @return True if the proposal vote is open, false otherwise.
@@ -357,7 +353,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, ProposalFace
         return
             proposal_.parameters.startDate <= currentTime &&
             currentTime < proposal_.parameters.endDate &&
-            !proposal_.executed;
+            proposal_.executed == 0;
     }
 
     /// @notice Internal function to update the plugin-wide proposal vote settings.
