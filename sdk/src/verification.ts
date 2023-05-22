@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { Contract, ContractTransaction, ethers } from "ethers";
 import { GithubVerification } from "../../typechain-types";
 import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
 import { BigNumber } from "ethers";
@@ -133,6 +133,7 @@ export class VerificationSugar {
    * @param timestamp The timestamp in seconds
    * @param providerId The provider ID (github, proofofhumanity, etc.)
    * @param proofSignature The signature that you receive from the verification back-end
+   * @return Transaction of the object
    */
   public async Verify(
     toVerify: string,
@@ -140,9 +141,9 @@ export class VerificationSugar {
     timestamp: number,
     providerId: string,
     proofSignature: string
-  ): Promise<void> {
+  ): Promise<ContractTransaction> {
     const verificationContract = await this.GetVerificationContract();
-    await verificationContract.verifyAddress(
+    return await verificationContract.verifyAddress(
       toVerify,
       userHash,
       timestamp,
@@ -155,9 +156,14 @@ export class VerificationSugar {
    * Unverifies the current user
    * @param providerId The provider ID (github, proofofhumanity, etc.)
    */
-  public async Unverify(providerId: string): Promise<void> {
+  public async Unverify(providerId: string): Promise<ContractTransaction> {
     const verificationContract = await this.GetVerificationContract();
-    await verificationContract.unverify(providerId);
+    return await verificationContract.unverify(providerId);
+  }
+
+  public async GetReverifyThreshold(): Promise<BigNumber> {
+    const verificationContract = await this.GetVerificationContract();
+    return await verificationContract.reverifyThreshold();
   }
 
   /**
@@ -176,4 +182,5 @@ export class VerificationSugar {
 
     return threshold ? threshold[1] : BigNumber.from(0);
   }
+
 }
