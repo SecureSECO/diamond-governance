@@ -19,6 +19,7 @@ abstract contract ISearchSECORewardingFacet {
         address _toReward,
         uint _hashCount,
         uint _nonce,
+        uint _repFrac,
         bytes calldata _proof
     ) external virtual;
 

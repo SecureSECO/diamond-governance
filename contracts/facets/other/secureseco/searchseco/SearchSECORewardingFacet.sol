@@ -19,6 +19,10 @@ import {GenericSignatureHelper} from "../../../../utils/GenericSignatureHelper.s
 /// @author J.S.C.L & T.Y.M.W.
 /// @notice This contract is used to reward users for submitting new hashes
 contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISearchSECORewardingFacet, IFacet {
+    // Permission used by the setHashReward function
+    bytes32 public constant UPDATE_HASH_REWARD_PERMISSION_ID =
+        keccak256("UPDATE_HASH_REWARD_PERMISSION_ID");
+
     // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_REWARDING_SIGNER_PERMISSION_ID =
         keccak256("UPDATE_REWARDING_SIGNER_MAPPING_PERMISSION");
@@ -40,7 +44,9 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         SearchSECORewardingFacetInitParams memory _params
     ) public virtual {
         // Set signer for signature verification
-        LibSearchSECORewardingStorage.getStorage().signer = _params.signer;
+        LibSearchSECORewardingStorage.Storage storage s = LibSearchSECORewardingStorage.getStorage();
+        s.signer = _params.signer;
+        s.hashReward = 1;
 
         registerInterface(type(ISearchSECORewardingFacet).interfaceId);
     }
@@ -56,6 +62,7 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         address _toReward,
         uint _hashCount,
         uint _nonce,
+        uint _repFrac,
         bytes calldata _proof
     ) external override {
         // This is necessary to read from storage
@@ -76,6 +83,17 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
 
         s.hashCount[_toReward] += _hashCount;
 
+        require(
+            _repFrac >= 0 && _repFrac <= 1_000_000,
+            "REP fraction must be between 0 and 1_000_000"
+        );
+
+        // Calculate the reward
+        uint repReward = ((_hashCount * s.hashReward) * _repFrac) / 1_000_000;
+        uint coinReward = (_hashCount * s.hashReward) - repReward;
+
+        assert(repReward + coinReward == s.hashReward);
+
         // TODO: Reward the user
         // ...
     }
@@ -88,6 +106,14 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
     /// @inheritdoc ISearchSECORewardingFacet
     function getRewardingSigner() external view override returns (address) {
         return LibSearchSECORewardingStorage.getStorage().signer;
+    }
+
+    /// @notice Sets the hash reward (REP)
+    /// @param _hashReward The new hash reward
+    function setHashReward(
+        uint _hashReward
+    ) public auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
+        LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
