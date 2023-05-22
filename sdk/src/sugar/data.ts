@@ -46,28 +46,6 @@ export interface Action {
   params: { [name: string]: any };
 }
 
-// Used as a subtype of Action to make sure that the params are correct
-export type WithdrawAction = Action & {
-  params: {
-    amount: BigNumber;
-    tokenAddress: string;
-    to: string;
-  }
-}
-
-// Used as a subtype of Action to make sure that the params are correct
-export type MintAction = Action & {
-  params: {
-    to: [
-      {
-        to: string;
-        amount: BigNumber;
-        tokenId: BigNumber;
-      }
-    ]
-  }
-}
-
 export type Stamp = [id: string, userHash: string, verifiedAt: BigNumber[]];
 export type VerificationThreshold = [timestamp: BigNumber, threshold: BigNumber];
 
