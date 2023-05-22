@@ -26,6 +26,7 @@ const repoJsonFile = "./generated/diamondGovernanceRepo.json";
 const additionalContracts = [
   "DiamondGovernanceSetup",
   "SignVerification",
+  "ERC20MonetaryToken",
 ];
 
 const specialDeployment : { [contractName : string]: () => Promise<string> } = 
@@ -44,6 +45,20 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
 
     return SignVerification.address;
   },
+  ERC20MonetaryToken: async () => {
+    const ERC20MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
+    const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("SecureSECOCoin", "SECOIN");
+    await ERC20MonetaryToken.deployed();
+
+    if (!testing()) {
+      await hre.run("verify:verify", {
+        address: ERC20MonetaryToken.address,
+        constructorArguments: ["SecureSECOCoin", "SECOIN"],
+      });
+    }
+
+    return ERC20MonetaryToken.address;
+  }
 }
 
 export async function deployDiamondGovernance() : Promise<{ [contractName: string]: { address: string, fileHash: number } }> {

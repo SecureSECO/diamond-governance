@@ -13,7 +13,7 @@ import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
-import { createTestingDao } from "./utils/testDeployer";
+import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { GetTypedContractAt } from "../utils/contractHelper";
 
 // Types
@@ -22,6 +22,7 @@ import { DAO } from "../typechain-types";
 // Other
 
 async function getClient() {
+  await loadFixture(deployTestNetwork);
   return createTestingDao([]);
 }
 

@@ -17,7 +17,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { now, days } from "../utils/timeUnits";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
-import { createTestingDao } from "./utils/testDeployer";
+import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { wei } from "../utils/etherUnits";
 import { getEvents } from "../utils/utils";
 
@@ -27,47 +27,48 @@ import { getEvents } from "../utils/utils";
 import { DiamondGovernanceClient, ProposalMetadata, VoteOption } from "../sdk/index";
 
 async function getClient() {
-    const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
-    enum VotingMode {
-        SingleVote,
-        SinglePartialVote,
-        MultiplePartialVote,
-    }
-    const PartialVotingProposalFacetSettings = {
-        votingSettings: {
-            votingMode: VotingMode.MultiplePartialVote,
-            supportThreshold: 1,
-            minParticipation: 1,
-            maxSingleWalletPower: 10**6,
-            minDuration: 1 * days,
-            minProposerVotingPower: wei.mul(1),
-        },
-    };
-    const GovernanceERC20FacetSettings = {
-        _ERC20VotesFacetInitParams: {
-            _ERC20PermitFacetInitParams: {
-                _ERC20FacetInitParams: {
-                    name: "Token",
-                    symbol: "TOK",
-                }
-            }
-        }
-    };
-    const cut : DiamondCut[] = [
-        await DiamondCut.All(diamondGovernance.PartialVotingProposalFacet, [PartialVotingProposalFacetSettings]),
-        await DiamondCut.All(diamondGovernance.PartialVotingFacet),
-        await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),
-        await DiamondCut.All(diamondGovernance.AlwaysMemberTier1Facet),
-    ];
-    return createTestingDao(cut);
+  await loadFixture(deployTestNetwork);
+  const [owner] = await ethers.getSigners();
+  const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  enum VotingMode {
+      SingleVote,
+      SinglePartialVote,
+      MultiplePartialVote,
   }
+  const PartialVotingProposalFacetSettings = {
+      votingSettings: {
+          votingMode: VotingMode.MultiplePartialVote,
+          supportThreshold: 1,
+          minParticipation: 1,
+          maxSingleWalletPower: 10**6,
+          minDuration: 1 * days,
+          minProposerVotingPower: wei.mul(1),
+      },
+  };
+  const GovernanceERC20FacetSettings = {
+      _ERC20VotesFacetInitParams: {
+          _ERC20PermitFacetInitParams: {
+              _ERC20FacetInitParams: {
+                  name: "Token",
+                  symbol: "TOK",
+              }
+          }
+      }
+  };
+  const cut : DiamondCut[] = [
+      await DiamondCut.All(diamondGovernance.PartialVotingProposalFacet, [PartialVotingProposalFacetSettings]),
+      await DiamondCut.All(diamondGovernance.PartialVotingFacet),
+      await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),
+      await DiamondCut.All(diamondGovernance.AlwaysMemberTier1Facet),
+  ];
+  return createTestingDao(cut);
+}
 
 
 async function createProposal() {
-    const client = await loadFixture(getClient);
-    await getVotingPower(client);
-    return createProposalWithClient(client);
+  const client = await loadFixture(getClient);
+  await getVotingPower(client);
+  return createProposalWithClient(client);
 }
 
 export async function getVotingPower(client : DiamondGovernanceClient) {

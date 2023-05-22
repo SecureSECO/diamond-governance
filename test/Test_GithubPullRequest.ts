@@ -15,7 +15,7 @@ import { expect } from "chai";
 
 // Utils
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
-import { createTestingDao } from "./utils/testDeployer";
+import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 
 // Types
@@ -23,12 +23,13 @@ import { DiamondCut } from "../utils/diamondGovernanceHelper";
 // Other
 
 async function getClient() {
-    const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
-    const cut : DiamondCut[] = [
-        await DiamondCut.All(diamondGovernance.GithubPullRequestFacet),
-    ];
-    return createTestingDao(cut);
+  await loadFixture(deployTestNetwork);
+  const [owner] = await ethers.getSigners();
+  const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  const cut : DiamondCut[] = [
+      await DiamondCut.All(diamondGovernance.GithubPullRequestFacet),
+  ];
+  return createTestingDao(cut);
   }
 
 describe("GithubPullRequest", () => {

@@ -15,7 +15,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
-import { createTestingDao } from "./utils/testDeployer";
+import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { days } from "../utils/timeUnits";
 
@@ -24,27 +24,28 @@ import { days } from "../utils/timeUnits";
 // Other
 
 async function getClient() {
-    const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
-    const GovernanceERC20FacetSettings = {
-        _ERC20VotesFacetInitParams: {
-            _ERC20PermitFacetInitParams: {
-                _ERC20FacetInitParams: {
-                    name: "Token",
-                    symbol: "TOK",
-                }
-            }
-        }
-    };
-    const ERC20TimeClaimableFacetSettings = {
-        timeTillReward: 1 * days,
-        maxTimeRewarded: 10 * days,
-    };
-    const cut : DiamondCut[] = [
-        await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),
-        await DiamondCut.All(diamondGovernance.ERC20TimeClaimableFacet, [ERC20TimeClaimableFacetSettings]),
-    ];
-    return createTestingDao(cut);
+  await loadFixture(deployTestNetwork);
+  const [owner] = await ethers.getSigners();
+  const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  const GovernanceERC20FacetSettings = {
+      _ERC20VotesFacetInitParams: {
+          _ERC20PermitFacetInitParams: {
+              _ERC20FacetInitParams: {
+                  name: "Token",
+                  symbol: "TOK",
+              }
+          }
+      }
+  };
+  const ERC20TimeClaimableFacetSettings = {
+      timeTillReward: 1 * days,
+      maxTimeRewarded: 10 * days,
+  };
+  const cut : DiamondCut[] = [
+      await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),
+      await DiamondCut.All(diamondGovernance.ERC20TimeClaimableFacet, [ERC20TimeClaimableFacetSettings]),
+  ];
+  return createTestingDao(cut);
   }
 
 describe("ERC20TimeClaimable", function () {
