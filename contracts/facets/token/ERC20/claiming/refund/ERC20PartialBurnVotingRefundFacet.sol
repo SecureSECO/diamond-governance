@@ -11,25 +11,41 @@ pragma solidity ^0.8.0;
 
 import { IERC20PartialBurnVotingRefundFacet } from "./IERC20PartialBurnVotingRefundFacet.sol";
 import { IMintableGovernanceStructure } from "../../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
-import { PartialVotingProposalFacet } from "../../../../governance/proposal/PartialVotingProposalFacet.sol";
+import { IPartialVotingProposalFacet } from "../../../../governance/proposal/IPartialVotingProposalFacet.sol";
 
-import { LibPartialBurnVotingProposalStorage } from "../../../../../libraries/storage/LibPartialBurnVotingProposalStorage.sol";
+import { LibBurnVotingProposalStorage } from "../../../../../libraries/storage/LibBurnVotingProposalStorage.sol";
+import { IFacet } from "../../../../IFacet.sol";
 
-contract ERC20PartialBurnVotingRefundFacet is IERC20PartialBurnVotingRefundFacet {
+contract ERC20PartialBurnVotingRefundFacet is IERC20PartialBurnVotingRefundFacet, IFacet {
+    /// @inheritdoc IFacet
+    function init(bytes memory/* _initParams*/) public virtual override {
+        __ERC20PartialBurnVotingRefundFacet_init();
+    }
+
+    function __ERC20PartialBurnVotingRefundFacet_init() public virtual {
+        registerInterface(type(IERC20PartialBurnVotingRefundFacet).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IERC20PartialBurnVotingRefundFacet).interfaceId);
+        super.deinit();
+    }
+
     function tokensRefundableFromProposal(uint256 _proposalId, address _claimer) public view virtual returns (uint256) {
         if (!_proposalRefundable(_proposalId)) return 0;
 
-        return LibPartialBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_claimer];
+        return LibBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_claimer];
     }
 
     function _proposalRefundable(uint256 _proposalId) internal view virtual returns (bool) {
-        PartialVotingProposalFacet proposalFacet = PartialVotingProposalFacet(address(this));
-        (bool open, , , , , , ) = proposalFacet.getProposal(_proposalId);
+        IPartialVotingProposalFacet proposalFacet = IPartialVotingProposalFacet(address(this));
+        (bool open,,,,,,,,,) = proposalFacet.getProposal(_proposalId);
         return !open && !proposalFacet.isMinParticipationReached(_proposalId);
     }
 
     function _afterClaim(uint256 _proposalId, address _claimer) internal virtual {
-        LibPartialBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_claimer] = 0;
+        LibBurnVotingProposalStorage.getStorage().proposalBurnData[_proposalId][_claimer] = 0;
     }
 
     function refundTokensFromProposal(uint256 _proposalId) external virtual {

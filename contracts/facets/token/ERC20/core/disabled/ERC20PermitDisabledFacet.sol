@@ -11,6 +11,7 @@ pragma solidity ^0.8.0;
 
 import { ERC20DisabledFacet } from "./ERC20DisabledFacet.sol";
 import { IERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol";
+import { IFacet } from "../../../../IFacet.sol";
 
 contract ERC20PermitDisabledFacet is ERC20DisabledFacet, IERC20Permit {
     /// @inheritdoc IERC20Permit

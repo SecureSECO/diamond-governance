@@ -7,23 +7,29 @@
 pragma solidity ^0.8.0;
 
 import { IDAO } from "@aragon/osx/core/dao/IDAO.sol";
+import { IDAOReferenceFacet } from "./IDAOReferenceFacet.sol";
+import { IFacet } from "../IFacet.sol";
 
 import { LibDAOReferenceStorage } from "../../libraries/storage/LibDAOReferenceStorage.sol";
 
-library DAOReferenceFacetInit {
-    struct InitParams {
-        IDAO dao;
-    }
-
-    function init(InitParams calldata _params) external {
-        LibDAOReferenceStorage.getStorage().dao = _params.dao;
-    }
-}
-
-contract DAOReferenceFacet {
-    /// @notice Returns the DAO contract.
-    /// @return The DAO contract.
+contract DAOReferenceFacet is IDAOReferenceFacet, IFacet {
+    /// @inheritdoc IDAOReferenceFacet
     function dao() external view returns (IDAO) {
         return LibDAOReferenceStorage.getStorage().dao;
+    }
+
+    /// @inheritdoc IFacet
+    function init(bytes memory/* _initParams*/) public virtual override {
+        __DAOReferenceFacet_init();
+    }
+
+    function __DAOReferenceFacet_init() public virtual {
+        registerInterface(type(IDAOReferenceFacet).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IDAOReferenceFacet).interfaceId);
+        super.deinit();
     }
 }

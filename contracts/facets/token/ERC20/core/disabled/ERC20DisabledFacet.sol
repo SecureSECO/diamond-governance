@@ -10,8 +10,9 @@
 pragma solidity ^0.8.0;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IFacet } from "../../../../IFacet.sol";
 
-contract ERC20DisabledFacet is IERC20 {
+contract ERC20DisabledFacet is IERC20, IFacet {
     /// @inheritdoc IERC20
     function totalSupply() external pure override returns (uint256) {
         revert("Disabled");

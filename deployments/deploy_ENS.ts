@@ -26,7 +26,6 @@ import { ENSRegistry } from "../typechain-types";
 async function deployENS() {
     const ENSRegistry = await ethers.getContractFactory("ENSRegistry");
     const ens = await ENSRegistry.deploy();
-    console.log(`Ens registry deployed at ${ens.address}`);
     return ens;
 };
 
@@ -49,7 +48,6 @@ async function deployResolver(ens : ENSRegistry, owner : string, subdomain : str
         resolver.address,
         0
     );
-    console.log(`Ens resolver deployed for subdomain ${subdomain} at ${resolver.address}`);
     return resolver;
 }
 

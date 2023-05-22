@@ -17,5 +17,6 @@ export async function EncodeMetadata(metadata : ProposalMetadata) : Promise<Uint
 export async function DecodeMetadata(metadata : Uint8Array) : Promise<ProposalMetadata> {
     const decoded = new TextDecoder().decode(metadata);
     const cid = decoded.replace("ipfs://", "");
-    return JSON.parse(await getFromIpfs(cid));
+    const proposalMetadata = await getFromIpfs(cid);
+    return proposalMetadata as ProposalMetadata;
 }
