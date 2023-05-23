@@ -1,11 +1,11 @@
 /**
-  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
-  * © Copyright Utrecht University (Department of Information and Computing Sciences)
-  *
-  * This source code is licensed under the MIT license found in the
-  * LICENSE file in the root directory of this source tree.
-  */
- 
+ * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+ * © Copyright Utrecht University (Department of Information and Computing Sciences)
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // Framework
 import { ethers } from "hardhat";
 
@@ -24,63 +24,125 @@ import { DiamondCut } from "../utils/diamondGovernanceHelper";
 // Other
 
 async function getClient() {
-    await loadFixture(deployTestNetwork);
-    const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
-    const cut : DiamondCut[] = [
-        await DiamondCut.All(diamondGovernance.RewardMultiplierFacet),
-    ];
-    return createTestingDao(cut);
-  }
+  await loadFixture(deployTestNetwork);
+  const [owner] = await ethers.getSigners();
+  const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  const cut: DiamondCut[] = [
+    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet),
+  ];
+  return createTestingDao(cut);
+}
 
-describe("RewardMultiplier", function () {
-  it.only("should give multiplier based on multiple growth curves", async function () {
+const currentBlockNumber = async (): Promise<number> => {
+  const [owner] = await ethers.getSigners();
+  let blockNumber = await owner.provider?.getBlockNumber();
+  // expect(blockNumber).to.be.not.undefined;
+  if (blockNumber === undefined) {
+    throw new Error("Block number is undefined");
+  }
+  /* Update block number (should be 1 higher than before) */
+  blockNumber++; // To take into account the block shift that happens for every transaction
+  return blockNumber;
+};
+
+const to18Decimal = (amount: number): BigNumber => {
+  return BigNumber.from(amount).mul(BigNumber.from(10).pow(18));
+};
+
+const INITIAL_AMOUNT = 10;
+const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT);
+const MAX_BLOCKS_PASSED = 1000;
+const SLOPE_N = 1001;
+const SLOPE_D = 1000;
+const BASE_N = 1005;
+const BASE_D = 1000;
+
+describe.only("RewardMultiplier", function () {
+  it("should give 0 multiplier for non-existing variable", async function () {
     const client = await loadFixture(getClient);
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
-    const [owner] = await ethers.getSigners();
-
-    const multiplierBefore = await IRewardMultiplierFacet.getMultiplier("nonsense");
+    const multiplierBefore = await IRewardMultiplierFacet.getMultiplier(
+      "nonsense"
+    );
     expect(multiplierBefore).to.be.equal(0);
+  });
 
-    // Get block number
-    let blockNumber = await owner.provider?.getBlockNumber();
-    // expect(blockNumber).to.be.not.undefined;
-    if (blockNumber === undefined) {
-      throw new Error("Block number is undefined");
-    }
+  it("should give multiplier based on constant growth", async function () {
+    const client = await loadFixture(getClient);
+    const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
-    const pastBlock = Math.max(0, blockNumber - 1000);
-    const tenRep = to18Decimal(10);
+    /* ------ Set constant multiplier ------ */
+    const blockNumber = await currentBlockNumber();
+    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
 
-    // Set constant multiplier
-    // Block number is 1000 in the past, so it should be constant
-    await IRewardMultiplierFacet.setMultiplierTypeConstant("nonsense", pastBlock, tenRep); // 10e18
-    const multiplierAfterConstant = await IRewardMultiplierFacet.getMultiplier("nonsense");
-    expect(multiplierAfterConstant).to.be.equal(tenRep);// .approximately(10000000000000000000n, 1); // account for rounding error
+    await IRewardMultiplierFacet.setMultiplierTypeConstant(
+      "nonsense",
+      pastBlock,
+      INITIAL_AMOUNT_18
+    ); 
+    const multiplierAfterConstant = await IRewardMultiplierFacet.getMultiplier(
+      "nonsense"
+    );
+    expect(multiplierAfterConstant).to.be.approximately(INITIAL_AMOUNT_18, 1); // For rounding errors
+  });
 
-    blockNumber = await owner.provider?.getBlockNumber();
-    // expect(blockNumber).to.be.not.undefined;
-    if (blockNumber === undefined) {
-      throw new Error("Block number is undefined");
-    }
+  it("should give multiplier based on linear growth", async function () {
+    const client = await loadFixture(getClient);
+    const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
-    blockNumber += Math.round(Math.PI) >> 1; // To take into account the block shift that happens for every transaction
+    /* ------ Set linear multiplier ------ */
+    const blockNumber = await currentBlockNumber();
+    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
 
-    // Set linear multiplier
     // Block number is 1000 in the past, so it should be linearly increased
-    await IRewardMultiplierFacet.setMultiplierTypeLinear("nonsense", pastBlock, tenRep, 1001, 1000);
-    const multiplierAfterLinear = await IRewardMultiplierFacet.getMultiplier("nonsense");
+    await IRewardMultiplierFacet.setMultiplierTypeLinear(
+      "nonsense",
+      pastBlock,
+      INITIAL_AMOUNT_18,
+      SLOPE_N,
+      SLOPE_D,
+    );
+    const multiplierAfterLinear = await IRewardMultiplierFacet.getMultiplier(
+      "nonsense"
+    );
 
-    const growth = (blockNumber - pastBlock) * 1.001 * 1000;
-    const total = 10000 + growth;
+    const growth = (blockNumber - pastBlock) * (SLOPE_N / SLOPE_D) * 1000; // multiply by 1000 for precision in integer conversion
+    const total = INITIAL_AMOUNT * 1000 + growth;
     const bigGrowth = to18Decimal(Math.round(total)).div(1000);
 
-    expect(multiplierAfterLinear).to.be.approximately(bigGrowth, 10);
+    expect(multiplierAfterLinear).to.be.approximately(bigGrowth, 10); // For rounding errors
+  });
 
+  it("should give multiplier based on exponential growth", async function () {
+    const client = await loadFixture(getClient);
+    const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
+
+    /* ------ Set exponential multiplier ------ */
+    const blockNumber = await currentBlockNumber();
+    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
+
+    // Block number is 1000 in the past, so it should be linearly increased
+    await IRewardMultiplierFacet.setMultiplierTypeExponential(
+      "nonsense",
+      pastBlock,
+      INITIAL_AMOUNT_18,
+      BASE_N,
+      BASE_D
+    );
+    const multiplierAfterExponential =
+      await IRewardMultiplierFacet.getMultiplier("nonsense");
+
+    const base = BigNumber.from(Math.round(BASE_N / BASE_D * 1000));
+    const growth = base.pow(blockNumber - pastBlock).mul(to18Decimal(10));
+    const bigGrowth = growth.div(BigNumber.from(1000).pow(blockNumber - pastBlock));
+
+    expect(multiplierAfterExponential).to.be.approximately(bigGrowth, 10); // For rounding errors
   });
 });
 
-const to18Decimal = (amount: number) : BigNumber => {
-  return BigNumber.from(amount).mul(BigNumber.from(10).pow(18));
+const getSafePrecision = (amount: number) => {
+  const safeMult = Math.round(Number.MAX_SAFE_INTEGER / amount);
+  const numDigits = safeMult.toString().length;
+  return 10 ** (numDigits - 1);
 }

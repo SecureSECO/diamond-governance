@@ -105,7 +105,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     ) internal pure returns (int128 result) {
         int128 growth = ABDKMath64x64.pow(_base, _time);
 
-        result = ABDKMath64x64.add(_initialAmount, growth);
+        result = ABDKMath64x64.mul(_initialAmount, growth);
     }
 
     /// @inheritdoc IRewardMultiplierFacet
