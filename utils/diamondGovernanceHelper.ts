@@ -128,14 +128,16 @@ export interface DAOCreationSettings {
     trustedForwarder: string, //address
     daoURI: string, //string
     subdomain: string, //string
-    metadata: {
-        name: string;
-        description: string;
-        links : { name: string, url: string }[]
-        avatar: string; //or file and upload ipfs?
-    },
+    metadata: DAOMetadata,
     diamondCut : DiamondCut[],
     additionalPlugins : string[] //PluginInstallation[]
+}
+
+export interface DAOMetadata {
+    name: string;
+    description: string;
+    links : { name: string, url: string }[]
+    avatar: string; //or file and upload ipfs in create?
 }
 
 export async function CreateDAO(settings : DAOCreationSettings, signer : Signer) : Promise<DiamondGovernanceDAO> {

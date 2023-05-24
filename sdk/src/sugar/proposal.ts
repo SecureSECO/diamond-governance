@@ -66,7 +66,7 @@ export class Proposal {
         const prop = new Proposal(_id, _data, _proposalContract, _voteContract);
         prop.metadata = await DecodeMetadata(prop.fromHexString(prop.data.metadata.substring(2))); //remove 0x and convert to utf-8 array
         prop.status = prop.getStatus();
-        prop.actions = await asyncMap(prop.data.actions, async (a) => await ParseAction(_pure, a));
+        prop.actions = await asyncMap(prop.data.actions, async (a) => await ParseAction(_pure, _pure.pluginAddress, a, _pure.signer));
 
         prop.startDate = FromBlockchainDate(prop.data.parameters.startDate.toNumber());
         prop.endDate = FromBlockchainDate(prop.data.parameters.endDate.toNumber());

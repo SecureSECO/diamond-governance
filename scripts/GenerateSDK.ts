@@ -8,11 +8,15 @@
 
 import fs from "fs";
 import { generateInterfaceIds } from "./sdk/GenerateInterfaceIds";
+import { GetContractAt } from "../utils/contractHelper";
+import { ethers } from "hardhat";
+import { getSelectors } from "../utils/diamondHelper";
 
 const insertInterfaces = "/* interfaces */";
 const insertMethods = "/* interface methods */";
 const templateFile = "./generated/client-template.ts";
 const outputFile = "./generated/client.ts";
+const reverseSelectorFile = "./generated/functionSelectors.json";
 
 async function generateInterfaceMethod(interfaceName : string, interfaceId : string) : Promise<string> {
     return `
@@ -23,13 +27,21 @@ async function generateInterfaceMethod(interfaceName : string, interfaceId : str
 
 async function main() {
     console.log("Started generating of SDK");
+    const [owner] = await ethers.getSigners();
     const interfaceIds = await generateInterfaceIds();
     const interfaceKeys = Object.keys(interfaceIds);
 
     let interfaceMethodArray = [];
+    let reverseFunctionSelectorLookup : { [selector: string]: string} = {};
     for (let i = 0; i < interfaceKeys.length; i++) {
         const name = interfaceKeys[i];
         interfaceMethodArray.push(await generateInterfaceMethod(name, interfaceIds[name]));
+
+        const contract = await GetContractAt(name, ethers.constants.AddressZero, owner);
+        const selectors = getSelectors(contract).selectors;
+        for (let j = 0; j < selectors.length; j++) {
+            reverseFunctionSelectorLookup[selectors[j]] = name;
+        }
     }
     
     const interfaces = interfaceKeys.join(", ");
@@ -39,6 +51,7 @@ async function main() {
     const newClient = template.replaceAll(insertInterfaces, interfaces).replaceAll(insertMethods, methods);
 
     fs.writeFileSync(outputFile, newClient);
+    fs.writeFileSync(reverseSelectorFile, JSON.stringify(reverseFunctionSelectorLookup));
     console.log("Finished generating of SDK with", interfaceKeys.length, "interfaces");
 }
 

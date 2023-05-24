@@ -9,7 +9,7 @@
  
 pragma solidity ^0.8.0;
 
-import { _auth } from "@aragon/osx/core/utils/auth.sol";
+import { _auth, IDAO } from "@aragon/osx/core/utils/auth.sol";
 
 import { IAuthProvider } from "./IAuthProvider.sol";
 import { DAOReferenceFacet } from "../../facets/aragon/DAOReferenceFacet.sol";
@@ -18,6 +18,9 @@ import { IFacet } from "../../facets/IFacet.sol";
 contract AragonAuthFacet is IAuthProvider, IFacet {
     /// @inheritdoc IAuthProvider
     function auth(bytes32 _permissionId) external virtual override {
-        _auth(DAOReferenceFacet(address(this)).dao(), address(this), msg.sender, _permissionId, msg.data);
+      IDAO dao = DAOReferenceFacet(address(this)).dao();
+      if (msg.sender != address(dao)) {
+        _auth(dao, address(this), msg.sender, _permissionId, msg.data);
+      }
     }
 }

@@ -60,10 +60,14 @@ export class ProposalCache {
      * @param id The id of the proposal
      * @returns {Promise<Proposal>} The proposal with the given id
      */
-    public async GetProposal(id : number) {
+    public async GetProposal(id : number, useCache : boolean = true) {
         const proposalCount = await this.GetProposalCount();
         if (id < 0 || id > proposalCount) {
             throw new Error("Invalid id");
+        }
+        
+        if (!useCache) {
+            return await this.getProposal(this.proposals.length);
         }
 
         await this.FillCacheUntil(id + 1);
