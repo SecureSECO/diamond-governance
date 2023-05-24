@@ -11,6 +11,8 @@ import {LibRewardMultiplierStorage} from "../../libraries/storage/LibRewardMulti
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 import {IFacet} from "../IFacet.sol";
 import {ABDKMath64x64} from "./ABDKMath64x64.sol";
+import {LibABDKHelper} from "./LibABDKHelper.sol";
+import {LibCalculateGrowth} from "./LibCalculateGrowth.sol";
 
 contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     // Permission used by the setMultiplierType* functions
@@ -32,80 +34,21 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         super.deinit();
     }
 
-    function multipliedAmount(
+    /// @inheritdoc IRewardMultiplierFacet
+    function applyMultiplier(
         string memory _name,
         uint _amount
-    ) public view virtual returns (uint) {
-        int128 multiplier = _getMultiplier(_name);
+    ) public view virtual override returns (uint) {
+        int128 multiplier = _getMultiplier64x64(_name);
         return ABDKMath64x64.mulu(multiplier, _amount);
     }
 
     /// @inheritdoc IRewardMultiplierFacet
-    // Returns multiplier as 18 decimals
     function getMultiplier(
         string memory _name
     ) public view virtual override returns (uint) {
-        int128 multiplier = _getMultiplier(_name);
-        return to18Decimals(multiplier);
-    }
-
-    // Return multiplier as 64.64 fixed point number
-    function _getMultiplier(
-        string memory _name
-    ) internal view returns (int128) {
-        LibRewardMultiplierStorage.Storage
-            storage s = LibRewardMultiplierStorage.getStorage();
-
-        MultiplierInfo memory _info = s.rewardMultiplier[_name];
-
-        uint _numBlocksPassed = block.number - _info.startBlock;
-
-        // If the multiplier has not started yet, return 0
-        if (_info.multiplierType == MultiplierType.CONSTANT) {
-            return _info.initialAmount;
-        } else if (_info.multiplierType == MultiplierType.LINEAR) {
-            LinearParams memory params = s.linearParams[_name];
-            return
-                calculateLinearGrowth(
-                    _info.initialAmount,
-                    _numBlocksPassed,
-                    params.slope
-                );
-        } else if (_info.multiplierType == MultiplierType.EXPONENTIAL) {
-            ExponentialParams memory params = s.exponentialParams[_name];
-            return
-                calculateExponentialGrowth(
-                    _info.initialAmount,
-                    _numBlocksPassed,
-                    params.base
-                );
-        }
-
-        return 0;
-    }
-
-    // Slope is a 64.64 fixed point number
-    function calculateLinearGrowth(
-        int128 _initialAmount, // Verified
-        uint _time, // Verified
-        int128 _slope // Verified
-    ) internal pure returns (int128 result) {
-        int128 growth = ABDKMath64x64.mul(
-            _slope,
-            ABDKMath64x64.fromUInt(_time)
-        );
-
-        result = ABDKMath64x64.add(_initialAmount, growth);
-    }
-
-    function calculateExponentialGrowth(
-        int128 _initialAmount,
-        uint _time,
-        int128 _base
-    ) internal pure returns (int128 result) {
-        int128 growth = ABDKMath64x64.pow(_base, _time);
-
-        result = ABDKMath64x64.mul(_initialAmount, growth);
+        int128 multiplier = _getMultiplier64x64(_name);
+        return LibABDKHelper.to18Decimals(multiplier);
     }
 
     /// @inheritdoc IRewardMultiplierFacet
@@ -118,7 +61,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            from18Decimals(_initialAmount),
+            LibABDKHelper.from18Decimals(_initialAmount),
             MultiplierType.CONSTANT
         );
     }
@@ -135,7 +78,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            from18Decimals(_initialAmount),
+            LibABDKHelper.from18Decimals(_initialAmount),
             MultiplierType.LINEAR
         );
         int128 _slope = ABDKMath64x64.divu(_slopeN, _slopeD);
@@ -155,7 +98,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            from18Decimals(_initialAmount),
+            LibABDKHelper.from18Decimals(_initialAmount),
             MultiplierType.EXPONENTIAL
         );
 
@@ -166,38 +109,40 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         s.exponentialParams[_name] = ExponentialParams(_base);
     }
 
-    int128 constant DECIMALS_18 = 18446744073709551616000000000000000000;
+    /// @notice Return multiplier for a variable
+    /// @param _name Name of the variable
+    /// @return int128 Multiplier in 64.64
+    function _getMultiplier64x64(
+        string memory _name
+    ) internal view returns (int128) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
 
-    function from18Decimals(uint input) public pure returns (int128 amount) {
-        // Split number up into float part and integer part
-        uint ipart;
-        uint fpart;
+        MultiplierInfo memory _info = s.rewardMultiplier[_name];
 
-        unchecked {
-            ipart = input / 1e18;
-            fpart = input % 1e18;
+        uint _numBlocksPassed = block.number - _info.startBlock;
+
+        // If the multiplier has not started yet, return 0
+        if (_info.multiplierType == MultiplierType.CONSTANT) {
+            return _info.initialAmount;
+        } else if (_info.multiplierType == MultiplierType.LINEAR) {
+            LinearParams memory params = s.linearParams[_name];
+            return
+                LibCalculateGrowth.calculateLinearGrowth(
+                    _info.initialAmount,
+                    _numBlocksPassed,
+                    params.slope
+                );
+        } else if (_info.multiplierType == MultiplierType.EXPONENTIAL) {
+            ExponentialParams memory params = s.exponentialParams[_name];
+            return
+                LibCalculateGrowth.calculateExponentialGrowth(
+                    _info.initialAmount,
+                    _numBlocksPassed,
+                    params.base
+                );
         }
 
-        amount = ABDKMath64x64.fromUInt(ipart);
-        amount = ABDKMath64x64.add(
-            amount,
-            ABDKMath64x64.div(ABDKMath64x64.fromUInt(fpart), DECIMALS_18)
-        );
-    }
-
-    function to18Decimals(int128 input) public pure returns (uint amount) {
-        // Split number up into float part and integer part
-        uint ipart;
-        uint fpart;
-
-        ipart = ABDKMath64x64.toUInt(input);
-        fpart = ABDKMath64x64.toUInt(
-            ABDKMath64x64.mul(
-                ABDKMath64x64.sub(input, ABDKMath64x64.fromUInt(ipart)),
-                DECIMALS_18
-            )
-        );
-
-        amount = ipart * 1e18 + fpart;
+        return 0;
     }
 }

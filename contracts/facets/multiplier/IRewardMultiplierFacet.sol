@@ -7,14 +7,19 @@
 pragma solidity ^0.8.0;
 
 abstract contract IRewardMultiplierFacet {
-    enum MultiplierType { NONE, LINEAR, EXPONENTIAL, CONSTANT }
+    enum MultiplierType {
+        NONE,
+        LINEAR,
+        EXPONENTIAL,
+        CONSTANT
+    }
 
     /* ========== STRUCTS ========== */
     /* The following structs are used to store the multiplier information for each reward multiplier. */
     struct MultiplierInfo {
         uint startBlock;
         int128 initialAmount;
-        MultiplierType multiplierType; 
+        MultiplierType multiplierType;
     }
 
     struct LinearParams {
@@ -25,23 +30,51 @@ abstract contract IRewardMultiplierFacet {
         int128 base;
     }
 
+    /// @notice This function applies a multiplier to a number while keeping the most precision
+    /// @dev Returns the multiplier for a given variable name applied to a given amount
+    /// @param _name Name of the multiplier variable
+    /// @param _amount Number in 18 precision to apply the multiplier to
+    /// @return uint Result in 18 precision
+    function applyMultiplier(
+        string memory _name,
+        uint _amount
+    ) public view virtual returns (uint);
+
     /// @dev Returns the multiplier for a given reward multiplier variable (name)
     /// @param _name The name of the multiplier variable
     /// @return uint The multiplier
-    function getMultiplier(string memory _name) public view virtual returns (uint);
+    function getMultiplier(
+        string memory _name
+    ) public view virtual returns (uint);
 
     /* ========== SETTER FUNCTIONS ========== */
     /* The following functions are used to set the multiplier type of a reward multiplier variable.
-    * The functions follow the same pattern:
-    * @dev Sets the multiplier type to constant
-    * @param _name The name of the multiplier
-    * @param _startBlock The block number at which the multiplier starts
-    * @param _initialAmount The initial amount of the multiplier
-    * + any additional parameters for the specific multiplier type
+     * The functions follow the same pattern:
+     * @dev Sets the multiplier type to constant
+     * @param _name The name of the multiplier
+     * @param _startBlock The block number at which the multiplier starts
+     * @param _initialAmount The initial amount of the multiplier
+     * + any additional parameters for the specific multiplier type
      */
-    function setMultiplierTypeConstant(string memory _name, uint _startBlock, uint _initialAmount) external virtual;
+    function setMultiplierTypeConstant(
+        string memory _name,
+        uint _startBlock,
+        uint _initialAmount
+    ) external virtual;
 
-    function setMultiplierTypeLinear(string memory _name, uint _startBlock, uint _initialAmount, uint _slopeN, uint _slopeD) external virtual;
+    function setMultiplierTypeLinear(
+        string memory _name,
+        uint _startBlock,
+        uint _initialAmount,
+        uint _slopeN,
+        uint _slopeD
+    ) external virtual;
 
-    function setMultiplierTypeExponential(string memory _name, uint _startBlock, uint _initialAmount, uint _baseN, uint _baseD) external virtual;
+    function setMultiplierTypeExponential(
+        string memory _name,
+        uint _startBlock,
+        uint _initialAmount,
+        uint _baseN,
+        uint _baseD
+    ) external virtual;
 }
