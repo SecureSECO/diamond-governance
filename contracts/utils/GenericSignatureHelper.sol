@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
- * © Copyright Utrecht University (Department of Information and Computing Sciences)
- */
+  * This program has been developed by students from the bachelor Computer Science at Utrecht University within the Software Project course.
+  * © Copyright Utrecht University (Department of Information and Computing Sciences)
+  */
 
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.0;
 
-// Source: https://solidity-by-example.org/signature/
+// Modified source from: https://solidity-by-example.org/signature/
 
 /* Signature Verification
 
@@ -22,13 +22,11 @@ How to Sign and Verify
 3. Compare recovered signer to claimed signer
 */
 
+/// @title Set of (helper) functions for signature verification
 contract GenericSignatureHelper {
-    /* 1. Get message hash to sign */
-    // - abi.encodePacked(...) takes multiple arguments and packs them into a byte array
-    // - keccak256(...) takes an arbitrary length byte array and returns a 32 byte hash
-    // -> Message hash is created by first encoding the data then hashing the result.
-
-    /* 2. Sign message hash */
+    /// @notice Signs the messageHash with a standard prefix
+    /// @param _messageHash The hash of the packed message (messageHash) to be signed
+    /// @return bytes32 Returns the signed messageHash
     function getEthSignedMessageHash(
         bytes32 _messageHash
     ) internal pure returns (bytes32) {
@@ -45,17 +43,27 @@ contract GenericSignatureHelper {
             );
     }
 
-    /* 3. Verify signature */
+    /// @notice Verify a signature
+    /// @dev Generate the signed messageHash from the parameters to verify the signature against
+    /// @param _signer The signer of the signature (the owner of the contract)
+    /// @param _messageHash The hash of the packed message (messageHash) to be signed
+    /// @param _signature The signature of the proof signed by the signer
+    /// @return bool Returns the result of the verification, where true indicates success and false indicates failure
     function verify(
         address _signer,
         bytes32 _messageHash,
-        bytes memory signature
+        bytes memory _signature
     ) internal pure returns (bool) {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(_messageHash);
 
-        return recoverSigner(ethSignedMessageHash, signature) == _signer;
+        return recoverSigner(ethSignedMessageHash, _signature) == _signer;
     }
 
+    /// @notice Recover the signer from the signed messageHash and the signature
+    /// @dev This uses ecrecover
+    /// @param _ethSignedMessageHash The signed messageHash created from the parameters
+    /// @param _signature The signature of the proof signed by the signer
+    /// @return address Returns the recovered address
     function recoverSigner(
         bytes32 _ethSignedMessageHash,
         bytes memory _signature
@@ -65,6 +73,12 @@ contract GenericSignatureHelper {
         return ecrecover(_ethSignedMessageHash, v, r, s);
     }
 
+    /// @notice Splits the signature into r, s, and v
+    /// @dev This is necessary for the ecrecover function
+    /// @param sig The signature
+    /// @return r Returns the first 32 bytes of the signature
+    /// @return s Returns the second 32 bytes of the signature
+    /// @return v Returns the last byte of the signature
     function splitSignature(
         bytes memory sig
     ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
