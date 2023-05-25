@@ -45,21 +45,45 @@ const currentBlockNumber = async (): Promise<number> => {
   return blockNumber;
 };
 
-const to18Decimal = (amount: number, exponent = 18): BigNumber => {
-  return BigNumber.from(amount).mul(BigNumber.from(10).pow(exponent));
+const numberOfDecimals = (number: number): number => {
+  if (Math.floor(number.valueOf()) === number.valueOf()) return 0;
+  return (number.toString().split(".")[1] || []).length;
+};
+
+const to18Decimal = (amount: number): BigNumber => {
+  const { amount: newAmount, exponent } = tenFoldUntilLimit(amount);
+
+  return BigNumber.from(newAmount).mul(BigNumber.from(10).pow(18 - exponent));
+};
+
+const tenFoldUntilLimit = (
+  amount: number
+): { amount: number; exponent: number } => {
+  let i = 0;
+  for (; i <= 18; i++) {
+    if (Number.MAX_SAFE_INTEGER / 10 < amount) {
+      break;
+    }
+    amount *= 10;
+  }
+
+  return { amount: Math.round(amount), exponent: i };
 };
 
 /* CONSTANTS */
-const INITIAL_AMOUNT = 10;
+const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 decimal version
 const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT);
+const DECIMALS_18 = to18Decimal(1);
 const MAX_BLOCKS_PASSED = 1000;
+
 const SLOPE_N = 1001;
 const SLOPE_D = 1000;
+
 const BASE_N = 1005;
 const BASE_D = 1000;
 
-const BASE_REWARD = 123456;
-const BASE_REWARD_18 = to18Decimal(BASE_REWARD, 16);
+const BASE_REWARD = 1234.56; // Never used except to calculate the 18 decimal version
+const BASE_REWARD_18 = to18Decimal(BASE_REWARD);
 
 describe.only("RewardMultiplier", function () {
   it("should give 0 multiplier for non-existing variable", async function () {
@@ -84,7 +108,7 @@ describe.only("RewardMultiplier", function () {
       "nonsense",
       pastBlock,
       INITIAL_AMOUNT_18
-    ); 
+    );
     const multiplierAfterConstant = await IRewardMultiplierFacet.getMultiplier(
       "nonsense"
     );
@@ -104,17 +128,20 @@ describe.only("RewardMultiplier", function () {
       pastBlock,
       INITIAL_AMOUNT_18,
       SLOPE_N,
-      SLOPE_D,
+      SLOPE_D
     );
     const multiplierAfterLinear = await IRewardMultiplierFacet.getMultiplier(
       "nonsense"
     );
 
-    const growth = (blockNumber - pastBlock) * (SLOPE_N / SLOPE_D) * 1000; // multiply by 1000 for precision in integer conversion
-    const total = INITIAL_AMOUNT * 1000 + growth;
-    const bigGrowth = to18Decimal(Math.round(total)).div(1000);
+    const blocksPassed = blockNumber - pastBlock;
+    const total = calculateLinearGrowth(blocksPassed);
 
-    expect(multiplierAfterLinear).to.be.approximately(bigGrowth, 10); // For rounding errors
+    expect(multiplierAfterLinear).to.be.approximately(total, 10); // For rounding errors
+
+    // Check that the multiplier is not approximately the same if the block number is different
+    const wrongTotal = calculateLinearGrowth(blocksPassed + 1);
+    expect(multiplierAfterLinear).to.not.be.approximately(wrongTotal, 10); // For rounding errors
   });
 
   it("should give multiplier based on exponential growth", async function () {
@@ -136,11 +163,21 @@ describe.only("RewardMultiplier", function () {
       await IRewardMultiplierFacet.getMultiplier("nonsense");
 
     // Calculate modifier + growth in js with BigNumber for precision
-    const base = BigNumber.from(Math.round(BASE_N / BASE_D * 1000)); // Needs Math.round due to rounding errors with division
-    const growth = base.pow(blockNumber - pastBlock).mul(to18Decimal(10));
-    const bigGrowth = growth.div(BigNumber.from(1000).pow(blockNumber - pastBlock));
+    const exponent = blockNumber - pastBlock;
+    const multiplier = calculateExponentialGrowth(exponent);
 
-    expect(multiplierAfterExponential).to.be.approximately(bigGrowth, 10); // For rounding errors
+    expect(multiplierAfterExponential).to.be.approximately(
+      multiplier,
+      INITIAL_AMOUNT_18.div(DECIMALS_18)
+    ); // For rounding errors
+
+    // Check that the multiplier is not approximately the same if the exponent is different
+    const wrongMultiplier = calculateExponentialGrowth(exponent + 1);
+
+    expect(multiplierAfterExponential).to.be.not.approximately(
+      wrongMultiplier,
+      INITIAL_AMOUNT_18.div(DECIMALS_18)
+    ); // For rounding errors
   });
 
   it("should apply multiplier to reward", async function () {
@@ -158,15 +195,52 @@ describe.only("RewardMultiplier", function () {
       BASE_N,
       BASE_D
     );
-    const multipliedReward =
-      await IRewardMultiplierFacet.applyMultiplier("nonsense", BASE_REWARD_18);
+    const multipliedReward = await IRewardMultiplierFacet.applyMultiplier(
+      "nonsense",
+      BASE_REWARD_18
+    );
 
-    // Calculate modifier + growth in js with BigNumber for precision
-    const base = BigNumber.from(Math.round(BASE_N / BASE_D * 1000)); // Needs Math.round due to rounding errors with division
-    const growth = base.pow(blockNumber - pastBlock).mul(to18Decimal(10)).mul(BASE_REWARD);
-    const bigGrowth = growth.div(BigNumber.from(1000).pow(blockNumber - pastBlock));
-    const expectedReward = bigGrowth.div(100); // TODO: make this generic
+    /* Calculate modifier + growth in js with BigNumber for precision */
+    const exponent = blockNumber - pastBlock;
+    const bigGrowth = calculateExponentialAppliedMultiplier(exponent);
+    expect(multipliedReward).to.be.approximately(
+      bigGrowth,
+      INITIAL_AMOUNT_18.mul(BASE_REWARD_18).div(DECIMALS_18).div(DECIMALS_18)
+    ); // For rounding errors
 
-    expect(multipliedReward).to.be.approximately(expectedReward, 10); // For rounding errors
+    /* Check that the multiplier is not approximately the same if the exponent is different */
+    const wrongMultiplier = calculateExponentialAppliedMultiplier(exponent + 1);
+    expect(multipliedReward).to.be.not.approximately(
+      wrongMultiplier,
+      INITIAL_AMOUNT_18.mul(BASE_REWARD_18).div(DECIMALS_18).div(DECIMALS_18)
+    ); // For rounding errors
   });
 });
+
+const calculateLinearGrowth = (blocksPassed: number): BigNumber => {
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(SLOPE_N / SLOPE_D);
+  const growth = BigNumber.from(amount)
+    .mul(blocksPassed)
+    .mul(10 ** (18 - numShifted));
+  return INITIAL_AMOUNT_18.add(growth);
+};
+
+const calculateExponentialGrowth = (exponent: number): BigNumber => {
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE_N / BASE_D);
+  const base = BigNumber.from(amount); // Needs Math.round due to rounding errors with division
+  const growth = base.pow(exponent).mul(INITIAL_AMOUNT_18);
+  return growth.div(BigNumber.from(10 ** numShifted).pow(exponent));
+};
+
+const calculateExponentialAppliedMultiplier = (exponent: number): BigNumber => {
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE_N / BASE_D);
+  const base = BigNumber.from(amount); // Needs Math.round due to rounding errors with division
+  const growth = base
+    .pow(exponent)
+    .mul(BASE_REWARD_18)
+    .mul(INITIAL_AMOUNT_18)
+    .div(DECIMALS_18);
+  return growth.div(BigNumber.from(10 ** numShifted).pow(exponent));
+};
+
+// 678902321465579952089726465533
