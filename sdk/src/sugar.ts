@@ -73,11 +73,11 @@ export class DiamondGovernanceSugar {
      * @param id Id of the proposal to retrieve
      * @returns {Promise<Proposal>} Proposal object
      */
-    public async GetProposal(id : number) : Promise<Proposal> {
+    public async GetProposal(id : number, useCache : boolean = true) : Promise<Proposal> {
         if (this.proposalCache == null) {
             this.proposalCache = await this.InitProposalCache();
         }
-        return await this.proposalCache.GetProposal(id);
+        return await this.proposalCache.GetProposal(id, useCache);
     }
 
     /**
@@ -102,7 +102,7 @@ export class DiamondGovernanceSugar {
         const IPartialVotingProposalFacet = await this.pure.IPartialVotingProposalFacet();
         return await IPartialVotingProposalFacet.createProposal(
             EncodeMetadata(metadata), 
-            await asyncMap(actions, (action : Action) => ToAction(this.pure, this.pure.pluginAddress, action)), 
+            await asyncMap(actions, (action : Action) => ToAction(this.pure, this.pure.pluginAddress, action, this.pure.signer)), 
             0, 
             ToBlockchainDate(startDate), 
             ToBlockchainDate(endDate), 
