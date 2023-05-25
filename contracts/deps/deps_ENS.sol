@@ -5,8 +5,8 @@
 
 //SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.17;
+pragma solidity ^0.8.0;
 
-import "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
-import "@ensdomains/ens-contracts/contracts/registry/FIFSRegistrar.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
+import { ENSRegistry } from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import { FIFSRegistrar } from "@ensdomains/ens-contracts/contracts/registry/FIFSRegistrar.sol";
+import { PublicResolver } from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";

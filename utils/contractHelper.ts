@@ -9,6 +9,7 @@
 import { Contract } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import abisJson from "../generated/abis.json";
+import functionSelectors from "../generated/functionSelectors.json";
 
 export class NamedContract extends Contract {
   public contractName: string;
@@ -38,4 +39,13 @@ export function GetAbi(name : string) : any[] {
   }
 
   return abis[name];
+}
+
+export function ReverseFunctionSelectorLookup(functionSelector : string) : string {
+  const selectorLookup = functionSelectors as { [selector : string]: string };
+  if (!selectorLookup.hasOwnProperty(functionSelector)) {
+    throw new Error(`Function selector ${functionSelector} not found, perhaps you need to regenerate functionSelectors.json?`);
+  }
+
+  return selectorLookup[functionSelector];
 }

@@ -14,7 +14,7 @@ import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
-import { now, days } from "../utils/timeUnits";
+import { days } from "../utils/timeUnits";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";

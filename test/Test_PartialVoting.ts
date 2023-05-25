@@ -11,7 +11,7 @@ import { ethers } from "hardhat";
 
 // Tests
 import { expect } from "chai";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { now, days } from "../utils/timeUnits";
@@ -26,7 +26,7 @@ import { getEvents } from "../utils/utils";
 // Other
 import { DiamondGovernanceClient, ProposalMetadata, VoteOption } from "../sdk/index";
 
-async function getClient() {
+export async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
@@ -106,7 +106,7 @@ export async function createProposalWithClient(client : DiamondGovernanceClient)
     throw new Error("Proposal creation event not found");
   }
   const proposalId = proposalCreationEvent[0].args.proposalId;
-  const proposal = await client.sugar.GetProposal(proposalId);
+  const proposal = await client.sugar.GetProposal(proposalId, false);
 
   return { client, proposal };
 }
