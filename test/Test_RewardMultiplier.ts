@@ -85,7 +85,7 @@ const BASE_D = 1000;
 const BASE_REWARD = 1234.56; // Never used except to calculate the 18 decimal version
 const BASE_REWARD_18 = to18Decimal(BASE_REWARD);
 
-describe.only("RewardMultiplier", function () {
+describe("RewardMultiplier", function () {
   it("should give 0 multiplier for non-existing variable", async function () {
     const client = await loadFixture(getClient);
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
