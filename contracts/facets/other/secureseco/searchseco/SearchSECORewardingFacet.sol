@@ -108,14 +108,6 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         return LibSearchSECORewardingStorage.getStorage().signer;
     }
 
-    /// @notice Sets the hash reward (REP)
-    /// @param _hashReward The new hash reward
-    function setHashReward(
-        uint _hashReward
-    ) public auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
-        LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
-    }
-
     /// @inheritdoc ISearchSECORewardingFacet
     function setRewardingSigner(
         address _newSigner
@@ -124,5 +116,17 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
             storage s = LibSearchSECORewardingStorage.getStorage();
 
         s.signer = _newSigner;
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function getHashReward() external view override returns (uint) {
+        return LibSearchSECORewardingStorage.getStorage().hashReward;
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function setHashReward(
+        uint _hashReward
+    ) external override auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
+        LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
     }
 }

@@ -35,4 +35,12 @@ abstract contract ISearchSECORewardingFacet {
     /// @notice Sets the signer used for signature verification
     /// @param _newSigner The new signer
     function setRewardingSigner(address _newSigner) external virtual;
+
+    /// @notice Sets the hash reward (REP)
+    /// @param _hashReward The new hash reward (18 decimals precision)
+    function setHashReward(uint _hashReward) external virtual;
+
+    /// @notice Gets the hash reward (REP)
+    /// @return uint The current hash reward (18 decimals precision)
+    function getHashReward() external virtual returns (uint);
 }
