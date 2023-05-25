@@ -143,30 +143,30 @@ describe.only("RewardMultiplier", function () {
     expect(multiplierAfterExponential).to.be.approximately(bigGrowth, 10); // For rounding errors
   });
 
-  // it("should apply multiplier to reward", async function () {
-  //   const client = await loadFixture(getClient);
-  //   const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
+  it("should apply multiplier to reward", async function () {
+    const client = await loadFixture(getClient);
+    const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
-  //   /* ------ Set exponential multiplier ------ */
-  //   const blockNumber = await currentBlockNumber();
-  //   const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
+    /* ------ Set exponential multiplier ------ */
+    const blockNumber = await currentBlockNumber();
+    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
 
-  //   await IRewardMultiplierFacet.setMultiplierTypeExponential(
-  //     "nonsense",
-  //     pastBlock,
-  //     INITIAL_AMOUNT_18,
-  //     BASE_N,
-  //     BASE_D
-  //   );
-  //   const multipliedReward =
-  //     await IRewardMultiplierFacet.applyMultiplier("nonsense", BASE_REWARD_18);
+    await IRewardMultiplierFacet.setMultiplierTypeExponential(
+      "nonsense",
+      pastBlock,
+      INITIAL_AMOUNT_18,
+      BASE_N,
+      BASE_D
+    );
+    const multipliedReward =
+      await IRewardMultiplierFacet.applyMultiplier("nonsense", BASE_REWARD_18);
 
-  //   // Calculate modifier + growth in js with BigNumber for precision
-  //   const base = BigNumber.from(Math.round(BASE_N / BASE_D * 1000)); // Needs Math.round due to rounding errors with division
-  //   const growth = base.pow(blockNumber - pastBlock).mul(to18Decimal(10));
-  //   const bigGrowth = growth.div(BigNumber.from(1000).pow(blockNumber - pastBlock));
-  //   const expectedReward = bigGrowth.mul(BASE_REWARD).div(100); // TODO: make this generic
+    // Calculate modifier + growth in js with BigNumber for precision
+    const base = BigNumber.from(Math.round(BASE_N / BASE_D * 1000)); // Needs Math.round due to rounding errors with division
+    const growth = base.pow(blockNumber - pastBlock).mul(to18Decimal(10)).mul(BASE_REWARD);
+    const bigGrowth = growth.div(BigNumber.from(1000).pow(blockNumber - pastBlock));
+    const expectedReward = bigGrowth.div(100); // TODO: make this generic
 
-  //   expect(multipliedReward).to.be.approximately(expectedReward, 10); // For rounding errors
-  // });
+    expect(multipliedReward).to.be.approximately(expectedReward, 10); // For rounding errors
+  });
 });
