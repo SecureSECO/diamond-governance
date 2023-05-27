@@ -18,7 +18,12 @@ import {GenericSignatureHelper} from "../../../../utils/GenericSignatureHelper.s
 /// @title A contract reward SearchSECO Spider users for submitting new hashes
 /// @author J.S.C.L & T.Y.M.W.
 /// @notice This contract is used to reward users for submitting new hashes
-contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISearchSECORewardingFacet, IFacet {
+contract SearchSECORewardingFacet is
+    AuthConsumer,
+    GenericSignatureHelper,
+    ISearchSECORewardingFacet,
+    IFacet
+{
     // Permission used by the setHashReward function
     bytes32 public constant UPDATE_HASH_REWARD_PERMISSION_ID =
         keccak256("UPDATE_HASH_REWARD_PERMISSION_ID");
@@ -44,7 +49,8 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         SearchSECORewardingFacetInitParams memory _params
     ) public virtual {
         // Set signer for signature verification
-        LibSearchSECORewardingStorage.Storage storage s = LibSearchSECORewardingStorage.getStorage();
+        LibSearchSECORewardingStorage.Storage
+            storage s = LibSearchSECORewardingStorage.getStorage();
         s.signer = _params.signer;
         s.hashReward = 1;
 
@@ -71,7 +77,11 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
 
         // Validate the given proof
         require(
-            verify(s.signer, keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)), _proof),
+            verify(
+                s.signer,
+                keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)),
+                _proof
+            ),
             "Proof is not valid"
         );
 
