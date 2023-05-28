@@ -70,7 +70,7 @@ contract ERC20OneTimeRewardFacet is IERC20OneTimeRewardFacet, IERC20ClaimableFac
     }
 
     /// @inheritdoc IERC20OneTimeRewardFacet
-    function setOneTimeReward(uint256 _reward) external virtual override auth(UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID) {
-        LibERC20OneTimeRewardStorage.getStorage().reward = _reward;
+    function setOneTimeReward(uint256 _oneTimeReward) external virtual override auth(UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID) {
+        LibERC20OneTimeRewardStorage.getStorage().reward = _oneTimeReward;
     }
 }

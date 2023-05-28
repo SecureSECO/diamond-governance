@@ -16,9 +16,9 @@ interface IERC20TimeClaimableFacet {
 
     function getClaimPeriodInterval() external view returns (uint256);
 
-    function setClaimPeriodInterval(uint256 _timeTillReward) external;
+    function setClaimPeriodInterval(uint256 _claimPeriodInterval) external;
 
     function getClaimPeriodMax() external view returns (uint256);
 
-    function setClaimPeriodMax(uint256 _maxTimeRewarded) external;
+    function setClaimPeriodMax(uint256 _claimPeriodMax) external;
 }

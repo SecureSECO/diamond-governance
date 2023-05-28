@@ -63,11 +63,22 @@ async function main() {
             if (getFunctionFrag.inputs.length > 0) { continue; }
 
             // Get function without output is illegal
-            if (getFunctionFrag.outputs == undefined) { continue; }
-            if (getFunctionFrag.outputs.length < 0) { continue; }
-            if (getFunctionFrag.outputs.length > 1) { console.warn("Variable get function for", variableName, "has more than 1 output"); }
+            if (getFunctionFrag.outputs == undefined) { console.warn("Variable get function for", variableName, "has no outputs"); continue; }
+            if (getFunctionFrag.outputs.length < 0) { console.warn("Variable get function for", variableName, "has no outputs"); continue; }
+            if (getFunctionFrag.outputs.length > 1) { console.warn("Variable get function for", variableName, "has more than 1 output"); continue; }
 
-            // More set function checks can be done here for validation (input == output)
+            // Check if set function matches the get function and follows the programming patterns
+            const setFunctionFrag = contract.interface.functions[functions[setFunctionIndex]];
+            if (setFunctionFrag.inputs.length < 0) { console.warn("Variable set function for", variableName, "has no inputs"); continue; }
+            if (setFunctionFrag.inputs.length > 1) { console.warn("Variable set function for", variableName, "has more than 1 input"); continue; }
+            if (setFunctionFrag.inputs[0].type !== getFunctionFrag.outputs[0].type) {
+                console.warn("Variable get and set function for", variableName, "have different types for out and input"); 
+                continue; 
+            }
+            if (setFunctionFrag.inputs[0].name !== "_" + firstLetterToLowercase(variableName)) {
+                console.warn("Variable set function for", variableName, "does not follow pattern of _variableName"); 
+                continue;
+            }
 
             variableSelectors[contract.interface.getSighash(functions[j])] = {
                 facetName: name,
@@ -88,6 +99,10 @@ async function main() {
     fs.writeFileSync(reverseSelectorFile, JSON.stringify(reverseFunctionSelectorLookup));
     fs.writeFileSync(variableSelectorFile, JSON.stringify(variableSelectors));
     console.log("Finished generating of SDK with", interfaceKeys.length, "interfaces");
+}
+
+function firstLetterToLowercase(str : string) : string {
+    return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

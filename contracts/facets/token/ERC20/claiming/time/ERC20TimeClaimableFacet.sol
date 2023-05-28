@@ -72,8 +72,8 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
     }
 
     /// @inheritdoc IERC20TimeClaimableFacet
-    function setClaimPeriodInterval(uint256 _timeTillReward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        LibERC20TimeClaimableStorage.getStorage().timeTillReward = _timeTillReward;
+    function setClaimPeriodInterval(uint256 _claimPeriodInterval) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
+        LibERC20TimeClaimableStorage.getStorage().timeTillReward = _claimPeriodInterval;
     }
 
     /// @inheritdoc IERC20TimeClaimableFacet
@@ -82,8 +82,8 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
     }
 
     /// @inheritdoc IERC20TimeClaimableFacet
-    function setClaimPeriodMax(uint256 _maxTimeRewarded) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded = _maxTimeRewarded;
+    function setClaimPeriodMax(uint256 _claimPeriodMax) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
+        LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded = _claimPeriodMax;
     }
 
     function _tokensClaimableAt(address _claimer, uint256 _timeStamp) internal view virtual returns (uint256 amount) {
