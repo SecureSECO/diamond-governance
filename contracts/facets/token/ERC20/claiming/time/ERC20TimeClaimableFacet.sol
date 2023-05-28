@@ -66,19 +66,23 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
         LibERC20TimeClaimableStorage.getStorage().lastClaim[_claimer] = block.timestamp;
     }
 
-    function setClaimPeriodInterval(uint256 _timeTillReward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        _setClaimPeriodInterval(_timeTillReward);
+    /// @inheritdoc IERC20TimeClaimableFacet
+    function getClaimPeriodInterval() external view virtual override returns (uint256) {
+        return LibERC20TimeClaimableStorage.getStorage().timeTillReward;
     }
 
-    function _setClaimPeriodInterval(uint256 _timeTillReward) internal virtual {
+    /// @inheritdoc IERC20TimeClaimableFacet
+    function setClaimPeriodInterval(uint256 _timeTillReward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
         LibERC20TimeClaimableStorage.getStorage().timeTillReward = _timeTillReward;
     }
 
-    function setClaimPeriodMax(uint256 _maxTimeRewarded) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        _setClaimPeriodMax(_maxTimeRewarded);
+    /// @inheritdoc IERC20TimeClaimableFacet
+    function getClaimPeriodMax() external view virtual override returns (uint256) {
+        return  LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded;
     }
 
-    function _setClaimPeriodMax(uint256 _maxTimeRewarded) internal virtual {
+    /// @inheritdoc IERC20TimeClaimableFacet
+    function setClaimPeriodMax(uint256 _maxTimeRewarded) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
         LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded = _maxTimeRewarded;
     }
 

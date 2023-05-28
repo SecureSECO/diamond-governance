@@ -11,12 +11,14 @@ import { generateInterfaceIds } from "./sdk/GenerateInterfaceIds";
 import { GetContractAt } from "../utils/contractHelper";
 import { ethers } from "hardhat";
 import { getSelectors } from "../utils/diamondHelper";
+import { functionSelectorsJson, variableSelectorsJson } from "../utils/jsonTypes";
 
 const insertInterfaces = "/* interfaces */";
 const insertMethods = "/* interface methods */";
 const templateFile = "./generated/client-template.ts";
 const outputFile = "./generated/client.ts";
 const reverseSelectorFile = "./generated/functionSelectors.json";
+const variableSelectorFile = "./generated/variableSelectors.json";
 
 async function generateInterfaceMethod(interfaceName : string, interfaceId : string) : Promise<string> {
     return `
@@ -32,15 +34,47 @@ async function main() {
     const interfaceKeys = Object.keys(interfaceIds);
 
     let interfaceMethodArray = [];
-    let reverseFunctionSelectorLookup : { [selector: string]: string} = {};
+    let reverseFunctionSelectorLookup : functionSelectorsJson = {};
+    let variableSelectors : variableSelectorsJson = {};
     for (let i = 0; i < interfaceKeys.length; i++) {
         const name = interfaceKeys[i];
         interfaceMethodArray.push(await generateInterfaceMethod(name, interfaceIds[name]));
 
         const contract = await GetContractAt(name, ethers.constants.AddressZero, owner);
+        //reverseFunctionSelectorLookup
         const selectors = getSelectors(contract).selectors;
         for (let j = 0; j < selectors.length; j++) {
             reverseFunctionSelectorLookup[selectors[j]] = name;
+        }
+
+        //variableSelectors
+        variableSelectors[interfaceIds[name]] = { facetName: name, variables: { } };
+        const functions = Object.keys(contract.interface.functions);
+        for (let j = 0; j < functions.length; j++) {
+            // Is not a get function (getX(args))
+            if (!functions[j].startsWith("get")) { continue; }
+            const variableName = functions[j].split('(')[0].substring(3);
+
+            // There exists no set function (setX(args)) 
+            const setFunctionIndex = functions.findIndex(f => f.startsWith("set" + variableName));
+            if (setFunctionIndex === -1) { continue; }
+
+            const getFunctionFrag = contract.interface.functions[functions[j]];
+            // Get functions with inputs currently not supported
+            if (getFunctionFrag.inputs.length > 0) { continue; }
+
+            // Get function without output is illegal
+            if (getFunctionFrag.outputs == undefined) { continue; }
+            if (getFunctionFrag.outputs.length < 0) { continue; }
+            if (getFunctionFrag.outputs.length > 1) { console.warn("Variable get function for", variableName, "has more than 1 output"); }
+
+            // More set function checks can be done here for validation (input == output)
+
+            variableSelectors[interfaceIds[name]].variables[contract.interface.getSighash(functions[j])] = {
+                variableName: variableName,
+                variableType: getFunctionFrag.outputs[0].format("full"),
+                setSelector: contract.interface.getSighash(functions[setFunctionIndex]),
+            };
         }
     }
     
@@ -52,6 +86,7 @@ async function main() {
 
     fs.writeFileSync(outputFile, newClient);
     fs.writeFileSync(reverseSelectorFile, JSON.stringify(reverseFunctionSelectorLookup));
+    fs.writeFileSync(variableSelectorFile, JSON.stringify(variableSelectors));
     console.log("Finished generating of SDK with", interfaceKeys.length, "interfaces");
 }
 

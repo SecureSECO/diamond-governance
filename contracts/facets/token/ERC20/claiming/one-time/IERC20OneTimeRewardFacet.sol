@@ -13,4 +13,8 @@ interface IERC20OneTimeRewardFacet {
     function tokensClaimableOneTime() external view returns (uint256 amount);
 
     function claimOneTime() external;
+
+    function getOneTimeReward() external view returns (uint256);
+
+    function setOneTimeReward(uint256 _reward) external;
 }

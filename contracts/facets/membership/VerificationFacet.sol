@@ -69,7 +69,7 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
 
     /// @notice Whitelist a given account
     /// @inheritdoc IMembershipWhitelisting
-    function whitelist(address _address) external auth(WHITELIST_MEMBER_PERMISSION_ID) {
+    function whitelist(address _address) external virtual override auth(WHITELIST_MEMBER_PERMISSION_ID) {
         LibVerificationStorage.getStorage().whitelistTimestamps[_address] = uint64(block.timestamp);
     }
 
@@ -99,7 +99,7 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     function getStampsAt(
         address _address,
         uint _timestamp
-    ) public view override returns (SignVerification.Stamp[] memory) {
+    ) public view virtual override returns (SignVerification.Stamp[] memory) {
         LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
         SignVerification verificationContract = SignVerification(ds.verificationContractAddress);
         SignVerification.Stamp[] memory stamps = verificationContract.getStampsAt(
@@ -196,15 +196,18 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
         return tier;
     }
 
-    /// @notice Updates a "tier" score for a given provider. This can be used to either score new providers or update
-    /// scores of already scored providers
-    /// @dev This maps a providerId to a uint256 tier
-    function updateTierMapping(string calldata providerId, uint256 tier) external auth(UPDATE_TIER_MAPPING_PERMISSION_ID) {
-        LibVerificationStorage.getStorage().tierMapping[providerId] = tier;
+    /// @inheritdoc IVerificationFacet
+    function getTierMapping(string calldata _providerId) external view virtual override returns (uint256) {
+        return LibVerificationStorage.getStorage().tierMapping[_providerId];
     }
 
     /// @inheritdoc IVerificationFacet
-    function getVerificationContractAddress() external view override returns (address) {
+    function setTierMapping(string calldata _providerId, uint256 _tier) external virtual override auth(UPDATE_TIER_MAPPING_PERMISSION_ID) {
+        LibVerificationStorage.getStorage().tierMapping[_providerId] = _tier;
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function getVerificationContractAddress() external view virtual override returns (address) {
         return LibVerificationStorage.getStorage().verificationContractAddress;
     }
 }

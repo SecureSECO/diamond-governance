@@ -33,7 +33,7 @@ contract GithubPullRequestFacet is IGithubPullRequestFacet, AuthConsumer, IFacet
     /// @param _owner Owner of the repository
     /// @param _repo Name of the repository
     /// @param _pull_number Number of the pull request
-    function merge(string memory _owner, string memory _repo, string memory _pull_number) external override auth(MERGE_PR_PERMISSION_ID) {
+    function merge(string memory _owner, string memory _repo, string memory _pull_number) external virtual override auth(MERGE_PR_PERMISSION_ID) {
         emit MergePullRequest(_owner, _repo, _pull_number);
     }
 }

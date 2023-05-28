@@ -18,7 +18,7 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { IERC20, Ownable } from "../typechain-types";
+import { ERC20MonetaryToken, IERC20, Ownable } from "../typechain-types";
 
 // Types
 
@@ -50,15 +50,6 @@ describe("MonetaryTokenContract", () => {
     expect(await IChangeableTokenContract.getTokenContractAddress()).to.equal(monetaryTokenContractAddress);
   });
 
-  it("should not be able to mint monetary token without permission (owner)", async () => {
-    const client = await loadFixture(getClient);
-    const [owner] = await ethers.getSigners();
-
-    const IMonetaryTokenMintable = await client.pure.IMonetaryTokenMintable();
-
-    expect(IMonetaryTokenMintable.mintMonetaryToken(owner.address, 1)).to.be.reverted;
-  });
-
   it("should update contract address on set", async () => {
     const client = await loadFixture(getClient);
     
@@ -68,22 +59,30 @@ describe("MonetaryTokenContract", () => {
     expect(await IChangeableTokenContract.getTokenContractAddress()).to.equal(ethers.constants.AddressZero);
   });
 
-  it("should be able to mint monetary token with permission (owner)", async () => {
+  it("should be able to mint monetary token once", async () => {
     const client = await loadFixture(getClient);
     const [owner] = await ethers.getSigners();
+    const diamondGovernance = await getDeployedDiamondGovernance(owner);
+    const mintAmount = 10;
 
-    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
-    const monetaryTokenContractAddress = await IChangeableTokenContract.getTokenContractAddress();
-    const IMonetaryTokenMintable = await client.pure.IMonetaryTokenMintable();
-    
-    const Ownable = await GetTypedContractAt<Ownable>("Ownable", monetaryTokenContractAddress, owner);
-    await Ownable.transferOwnership(client.pure.pluginAddress);
+    const monetaryTokenContractAddress = diamondGovernance.ERC20MonetaryToken.address;
+    const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
 
-    const IERC20 = await GetTypedContractAt<IERC20>("IERC20", monetaryTokenContractAddress, owner);
-    const oldBalance = await IERC20.balanceOf(owner.address);
-    await IMonetaryTokenMintable.mintMonetaryToken(owner.address, 1);
-    const newBalance = await IERC20.balanceOf(owner.address);
+    const balanceBefore = await ERC20MonetaryToken.balanceOf(owner.address);
+    await ERC20MonetaryToken.init(owner.address, mintAmount);
+    const balanceAfter = await ERC20MonetaryToken.balanceOf(owner.address);
+    expect(balanceAfter).to.be.equal(balanceBefore.add(mintAmount));
+  });
 
-    expect(newBalance).to.equal(oldBalance.add(1));
+  it("should not be able to mint monetary token twice", async () => {
+    const client = await loadFixture(getClient);
+    const [owner] = await ethers.getSigners();
+    const diamondGovernance = await getDeployedDiamondGovernance(owner);
+
+    const monetaryTokenContractAddress = diamondGovernance.ERC20MonetaryToken.address;
+    const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
+
+    await ERC20MonetaryToken.init(owner.address, 10);
+    expect(ERC20MonetaryToken.init(owner.address, 10)).to.be.reverted;
   });
 });

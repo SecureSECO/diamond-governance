@@ -10,5 +10,7 @@
 pragma solidity ^0.8.0;
 
 interface IERC20TieredTimeClaimableFacet {
+    function getClaimReward(uint256 _tier) external view returns (uint256);
+
     function setClaimReward(uint256 _tier, uint256 _reward) external;
 }

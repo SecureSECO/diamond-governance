@@ -109,29 +109,47 @@ interface IPartialVotingProposalFacet {
     /// @param votingSettings The new voting settings.
     event VotingSettingsUpdated(VotingSettings votingSettings);
 
-    /// @notice Returns the voting settings.
-    /// @return The vote mode parameter.
-    function votingMode() external view returns (IPartialVotingFacet.VotingMode);
+    /// @notice Returns the voting mode parameter stored in the voting settings.
+    /// @return The voting mode parameter.
+    function getVotingMode() external view returns (IPartialVotingFacet.VotingMode);
+
+    /// @notice Change the voting mode parameter stored in the voting settings.
+    function setVotingMode(IPartialVotingFacet.VotingMode _votingMode) external;
 
     /// @notice Returns the support threshold parameter stored in the voting settings.
     /// @return The support threshold parameter.
-    function supportThreshold() external view returns (uint32);
+    function getSupportThreshold() external view returns (uint32);
+
+    /// @notice Change the support threshold parameter stored in the voting settings.
+    function setSupportThreshold(uint32 _supportThreshold) external;
 
     /// @notice Returns the minimum participation parameter stored in the voting settings.
     /// @return The minimum participation parameter.
-    function minParticipation() external view returns (uint32);
+    function getMinParticipation() external view returns (uint32);
+
+    /// @notice Change the minimum participation parameter stored in the voting settings.
+    function setMinParticipation(uint32 _minParticipation) external;
 
     /// @notice Returns the max single wallet power parameter stored in the voting settings.
     /// @return The max single wallet power parameter.
-    function maxSingleWalletPower() external view returns (uint32);
+    function getMaxSingleWalletPower() external view returns (uint32);
+
+    /// @notice Change the max single wallet power parameter stored in the voting settings.
+    function setMaxSingleWalletPower(uint32 _maxSingleWalletPower) external;
 
     /// @notice Returns the minimum duration parameter stored in the voting settings.
     /// @return The minimum duration parameter.
-    function minDuration() external view returns (uint64);
+    function getMinDuration() external view returns (uint64);
 
-    /// @notice Returns the minimum voting power required to create a proposa stored in the voting settings.
+    /// @notice Change the minimum duration parameter stored in the voting settings.
+    function setMinDuration(uint64 _minDuration) external;
+
+    /// @notice Returns the minimum voting power required to create a proposal stored in the voting settings.
     /// @return The minimum voting power required to create a proposal.
-    function minProposerVotingPower() external view returns (uint256);
+    function getMinProposerVotingPower() external view returns (uint256);
+
+    /// @notice Change the minimum voting power required to create a proposal stored in the voting settings.
+    function setMinProposerVotingPower(uint256 _minProposerVotingPower) external;
 
     /// @notice Checks if the support value defined as $$\texttt{support} = \frac{N_\text{yes}}{N_\text{yes}+N_\text{no}}$$ for a proposal vote is greater than the support threshold.
     /// @param _proposalId The ID of the proposal.

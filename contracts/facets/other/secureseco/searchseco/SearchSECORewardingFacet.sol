@@ -64,7 +64,7 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         uint _nonce,
         uint _repFrac,
         bytes calldata _proof
-    ) external override {
+    ) external virtual override {
         // This is necessary to read from storage
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
@@ -99,30 +99,30 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getHashCount(address _user) public view override returns (uint) {
+    function getHashCount(address _user) public view virtual override returns (uint) {
         return LibSearchSECORewardingStorage.getStorage().hashCount[_user];
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getRewardingSigner() external view override returns (address) {
-        return LibSearchSECORewardingStorage.getStorage().signer;
+    function getHashReward() external view virtual override returns (uint) {
+        return LibSearchSECORewardingStorage.getStorage().hashReward;
     }
 
-    /// @notice Sets the hash reward (REP)
-    /// @param _hashReward The new hash reward
-    function setHashReward(
-        uint _hashReward
-    ) public auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
+    /// @inheritdoc ISearchSECORewardingFacet
+    function setHashReward(uint _hashReward) public virtual override auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
         LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function setRewardingSigner(
-        address _newSigner
-    ) external override auth(UPDATE_REWARDING_SIGNER_PERMISSION_ID) {
+    function getRewardingSigner() external view virtual override returns (address) {
+        return LibSearchSECORewardingStorage.getStorage().signer;
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function setRewardingSigner(address _rewardingSigner) external virtual override auth(UPDATE_REWARDING_SIGNER_PERMISSION_ID) {
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
 
-        s.signer = _newSigner;
+        s.signer = _rewardingSigner;
     }
 }

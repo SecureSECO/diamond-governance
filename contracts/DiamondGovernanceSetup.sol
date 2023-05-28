@@ -4,7 +4,7 @@
   * © Copyright Utrecht University (Department of Information and Computing Sciences)
   */
 
-pragma solidity 0.8.17;
+pragma solidity ^0.8.0;
 
 import { PermissionLib } from "@aragon/osx/core/permission/PermissionLib.sol";
 import { PluginSetup } from "@aragon/osx/framework/plugin/setup/PluginSetup.sol";

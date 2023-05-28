@@ -17,7 +17,7 @@ import { IFacet } from "../../facets/IFacet.sol";
 
 contract AragonAuthFacet is IAuthProvider, IFacet {
     /// @inheritdoc IAuthProvider
-    function auth(bytes32 _permissionId) external virtual override {
+    function auth(bytes32 _permissionId) external view virtual override {
       IDAO dao = DAOReferenceFacet(address(this)).dao();
       if (msg.sender != address(dao)) {
         _auth(dao, address(this), msg.sender, _permissionId, msg.data);
