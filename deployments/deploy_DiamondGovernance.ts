@@ -51,10 +51,12 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
     await ERC20MonetaryToken.deployed();
 
     if (!testing()) {
-      await hre.run("verify:verify", {
-        address: ERC20MonetaryToken.address,
-        constructorArguments: ["SecureSECOCoin", "SECOIN"],
-      });
+      try {
+        await hre.run("verify:verify", {
+          address: ERC20MonetaryToken.address,
+          constructorArguments: ["SecureSECOCoin", "SECOIN"],
+        });
+      } catch { }
     }
 
     return ERC20MonetaryToken.address;
@@ -90,11 +92,13 @@ export async function deployDiamondGovernance() : Promise<{ [contractName: strin
         console.log("Starting verification");
         // Wait for etherscan to process the deployment
         await new Promise(f => setTimeout(f, 10 * 1000));
-        await hre.run("verify:verify", {
-          address: deployment.address,
-          constructorArguments: [],
-          contract: contractsToDeploy[i],
-        });
+        try {
+          await hre.run("verify:verify", {
+            address: deployment.address,
+            constructorArguments: [],
+            contract: contractsToDeploy[i],
+          });
+        } catch { }
       }
     }
 
