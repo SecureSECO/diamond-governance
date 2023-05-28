@@ -223,6 +223,7 @@ function isChanged(artifactName : string) : boolean {
 
   const artifact = hre.artifacts.readArtifactSync(artifactName);
   if (deployment[network.name][contractName].fileHash !== getHash(artifact.bytecode)) {
+    // Possibly change this into a Y/n console prompt (with of course option to accept/reject all)
     console.log("Detected changes to", contractName, "compared to latest deployment. Redeploying...");
     return true;
   }

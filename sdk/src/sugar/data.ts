@@ -53,3 +53,14 @@ export interface AddressVotes {
   address: string;
   votes: IPartialVotingFacet.PartialVoteStructOutput[];
 }
+
+export interface InterfaceVariables {
+  interfaceName: string;
+  variables: Variable[];
+};
+
+export interface Variable {
+  variableName: string;
+  variableType: string;
+  changeable: boolean;
+}

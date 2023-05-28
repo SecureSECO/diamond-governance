@@ -48,7 +48,6 @@ async function main() {
         }
 
         //variableSelectors
-        variableSelectors[interfaceIds[name]] = { facetName: name, variables: { } };
         const functions = Object.keys(contract.interface.functions);
         for (let j = 0; j < functions.length; j++) {
             // Is not a get function (getX(args))
@@ -70,7 +69,8 @@ async function main() {
 
             // More set function checks can be done here for validation (input == output)
 
-            variableSelectors[interfaceIds[name]].variables[contract.interface.getSighash(functions[j])] = {
+            variableSelectors[contract.interface.getSighash(functions[j])] = {
+                facetName: name,
                 variableName: variableName,
                 variableType: getFunctionFrag.outputs[0].format("full"),
                 setSelector: contract.interface.getSighash(functions[setFunctionIndex]),

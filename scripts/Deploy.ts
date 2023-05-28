@@ -85,6 +85,9 @@ async function main() {
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
   };
+  const MonetaryTokenFacetSettings = {
+    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
+  };
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
     await DiamondCut.All(diamondGovernance.DiamondLoupeFacet),
@@ -102,6 +105,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.ERC20MultiMinterFacet),
     await DiamondCut.All(diamondGovernance.SearchSECOMonetizationFacet, [SearchSECOMonetizationFacetSettings]),
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
+    await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings])
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
@@ -127,7 +131,7 @@ async function main() {
   console.log("Diamond Governance:", dao.diamondGovernance.address);
   
   const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", diamondGovernance.ERC20MonetaryToken.address, owner);
-  ERC20MonetaryToken.init(dao.dao.address, 1000000);
+  ERC20MonetaryToken.init(dao.dao.address, ether.mul(1000000));
 
   console.log("Deploy finished!");
 }
