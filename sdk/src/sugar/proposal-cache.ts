@@ -41,9 +41,9 @@ export class ProposalCache {
      * @param until Fill the cache until this index (exclusive)
      */
     private async FillCacheUntil(until : number) {
-        while (this.proposals.length < until) {
-            const prop = await this.getProposal(this.proposals.length);
-            this.proposals.push(prop);
+        for (let i = this.proposals.length; i < until; i++) {
+            const prop = await this.getProposal(i);
+            this.proposals[i] = prop;
         }
     }
 

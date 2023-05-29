@@ -48,8 +48,11 @@ export async function getFromIpfs(hash: string): Promise<any> {
   }
   
   const config = {
-    method: "GET",
-    url: "https://ipfs.io/ipfs/" + hash,
+    method: "POST",
+    url: "https://ipfs-0.aragon.network/api/v0/cat?arg=" + hash,
+    headers: {
+      "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
+    },
   };
   
   const res = await axios(config);
