@@ -12,13 +12,17 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 
 import { IDiamondCut } from "../../additional-contracts/IDiamondCut.sol";
+import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { IFacet } from "../IFacet.sol";
 
 // Remember to add the loupe functions from DiamondLoupeFacet to the diamond.
 // The loupe functions are required by the EIP2535 Diamonds standard
 
-contract DiamondCutFacet is IDiamondCut, IFacet {
+contract DiamondCutFacet is IDiamondCut, AuthConsumer, IFacet {
+    // Permission to cut the diamond
+    bytes32 public constant DIAMOND_CUT_PERMISSION_ID = keccak256("DIAMOND_CUT_PERMISSION");
+
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {
         __DiamondCutFacet_init();
@@ -37,10 +41,7 @@ contract DiamondCutFacet is IDiamondCut, IFacet {
     /// @notice Add/replace/remove any number of functions and optionally execute
     ///         a function with delegatecall
     /// @param _diamondCut Contains the facet addresses and function selectors
-    function diamondCut(
-        FacetCut[] calldata _diamondCut
-    ) external override {
-        LibDiamond.enforceIsContractOwner();
+    function diamondCut(FacetCut[] calldata _diamondCut) external virtual override auth(DIAMOND_CUT_PERMISSION_ID) {
         LibDiamond.diamondCut(_diamondCut);
     }
 }

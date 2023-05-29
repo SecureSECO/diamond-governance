@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
 /// @title ISearchSECORewardingFacet
 /// @author Utrecht University - 2023
 /// @notice The interface of the rewarding (miners) plugin.
-abstract contract ISearchSECORewardingFacet {
+interface ISearchSECORewardingFacet {
     /// @notice Rewards the user for submitting new hashes
     /// @param _toReward The address of the user to reward
     /// @param _hashCount The number of new hashes the user has submitted
@@ -21,18 +21,24 @@ abstract contract ISearchSECORewardingFacet {
         uint _nonce,
         uint _repFrac,
         bytes calldata _proof
-    ) external virtual;
+    ) external;
 
     /// @notice Returns the hash count for a given user
     /// @param _user The address of the user
     /// @return The hash count
-    function getHashCount(address _user) external view virtual returns (uint);
+    function getHashCount(address _user) external view returns (uint);
+
+    function getHashReward() external view returns (uint);
+
+    /// @notice Sets the hash reward (REP)
+    /// @param _hashReward The new hash reward
+    function setHashReward(uint _hashReward) external;
 
     /// @notice Returns the signer used for signature verification
     /// @return address signer
-    function getRewardingSigner() external view virtual returns (address);
+    function getRewardingSigner() external view returns (address);
 
     /// @notice Sets the signer used for signature verification
-    /// @param _newSigner The new signer
-    function setRewardingSigner(address _newSigner) external virtual;
+    /// @param _rewardingSigner The new signer
+    function setRewardingSigner(address _rewardingSigner) external;
 }

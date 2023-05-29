@@ -13,6 +13,8 @@ import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGove
 import { days } from "../utils/timeUnits";
 import { ether } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
+import { GetTypedContractAt } from "../utils/contractHelper";
+import { ERC20MonetaryToken } from "../typechain-types";
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -83,6 +85,9 @@ async function main() {
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
   };
+  const MonetaryTokenFacetSettings = {
+    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
+  };
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
     await DiamondCut.All(diamondGovernance.DiamondLoupeFacet),
@@ -100,6 +105,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.ERC20MultiMinterFacet),
     await DiamondCut.All(diamondGovernance.SearchSECOMonetizationFacet, [SearchSECOMonetizationFacetSettings]),
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
+    await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings])
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
@@ -123,6 +129,9 @@ async function main() {
   const dao = await CreateDAO(settings, owner);
   console.log("DAO:", dao.dao.address);
   console.log("Diamond Governance:", dao.diamondGovernance.address);
+  
+  const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", diamondGovernance.ERC20MonetaryToken.address, owner);
+  ERC20MonetaryToken.init(dao.dao.address, ether.mul(1000000));
 
   console.log("Deploy finished!");
 }

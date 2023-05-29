@@ -62,7 +62,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     }
 
     /// @inheritdoc ISearchSECOMonetizationFacet
-    function payForHashes(uint _amount, string memory _uniqueId) external override {
+    function payForHashes(uint _amount, string memory _uniqueId) external virtual override {
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
         IChangeableTokenContract monetaryTokenFacet = IChangeableTokenContract(address(this));
@@ -87,14 +87,12 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     }
 
     /// @inheritdoc ISearchSECOMonetizationFacet
-    function updateHashCost(
-        uint _newCost
-    ) external override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
-        LibSearchSECOMonetizationStorage.getStorage().hashCost = _newCost;
+    function getHashCost() external view virtual override returns (uint) {
+        return LibSearchSECOMonetizationStorage.getStorage().hashCost;
     }
 
     /// @inheritdoc ISearchSECOMonetizationFacet
-    function getHashCost() external view override returns (uint) {
-        return LibSearchSECOMonetizationStorage.getStorage().hashCost;
+    function setHashCost(uint _hashCost) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
+        LibSearchSECOMonetizationStorage.getStorage().hashCost = _hashCost;
     }
 }

@@ -1,11 +1,13 @@
 import { DiamondGovernancePure } from "../../generated/client";
-import { ProposalStatus, ProposalSorting, SortingOrder, ProposalMetadata, Action } from "./sugar/data";
+import { ProposalStatus, ProposalSorting, SortingOrder, ProposalMetadata, Action, InterfaceVariables, Variable } from "./sugar/data";
 import { ProposalCache } from "./sugar/proposal-cache";
 import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
-import type { ContractTransaction } from "ethers";
+import { ContractTransaction } from "ethers";
+import variableSelectorsJson from "../../generated/variableSelectors.json";
+import { VariableSelectorsJson } from "../../utils/jsonTypes";
 
 export * from "./sugar/data"; 
 export * from "./sugar/proposal";
@@ -108,6 +110,40 @@ export class DiamondGovernanceSugar {
             ToBlockchainDate(endDate), 
             true
         );
+    }
+    /**
+     * Gets all variables that are gettable in the facets of the Diamond
+     * @returns {Promise<InterfaceVariables[]>} The variables in the facets of the Diamond
+     */
+    public async GetVariables() : Promise<InterfaceVariables[]> {
+        let interfaceVariables : { [interfaceName: string] : Variable[] } = { };
+        const variableSelectors : VariableSelectorsJson = variableSelectorsJson;
+        
+        const IDiamondLoupe = await this.pure.IDiamondLoupe();
+        const facetSelectors = await IDiamondLoupe.facets();
+        for (let i = 0; i < facetSelectors.length; i++) {
+            for (let j = 0; j < facetSelectors[i].functionSelectors.length; j++) {
+                const functionSelector = facetSelectors[i].functionSelectors[j];
+                if (!variableSelectors.hasOwnProperty(functionSelector)) { 
+                    // Likely not a get function, or a get function that has not been processed (custom?)
+                    continue;
+                }
+
+                const variableInfo = variableSelectors[functionSelector];
+                if (!interfaceVariables.hasOwnProperty(variableInfo.facetName)) {
+                    interfaceVariables[variableInfo.facetName] = [];
+                }
+
+                interfaceVariables[variableInfo.facetName].push({
+                    variableName: variableInfo.variableName,
+                    variableType: variableInfo.variableType,
+                    changeable: facetSelectors[i].functionSelectors.includes(variableInfo.setSelector),
+                });
+            }
+        }
+
+        const interfaces = Object.keys(interfaceVariables);
+        return interfaces.map(interfaceName => { return { interfaceName: interfaceName, variables: interfaceVariables[interfaceName] }; });
     }
 }
 

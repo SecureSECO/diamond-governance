@@ -21,6 +21,9 @@ import { SignVerification } from "../../../../../other/verification/SignVerifica
 import { VerificationFacet } from "../../../../membership/VerificationFacet.sol";
 
 contract ERC20OneTimeVerificationRewardFacet is IERC20OneTimeVerificationRewardFacet, IERC20ClaimableFacet, AuthConsumer {
+    /// @notice The permission to update claim reward
+    bytes32 public constant UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION_ID = keccak256("UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION");
+
     struct ERC20OneTimeVerificationRewardFacetInitParams {
         string[] providers;
         uint256[] rewards;
@@ -83,26 +86,39 @@ contract ERC20OneTimeVerificationRewardFacet is IERC20OneTimeVerificationRewardF
         }
     }
 
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
     function tokensClaimableVerificationRewardAll() external view virtual returns (uint256 amount) {
         return _tokensClaimable(msg.sender);
     }
 
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
     function claimVerificationRewardAll() external virtual {
         _claim(msg.sender);
     }
 
-    
-    function tokensClaimableVerificationRewardStamp(uint256 stampIndex) external view virtual returns (uint256 amount) {
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
+    function tokensClaimableVerificationRewardStamp(uint256 _stampIndex) external view virtual returns (uint256 amount) {
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(address(this)).getStampsAt(msg.sender, block.timestamp);
-        require(stampIndex < stampsAt.length, "Stamp index out of bound");
-        return _tokensClaimableStamp(msg.sender, stampsAt[stampIndex].providerId, stampsAt[stampIndex].userHash);
+        require(_stampIndex < stampsAt.length, "Stamp index out of bound");
+        return _tokensClaimableStamp(msg.sender, stampsAt[_stampIndex].providerId, stampsAt[_stampIndex].userHash);
     }
 
-    function claimVerificationRewardStamp(uint256 stampIndex) external virtual {
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
+    function claimVerificationRewardStamp(uint256 _stampIndex) external virtual {
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(address(this)).getStampsAt(msg.sender, block.timestamp);
-        require(stampIndex < stampsAt.length, "Stamp index out of bound");
-        IMintableGovernanceStructure(address(this)).mintVotingPower(msg.sender, 0, _tokensClaimableStamp(msg.sender, stampsAt[stampIndex].providerId, stampsAt[stampIndex].userHash));
-        _afterClaimStamp(msg.sender, stampsAt[stampIndex].providerId, stampsAt[stampIndex].userHash);
+        require(_stampIndex < stampsAt.length, "Stamp index out of bound");
+        IMintableGovernanceStructure(address(this)).mintVotingPower(msg.sender, 0, _tokensClaimableStamp(msg.sender, stampsAt[_stampIndex].providerId, stampsAt[_stampIndex].userHash));
+        _afterClaimStamp(msg.sender, stampsAt[_stampIndex].providerId, stampsAt[_stampIndex].userHash);
+    }
+
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
+    function getProviderReward(string calldata _provider) external view virtual override returns (uint256) {
+        return LibERC20OneTimeVerificationRewardStorage.getStorage().providerReward[_provider];
+    }
+
+    /// @inheritdoc IERC20OneTimeVerificationRewardFacet
+    function setProviderReward(string calldata _provider, uint256 _reward) external virtual override auth(UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION_ID) {
+        LibERC20OneTimeVerificationRewardStorage.getStorage().providerReward[_provider] = _reward;
     }
 
     function _afterClaimStamp(address _claimer, string memory _provider, string memory _stamp) internal virtual {
