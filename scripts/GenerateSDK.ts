@@ -11,7 +11,7 @@ import { generateInterfaceIds } from "./sdk/GenerateInterfaceIds";
 import { GetContractAt } from "../utils/contractHelper";
 import { ethers } from "hardhat";
 import { getSelectors } from "../utils/diamondHelper";
-import { functionSelectorsJson, variableSelectorsJson } from "../utils/jsonTypes";
+import { FunctionSelectorsJson, VariableSelectorsJson } from "../utils/jsonTypes";
 
 const insertInterfaces = "/* interfaces */";
 const insertMethods = "/* interface methods */";
@@ -34,8 +34,8 @@ async function main() {
     const interfaceKeys = Object.keys(interfaceIds);
 
     let interfaceMethodArray = [];
-    let reverseFunctionSelectorLookup : functionSelectorsJson = {};
-    let variableSelectors : variableSelectorsJson = {};
+    let reverseFunctionSelectorLookup : FunctionSelectorsJson = {};
+    let variableSelectors : VariableSelectorsJson = {};
     for (let i = 0; i < interfaceKeys.length; i++) {
         const name = interfaceKeys[i];
         interfaceMethodArray.push(await generateInterfaceMethod(name, interfaceIds[name]));

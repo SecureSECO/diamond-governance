@@ -1,8 +1,8 @@
-export type diamondGovernanceJson = { [contractName: string]: { address: string } };
+export type DiamondGovernanceJson = { [contractName: string]: { address: string } };
 
-export type functionSelectorsJson = { [selector: string]: string };
+export type FunctionSelectorsJson = { [selector: string]: string };
 
-export type variableSelectorsJson = { 
+export type VariableSelectorsJson = { 
     [variableSelector: string]: { 
         facetName: string; 
         variableName: string; 

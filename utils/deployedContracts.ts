@@ -10,7 +10,7 @@ import { ENSFrameworkContracts, AragonOSxFrameworkContracts } from "../deploymen
 import { Signer } from "@ethersproject/abstract-signer";
 import { GetTypedContractAt, GetContractAt, NamedContract } from "./contractHelper";
 import { DAO, DAOFactory, DAORegistry, ENS, ENSSubdomainRegistrar, PluginRepoFactory, PluginRepoRegistry, PluginSetupProcessor, PublicResolver } from "../typechain-types";
-import { diamondGovernanceJson } from "./jsonTypes";
+import { DiamondGovernanceJson } from "./jsonTypes";
 
 import deployed_ENSFrameworkJson from "../deployments/deployed-contracts/deployed_ENSFramework.json";
 import deployed_AragonOSxFrameworkJson from "../deployments/deployed-contracts/deployed_AragonOSxFramework.json";
@@ -30,7 +30,7 @@ export function setDeployedAragon(_deployedAragon : AragonOSxFrameworkContracts)
     deployedAragon = _deployedAragon;
 }
 
-export async function setDeployedDiamondGovernance(_deployedDiamondGovernanceJson : diamondGovernanceJson, signer : Signer) {
+export async function setDeployedDiamondGovernance(_deployedDiamondGovernanceJson : DiamondGovernanceJson, signer : Signer) {
     deployedDiamondGovernance = await diamondGovernanceJsonToContracts(_deployedDiamondGovernanceJson, signer);
 }
 
@@ -124,7 +124,7 @@ export async function getDeployedENSFramework(signer : Signer) : Promise<ENSFram
     }
     const network = networkName(providerNetwork.name);
 
-    const deployedContracts : { [networkName : string]: diamondGovernanceJson } = deployed_DiamondGovernanceJson;
+    const deployedContracts : { [networkName : string]: DiamondGovernanceJson } = deployed_DiamondGovernanceJson;
     if (!deployedContracts.hasOwnProperty(network)) {
         throw new Error(`Network ${network} doesnt exist in known deployed Diamond Governance frameworks`);
     }
@@ -153,7 +153,7 @@ export async function getDiamondGovernanceRepo(signer : Signer)  : Promise<strin
     return diamondGovernanceRepo;
 }
 
-async function diamondGovernanceJsonToContracts(diamondGovernanceJson : diamondGovernanceJson, signer : Signer) : Promise<{ [contractName : string]: NamedContract }> {
+async function diamondGovernanceJsonToContracts(diamondGovernanceJson : DiamondGovernanceJson, signer : Signer) : Promise<{ [contractName : string]: NamedContract }> {
     const contractNames = Object.keys(diamondGovernanceJson);
     const diamondGovernance : { [contractName : string]: NamedContract } = { };
     for (let i = 0; i < contractNames.length; i++) {

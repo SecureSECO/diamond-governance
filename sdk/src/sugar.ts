@@ -6,8 +6,8 @@ import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
 import { ContractTransaction } from "ethers";
-import VariableSelectorsJson from "../../generated/variableSelectors.json";
-import { variableSelectorsJson } from "../../utils/jsonTypes";
+import variableSelectorsJson from "../../generated/variableSelectors.json";
+import { VariableSelectorsJson } from "../../utils/jsonTypes";
 
 export * from "./sugar/data"; 
 export * from "./sugar/proposal";
@@ -117,7 +117,7 @@ export class DiamondGovernanceSugar {
      */
     public async GetVariables() : Promise<InterfaceVariables[]> {
         let interfaceVariables : { [interfaceName: string] : Variable[] } = { };
-        const variableSelectors : variableSelectorsJson = VariableSelectorsJson;
+        const variableSelectors : VariableSelectorsJson = variableSelectorsJson;
         
         const IDiamondLoupe = await this.pure.IDiamondLoupe();
         const facetSelectors = await IDiamondLoupe.facets();

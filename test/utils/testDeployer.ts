@@ -12,7 +12,6 @@ import { deployDiamondGovernance } from "../../deployments/deploy_DiamondGoverna
 import { DiamondCut, createDiamondGovernanceRepo, DAOCreationSettings, CreateDAO } from "../../utils/diamondGovernanceHelper";
 import { setDeployedENS, setDeployedAragon, setDeployedDiamondGovernance, setDiamondGovernanceRepo, getDeployedDiamondGovernance } from "../../utils/deployedContracts";
 import { DiamondGovernanceClient } from "../../sdk/index";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { customIpfsAdd, customIpfsGet } from "../../utils/ipfsHelper";
 
 const ipfs : any[] = [];
