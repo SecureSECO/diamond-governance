@@ -38,10 +38,10 @@ export async function defaultDiamondCut(diamondGovernance : any) : Promise<Diamo
   ];
 }
 
-export async function createTestingDao(diamondCut : DiamondCut[]) : Promise<DiamondGovernanceClient> {
+export async function createTestingDao(diamondCut : DiamondCut[], addDefault : boolean = true) : Promise<DiamondGovernanceClient> {
   const [owner] = await ethers.getSigners();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
-  const cut : DiamondCut[] = diamondCut.concat(await defaultDiamondCut(diamondGovernance));
+  const cut : DiamondCut[] = diamondCut.concat(addDefault ? await defaultDiamondCut(diamondGovernance) : []);
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
     daoURI: "https://plopmenz.com",
