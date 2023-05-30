@@ -5,7 +5,8 @@ import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
-import { ContractTransaction } from "ethers";
+import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { getEvents } from "../../utils/utils";
 import variableSelectorsJson from "../../generated/variableSelectors.json";
 import { VariableSelectorsJson } from "../../utils/jsonTypes";
 
@@ -93,6 +94,10 @@ export class DiamondGovernanceSugar {
         return await this.proposalCache.GetProposalCount()
     }
 
+    public async ClearProposalCache() {
+        this.proposalCache = await this.InitProposalCache();
+    }
+
     /**
      * Creates a proposal using the IPartialVotingProposalFacet interface/contract
      * @param metadata Proposal metadata object (IPFS related)
@@ -111,6 +116,17 @@ export class DiamondGovernanceSugar {
             true
         );
     }
+
+    public async GetProposalId(receipt : ContractReceipt) : Promise<number> {
+        const IProposal = await this.pure.IProposal();
+        const proposalCreationEvent = getEvents(IProposal, "ProposalCreated", receipt);
+        if (proposalCreationEvent.length < 1) {
+            throw new Error("Proposal creation event not found");
+        }
+        const proposalId = proposalCreationEvent[0].args.proposalId;
+        return proposalId;
+    }
+
     /**
      * Gets all variables that are gettable in the facets of the Diamond
      * @returns {Promise<InterfaceVariables[]>} The variables in the facets of the Diamond
