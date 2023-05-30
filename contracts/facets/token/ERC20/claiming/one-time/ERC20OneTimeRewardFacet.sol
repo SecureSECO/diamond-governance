@@ -19,7 +19,7 @@ import { IFacet } from "../../../../IFacet.sol";
 import { LibERC20OneTimeRewardStorage } from "../../../../../libraries/storage/LibERC20OneTimeRewardStorage.sol";
 
 contract ERC20OneTimeRewardFacet is IERC20OneTimeRewardFacet, IERC20ClaimableFacet, AuthConsumer {
-    /// @notice The permission to update claim reward and period
+    /// @notice The permission to update claim reward
     bytes32 public constant UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID = keccak256("UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION");
 
     struct ERC20OneTimeRewardFacetInitParams {
@@ -44,10 +44,12 @@ contract ERC20OneTimeRewardFacet is IERC20OneTimeRewardFacet, IERC20ClaimableFac
         super.deinit();
     }
 
+    /// @inheritdoc IERC20OneTimeRewardFacet
     function tokensClaimableOneTime() external view virtual returns (uint256 amount) {
         return _tokensClaimable(msg.sender);
     }
 
+    /// @inheritdoc IERC20OneTimeRewardFacet
     function claimOneTime() external virtual {
         _claim(msg.sender);
     }
@@ -62,11 +64,13 @@ contract ERC20OneTimeRewardFacet is IERC20OneTimeRewardFacet, IERC20ClaimableFac
         LibERC20OneTimeRewardStorage.getStorage().hasClaimed[_claimer] = LibERC20OneTimeRewardStorage.getStorage().reward;
     }
 
-    function setOneTimeReward(uint256 _reward) external auth(UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID) {
-        _setOneTimeReward(_reward);
+    /// @inheritdoc IERC20OneTimeRewardFacet
+    function getOneTimeReward() external view virtual override returns (uint256) {
+        return LibERC20OneTimeRewardStorage.getStorage().reward;
     }
 
-    function _setOneTimeReward(uint256 _reward) internal virtual {
-        LibERC20OneTimeRewardStorage.getStorage().reward = _reward;
+    /// @inheritdoc IERC20OneTimeRewardFacet
+    function setOneTimeReward(uint256 _oneTimeReward) external virtual override auth(UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID) {
+        LibERC20OneTimeRewardStorage.getStorage().reward = _oneTimeReward;
     }
 }

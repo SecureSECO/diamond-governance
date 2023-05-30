@@ -46,6 +46,11 @@ contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet, IBurnVoti
         return LibBurnVotingProposalStorage.getStorage().proposalCreationCost;
     }
 
+    /// @inheritdoc IBurnVotingProposalFacet
+    function setProposalCreationCost(uint256 _proposalCreationCost) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        LibBurnVotingProposalStorage.getStorage().proposalCreationCost = _proposalCreationCost;
+    }
+
     /// @inheritdoc PartialVotingProposalFacet
     function createProposal(
         bytes calldata _metadata,

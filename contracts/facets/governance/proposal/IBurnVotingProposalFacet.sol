@@ -10,4 +10,6 @@ pragma solidity ^0.8.0;
 
 interface IBurnVotingProposalFacet {
     function getProposalCreationCost() external view returns (uint256);
+
+    function setProposalCreationCost(uint256 _proposalCreationCost) external;
 }

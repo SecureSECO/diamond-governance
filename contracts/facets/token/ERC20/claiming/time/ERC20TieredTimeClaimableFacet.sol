@@ -50,11 +50,13 @@ contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20T
         super.deinit();
     }
 
-    function setClaimReward(uint256 _tier, uint256 _reward) external auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
-        _setClaimReward(_tier, _reward);
+    /// @inheritdoc IERC20TieredTimeClaimableFacet
+    function getClaimReward(uint256 _tier) external view virtual override returns (uint256) {
+        return LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[_tier];
     }
 
-    function _setClaimReward(uint256 _tier, uint256 _reward) internal virtual {
+    /// @inheritdoc IERC20TieredTimeClaimableFacet
+    function setClaimReward(uint256 _tier, uint256 _reward) external virtual override auth(UPDATE_CLAIM_SETTINGS_PERMISSION_ID) {
         LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[_tier] = _reward;
     }
 

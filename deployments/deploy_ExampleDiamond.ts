@@ -8,7 +8,7 @@
 
 // Framework
 import { ethers } from "hardhat";
-import { DiamondCutFacet, IDiamondCut } from "../typechain-types";
+import { DiamondCutTestFacet, IDiamondCut } from "../typechain-types";
 
 // Utils
 import { getSelectors, FacetCutAction } from "../utils/diamondHelper";
@@ -21,7 +21,7 @@ async function deployDiamond () {
   const [ owner ] = await ethers.getSigners();
 
   // Deploy DiamondCutFacet
-  const DiamondCutFacetContract = await ethers.getContractFactory('DiamondCutFacet');
+  const DiamondCutFacetContract = await ethers.getContractFactory('DiamondCutTestFacet');
   const DiamondCutFacetDeploy = await DiamondCutFacetContract.deploy();
 
   // Deploy Diamond
@@ -49,7 +49,7 @@ async function deployDiamond () {
     initCalldata: "0x",
   });
 
-  const DiamondCutFacet = await ethers.getContractAt("DiamondCutFacet", Diamond.address);
+  const DiamondCutFacet = await ethers.getContractAt("DiamondCutTestFacet", Diamond.address);
   const DiamondLoupeFacet = await ethers.getContractAt("DiamondLoupeFacet", Diamond.address);
   const OwnershipFacet = await ethers.getContractAt("OwnershipFacet", Diamond.address);
 
@@ -63,7 +63,7 @@ async function deployDiamond () {
   return { Diamond, DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet, DiamondCutFacetDeploy, DiamondLoupeFacetDeploy, OwnershipFacetDeploy };
 }
 
-async function deployTest1Facet(diamondCutFacet : DiamondCutFacet) {
+async function deployTest1Facet(diamondCutFacet : DiamondCutTestFacet) {
     const Test1FacetContract = await ethers.getContractFactory('Test1Facet');
     const Test1FacetDeploy = await Test1FacetContract.deploy();
     const selectors = getSelectors(Test1FacetDeploy).remove(['supportsInterface(bytes4)']).selectors;
@@ -82,7 +82,7 @@ async function deployTest1Facet(diamondCutFacet : DiamondCutFacet) {
     return { Test1Facet, Test1FacetDeploy };
 }
 
-async function deployTest2Facet(diamondCutFacet : DiamondCutFacet) {
+async function deployTest2Facet(diamondCutFacet : DiamondCutTestFacet) {
     const Test2FacetContract = await ethers.getContractFactory('Test2Facet');
     const Test2FacetDeploy = await Test2FacetContract.deploy();
     const selectors = getSelectors(Test2FacetDeploy).selectors;

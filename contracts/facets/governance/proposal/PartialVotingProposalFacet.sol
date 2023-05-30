@@ -116,35 +116,93 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
     
     /// @notice Returns the voting settings.
     /// @return The vote mode parameter.
-    function votingMode() public view virtual returns (IPartialVotingFacet.VotingMode) {
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getVotingMode() public view virtual returns (IPartialVotingFacet.VotingMode) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.votingMode;
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
-    function supportThreshold() public view virtual returns (uint32) {
+    function setVotingMode(IPartialVotingFacet.VotingMode _votingMode) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        LibPartialVotingProposalStorage.getStorage().votingSettings.votingMode = _votingMode;
+        _updateVotingSettings();
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getSupportThreshold() public view virtual returns (uint32) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.supportThreshold;
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
-    function minParticipation() public view virtual returns (uint32) {
+    function setSupportThreshold(uint32 _supportThreshold) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        // Require the support threshold value to be in the interval [0, 10^6-1], because `>` comparision is used in the support criterion and >100% could never be reached.
+        if (_supportThreshold > RATIO_BASE - 1) {
+            revert RatioOutOfBounds({limit: RATIO_BASE - 1, actual: _supportThreshold});
+        }
+
+        LibPartialVotingProposalStorage.getStorage().votingSettings.supportThreshold = _supportThreshold;
+        _updateVotingSettings();
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getMinParticipation() public view virtual returns (uint32) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.minParticipation;
     }
 
     /// @inheritdoc IPartialVotingProposalFacet
-    function maxSingleWalletPower() public view virtual returns (uint32) {
+    function setMinParticipation(uint32 _minParticipation) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        // Require the minimum participation value to be in the interval [0, 10^6], because `>=` comparision is used in the participation criterion.
+        if (_minParticipation > RATIO_BASE) {
+            revert RatioOutOfBounds({limit: RATIO_BASE, actual: _minParticipation});
+        }
+
+        LibPartialVotingProposalStorage.getStorage().votingSettings.minParticipation = _minParticipation;
+        _updateVotingSettings();
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getMaxSingleWalletPower() public view virtual returns (uint32) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.maxSingleWalletPower;
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function setMaxSingleWalletPower(uint32 _maxSingleWalletPower) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        // Require to be in the interval [0, 10^6]
+        if (_maxSingleWalletPower > RATIO_BASE) {
+            revert RatioOutOfBounds({limit: RATIO_BASE, actual: _maxSingleWalletPower});
+        }
+        LibPartialVotingProposalStorage.getStorage().votingSettings.maxSingleWalletPower = _maxSingleWalletPower;
+        _updateVotingSettings();
     }
 
     /// @notice Returns the minimum duration parameter stored in the voting settings.
     /// @return The minimum duration parameter.
-    function minDuration() public view virtual returns (uint64) {
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getMinDuration() public view virtual returns (uint64) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.minDuration;
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function setMinDuration(uint64 _minDuration) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        LibPartialVotingProposalStorage.getStorage().votingSettings.minDuration = _minDuration;
+        _updateVotingSettings();
     }
 
     /// @notice Returns the minimum voting power required to create a proposa stored in the voting settings.
     /// @return The minimum voting power required to create a proposal.
-    function minProposerVotingPower() public view virtual returns (uint256) {
+    /// @inheritdoc IPartialVotingProposalFacet
+    function getMinProposerVotingPower() public view virtual returns (uint256) {
         return LibPartialVotingProposalStorage.getStorage().votingSettings.minProposerVotingPower;
+    }
+
+    /// @inheritdoc IPartialVotingProposalFacet
+    function setMinProposerVotingPower(uint256 _minProposerVotingPower) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
+        LibPartialVotingProposalStorage.getStorage().votingSettings.minProposerVotingPower = _minProposerVotingPower;
+        _updateVotingSettings();
+    }
+    
+    /// @notice Internal function after voting settings have been updated
+    function _updateVotingSettings() internal virtual {
+        emit VotingSettingsUpdated(LibPartialVotingProposalStorage.getStorage().votingSettings);
     }
 
     /// @notice Returns all information for a proposal vote by its ID.
@@ -186,14 +244,6 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
         creator = proposal_.creator;
         voterList = proposal_.voterList;
         executor = proposal_.executor;
-    }
-
-    /// @notice Updates the voting settings.
-    /// @param _votingSettings The new voting settings.
-    function updateVotingSettings(
-        VotingSettings calldata _votingSettings
-    ) external virtual auth(UPDATE_VOTING_SETTINGS_PERMISSION_ID) {
-        _updateVotingSettings(_votingSettings);
     }
 
     /// @notice Creates a voting proposal.
@@ -246,7 +296,7 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
             IGovernanceStructure governance = IGovernanceStructure(address(this));
             totalVotingPower_ = governance.totalVotingPower(snapshotBlock);
 
-            if (governance.walletVotingPower(msg.sender, snapshotBlock) < minProposerVotingPower()) {
+            if (governance.walletVotingPower(msg.sender, snapshotBlock) < getMinProposerVotingPower()) {
                 revert ProposalCreationForbidden(msg.sender);
             }
         }
@@ -263,21 +313,21 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
         // Store proposal related information
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[proposalId];
 
-        proposal_.parameters.votingMode = votingMode();
+        proposal_.parameters.votingMode = getVotingMode();
         proposal_.parameters.earlyExecution = _allowEarlyExecution;
         (proposal_.parameters.startDate, proposal_.parameters.endDate) = _validateProposalDates(
             _startDate,
             _endDate
         );
         proposal_.parameters.snapshotBlock = snapshotBlock.toUint64();
-        proposal_.parameters.supportThreshold = supportThreshold();
+        proposal_.parameters.supportThreshold = getSupportThreshold();
         proposal_.parameters.minParticipationThresholdPower = _applyRatioCeiled(
             totalVotingPower_,
-            minParticipation()
+            getMinParticipation()
         );
         proposal_.parameters.maxSingleWalletPower = _applyRatioCeiled(
             totalVotingPower_,
-            maxSingleWalletPower()
+            getMaxSingleWalletPower()
         );
         proposal_.proposalType = _proposalType;
         proposal_.metadata = _metadata;
@@ -354,35 +404,6 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
             proposal_.parameters.startDate <= currentTime &&
             currentTime < proposal_.parameters.endDate &&
             proposal_.executed == 0;
-    }
-
-    /// @notice Internal function to update the plugin-wide proposal vote settings.
-    /// @param _votingSettings The voting settings to be validated and updated.
-    function _updateVotingSettings(VotingSettings calldata _votingSettings) internal virtual {
-        // Require the support threshold value to be in the interval [0, 10^6-1], because `>` comparision is used in the support criterion and >100% could never be reached.
-        if (_votingSettings.supportThreshold > RATIO_BASE - 1) {
-            revert RatioOutOfBounds({
-                limit: RATIO_BASE - 1,
-                actual: _votingSettings.supportThreshold
-            });
-        }
-
-        // Require the minimum participation value to be in the interval [0, 10^6], because `>=` comparision is used in the participation criterion.
-        if (_votingSettings.minParticipation > RATIO_BASE) {
-            revert RatioOutOfBounds({limit: RATIO_BASE, actual: _votingSettings.minParticipation});
-        }
-
-        if (_votingSettings.minDuration < 60 minutes) {
-            revert MinDurationOutOfBounds({limit: 60 minutes, actual: _votingSettings.minDuration});
-        }
-
-        if (_votingSettings.minDuration > 365 days) {
-            revert MinDurationOutOfBounds({limit: 365 days, actual: _votingSettings.minDuration});
-        }
-
-        LibPartialVotingProposalStorage.getStorage().votingSettings = _votingSettings;
-
-        emit VotingSettingsUpdated(_votingSettings);
     }
 
     /// @notice Validates and returns the proposal vote dates.

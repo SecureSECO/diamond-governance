@@ -29,6 +29,11 @@ const additionalContracts = [
   "ERC20MonetaryToken",
 ];
 
+// This should actually only be deployed on creating a DAO, when DAO creation is split from deployment
+const alwaysRedeploy = [
+  "ERC20MonetaryToken",
+];
+
 const specialDeployment : { [contractName : string]: () => Promise<string> } = 
 { 
   SignVerification: async () => { 
@@ -37,6 +42,9 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
     await SignVerification.deployed();
 
     if (!testing()) {
+      console.log("Starting verification");
+      // Wait for etherscan to process the deployment
+      await new Promise(f => setTimeout(f, 10 * 1000));
       await hre.run("verify:verify", {
         address: SignVerification.address,
         constructorArguments: [60, 30],
@@ -51,10 +59,15 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
     await ERC20MonetaryToken.deployed();
 
     if (!testing()) {
-      await hre.run("verify:verify", {
-        address: ERC20MonetaryToken.address,
-        constructorArguments: ["SecureSECOCoin", "SECOIN"],
-      });
+      try {
+        console.log("Starting verification");
+        // Wait for etherscan to process the deployment
+        await new Promise(f => setTimeout(f, 10 * 1000));
+        await hre.run("verify:verify", {
+          address: ERC20MonetaryToken.address,
+          constructorArguments: ["SecureSECOCoin", "SECOIN"],
+        });
+      } catch { }
     }
 
     return ERC20MonetaryToken.address;
@@ -90,11 +103,13 @@ export async function deployDiamondGovernance() : Promise<{ [contractName: strin
         console.log("Starting verification");
         // Wait for etherscan to process the deployment
         await new Promise(f => setTimeout(f, 10 * 1000));
-        await hre.run("verify:verify", {
-          address: deployment.address,
-          constructorArguments: [],
-          contract: contractsToDeploy[i],
-        });
+        try {
+          await hre.run("verify:verify", {
+            address: deployment.address,
+            constructorArguments: [],
+            contract: contractsToDeploy[i],
+          });
+        } catch { }
       }
     }
 
@@ -149,7 +164,7 @@ function shouldDeploy(artifactName : string) : boolean {
             )
             || additionalContracts.includes(getContractName(artifactName))
           ) &&
-          (testing() || !alreadyDeployed(artifactName));
+          (!alreadyDeployed(artifactName) || isChanged(artifactName));
 }
 
 function isFacet(artifactName : string) : boolean {
@@ -174,9 +189,43 @@ function isDeployable(artifactName : string) : boolean {
 // Check if the contract is already deployed on this network
 // Note: redeployed anyway if on local hardhat network
 function alreadyDeployed(artifactName : string) : boolean {
-  const deployment = getDeployment();
-  if (!deployment.hasOwnProperty(network.name)) {
+  if (testing()) {
     return false;
   }
+
+  const deployment = getDeployment();
+  if (!deployment.hasOwnProperty(network.name)) {
+    // Network doesnt have any deployments
+    return false;
+  }
+
   return deployment[network.name].hasOwnProperty(getContractName(artifactName));
+}
+
+// Check if the contract is already deployed on this network
+function isChanged(artifactName : string) : boolean {
+  const contractName = getContractName(artifactName);
+  if (alwaysRedeploy.includes(contractName)) {
+    // Pretend it is changed to redeploy
+    return true;
+  }
+
+  const deployment = getDeployment();
+  if (!deployment.hasOwnProperty(network.name)) {
+    // Network doesnt have any deployments
+    return false;
+  }
+
+  if (!deployment[network.name].hasOwnProperty(contractName)) {
+    // Contract not deployed yet
+    return false;
+  }
+
+  const artifact = hre.artifacts.readArtifactSync(artifactName);
+  if (deployment[network.name][contractName].fileHash !== getHash(artifact.bytecode)) {
+    // Possibly change this into a Y/n console prompt (with of course option to accept/reject all)
+    console.log("Detected changes to", contractName, "compared to latest deployment. Redeploying...");
+    return true;
+  }
+  return false;
 }

@@ -16,6 +16,6 @@ interface IChangeableTokenContract {
     function getTokenContractAddress() external view returns (address);
 
     /// @notice Sets the contract address of the token contract used
-    /// @param newContractAddress The contract address of the token contract
-    function setTokenContractAddress(address newContractAddress) external;
+    /// @param _tokenContractAddress The contract address of the token contract
+    function setTokenContractAddress(address _tokenContractAddress) external;
 }
