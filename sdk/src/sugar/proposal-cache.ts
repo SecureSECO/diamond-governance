@@ -99,7 +99,7 @@ export class ProposalCache {
         if (!this.cachedSorting.hasOwnProperty(sort)) {
             this.cachedSorting[sort] = { };
         }
-        if (!this.cachedSorting[sort].hasOwnProperty(stat) || refreshSorting) {
+        if (!this.cachedSorting[sort].hasOwnProperty(stat)) {
             this.cachedSorting[sort][stat] = this.proposals
                 .filter(prop => status.includes(prop.status))
                 .sort(this.getSortingFunc(sorting))
@@ -107,7 +107,7 @@ export class ProposalCache {
         }
 
         let proposalIds = this.cachedSorting[sort][stat];
-        if (order == SortingOrder.Asc) {
+        if (order == SortingOrder.Desc) {
             proposalIds = proposalIds.reverse();
         }
 
@@ -122,7 +122,7 @@ export class ProposalCache {
      */
     private getSortingFunc(sorting : ProposalSorting) : (prop1: Proposal, prop2: Proposal) => number {
         const sort = (x1 : any, x2 : any) => { 
-            // This can be significatly shorted with x1 - x2, but this is more readable
+            // This can be significatly shorted with x1 - x2, but that might not work for all types (string? BigNumbers?)
             if (x1 == x2) return 0;
             else {
                 if (x1 > x2) return 1;

@@ -38,7 +38,7 @@ export async function createProposalWithClient(client : DiamondGovernanceClient,
   await client.sugar.CreateProposal(metadata, actions, start, end);
 }
 
-describe("Proposal SDK sugar", function () {
+describe.only("Proposal SDK sugar", function () {
   it("should return all proposals on get", async function () {
     const client = await loadFixture(getClient);
     await getVotingPower(client);
@@ -51,7 +51,7 @@ describe("Proposal SDK sugar", function () {
     }
 
     // Fetch all proposals
-    const proposals = await client.sugar.GetProposals(undefined, undefined, undefined, undefined, undefined, true);
+    const proposals = await client.sugar.GetProposals();
 
     // Fetch all proposals one by one
     const proposalsIndividual = [];
@@ -60,26 +60,6 @@ describe("Proposal SDK sugar", function () {
     }
 
     expect(proposals).to.have.same.members(proposalsIndividual);
-  });
-
-  it("should sort the proposals on title descendingly", async function () {
-    const client = await loadFixture(getClient);
-    await getVotingPower(client);
-    const titles = ["Empty treasury", "Kick all members", "Delete DAO", "Remove governance plugin"];
-    await client.sugar.ClearProposalCache();
-
-    // Create proposals
-    for (let i = 0; i < titles.length; i++) {
-      let metadata = getExampleMetaData();
-      metadata.title = titles[i];
-      await createProposalWithClient(client, metadata, []);
-    }
-
-    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.Title, SortingOrder.Desc, undefined, undefined, true);
-    const sortedTitles = [...titles].sort();
-    const indexes = sortedTitles.map(sortedTitle => titles.findIndex(title => title == sortedTitle));
-
-    expect(proposals.map(prop => prop.id)).to.eql(indexes);
   });
 
   it("should sort the proposals on title ascendingly", async function () {
@@ -95,14 +75,34 @@ describe("Proposal SDK sugar", function () {
       await createProposalWithClient(client, metadata, []);
     }
 
-    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.Title, SortingOrder.Asc, undefined, undefined, true);
+    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.Title, SortingOrder.Asc);
+    const sortedTitles = [...titles].sort();
+    const indexes = sortedTitles.map(sortedTitle => titles.findIndex(title => title == sortedTitle));
+
+    expect(proposals.map(prop => prop.id)).to.eql(indexes);
+  });
+
+  it("should sort the proposals on title descendingly", async function () {
+    const client = await loadFixture(getClient);
+    await getVotingPower(client);
+    const titles = ["Empty treasury", "Kick all members", "Delete DAO", "Remove governance plugin"];
+    await client.sugar.ClearProposalCache();
+
+    // Create proposals
+    for (let i = 0; i < titles.length; i++) {
+      let metadata = getExampleMetaData();
+      metadata.title = titles[i];
+      await createProposalWithClient(client, metadata, []);
+    }
+
+    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.Title, SortingOrder.Desc);
     const sortedTitles = [...titles].sort().reverse();
     const indexes = sortedTitles.map(sortedTitle => titles.findIndex(title => title == sortedTitle));
 
     expect(proposals.map(prop => prop.id)).to.eql(indexes);
   });
 
-  it("should sort the proposals on total votes descendingly", async function () {
+  it("should sort the proposals on total votes ascendingly", async function () {
     const client = await loadFixture(getClient);
     await getVotingPower(client);
     const votes = [7, 5, 6, 3, 2, 1, 4];
@@ -113,12 +113,45 @@ describe("Proposal SDK sugar", function () {
       await createProposalWithClient(client, getExampleMetaData(), []);
       const proposal = await client.sugar.GetProposal(i);
       await proposal.Vote(VoteOption.Yes, wei.mul(votes[i]));
+      await proposal.Refresh();
     }
 
-    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.TotalVotes, SortingOrder.Desc, undefined, undefined, true);
+    const proposals = await client.sugar.GetProposals(undefined, ProposalSorting.TotalVotes, SortingOrder.Asc);
     const sortedVotes = [...votes].sort();
     const indexes = sortedVotes.map(sortedVote => votes.findIndex(vote => vote == sortedVote));
 
     expect(proposals.map(prop => prop.id)).to.eql(indexes);
+  });
+  
+  it("should use cache correctly", async function () {
+    const client = await loadFixture(getClient);
+    await getVotingPower(client);
+    const votes = [7, 5, 6, 3];
+    const titles = ["Empty treasury", "Kick all members", "Delete DAO", "Remove governance plugin"];
+    await client.sugar.ClearProposalCache();
+
+    // Create proposals
+    for (let i = 0; i < votes.length; i++) {
+      let metadata = getExampleMetaData();
+      metadata.title = titles[i];
+      await createProposalWithClient(client, metadata, []);
+      const proposal = await client.sugar.GetProposal(i);
+      await proposal.Vote(VoteOption.Yes, wei.mul(votes[i]));
+      await proposal.Refresh();
+    }
+    const proposalSortedCreation = await client.sugar.GetProposals(undefined, ProposalSorting.Creation, SortingOrder.Asc);
+    const sortedCreationIndexes = [0, 1, 2, 3];
+
+    const proposalSortedVotes = await client.sugar.GetProposals(undefined, ProposalSorting.TotalVotes, SortingOrder.Asc);
+    const sortedVotes = [...votes].sort();
+    const sortedVotesIndexes = sortedVotes.map(sortedVote => votes.findIndex(vote => vote == sortedVote));
+
+    const proposalSortedTitles = await client.sugar.GetProposals(undefined, ProposalSorting.Title, SortingOrder.Asc);
+    const sortedTitles = [...titles].sort();
+    const sortedTitlesIndexes = sortedTitles.map(sortedTitle => titles.findIndex(title => title == sortedTitle));
+
+    expect(proposalSortedCreation.map(prop => prop.id)).to.eql(sortedCreationIndexes);
+    expect(proposalSortedVotes.map(prop => prop.id)).to.eql(sortedVotesIndexes);
+    expect(proposalSortedTitles.map(prop => prop.id)).to.eql(sortedTitlesIndexes);
   });
 });
