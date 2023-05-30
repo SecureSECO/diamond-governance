@@ -38,7 +38,7 @@ export async function createProposalWithClient(client : DiamondGovernanceClient,
   await client.sugar.CreateProposal(metadata, actions, start, end);
 }
 
-describe.only("Proposal SDK sugar", function () {
+describe("Proposal SDK sugar", function () {
   it("should return all proposals on get", async function () {
     const client = await loadFixture(getClient);
     await getVotingPower(client);
