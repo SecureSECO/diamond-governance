@@ -242,5 +242,3 @@ const calculateExponentialAppliedMultiplier = (exponent: number): BigNumber => {
     .div(DECIMALS_18);
   return growth.div(BigNumber.from(10 ** numShifted).pow(exponent));
 };
-
-// 678902321465579952089726465533
