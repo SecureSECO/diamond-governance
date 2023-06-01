@@ -55,7 +55,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
   },
   ERC20MonetaryToken: async () => {
     const ERC20MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
-    const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("SecureSECOCoin", "SECOIN");
+    const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("SecureSECO Coin", "SECOIN");
     await ERC20MonetaryToken.deployed();
 
     if (!testing()) {
@@ -65,7 +65,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
         await new Promise(f => setTimeout(f, 10 * 1000));
         await hre.run("verify:verify", {
           address: ERC20MonetaryToken.address,
-          constructorArguments: ["SecureSECOCoin", "SECOIN"],
+          constructorArguments: ["SecureSECO Coin", "SECOIN"],
         });
       } catch { }
     }

@@ -18,7 +18,7 @@ import { ERC20MonetaryToken } from "../typechain-types";
 
 async function main() {
   console.log("Deploying to", network.name);
-  // await deployTestNetwork();
+  //await deployTestNetwork();
   await deployDiamondGovernance();
   await createDiamondGovernanceRepoIfNotExists();
 
@@ -40,15 +40,18 @@ async function main() {
     SinglePartialVote,
     MultiplePartialVote,
   }
-  const PartialVotingProposalFacetSettings = {
-    votingSettings: {
-      votingMode: VotingMode.MultiplePartialVote, //IPartialVotingFacet.VotingMode
-      supportThreshold: 0.5 * 10**6, //uint32
-      minParticipation: 0.2 * 10**6, //uint32
-      maxSingleWalletPower: 0.1 * 10**6, //uint32
-      minDuration: 1 * days, //uint64
-      minProposerVotingPower: ether.mul(1), //uint256
-    },
+  const PartialBurnVotingProposalFacetSettings = {
+    proposalCreationCost: ether.mul(1),
+    _PartialVotingProposalFacetInitParams: {
+      votingSettings: {
+        votingMode: VotingMode.MultiplePartialVote, //IPartialVotingFacet.VotingMode
+        supportThreshold: 0.5 * 10**6, //uint32
+        minParticipation: 0.2 * 10**6, //uint32
+        maxSingleWalletPower: 0.1 * 10**6, //uint32
+        minDuration: 1 * days, //uint64
+        minProposerVotingPower: ether.mul(1), //uint256
+      },
+    }
   };
   const GovernanceERC20BurnableFacetSettings = {
     _GovernanceERC20FacetInitParams: {
@@ -88,13 +91,14 @@ async function main() {
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
   };
+
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
     await DiamondCut.All(diamondGovernance.DiamondLoupeFacet),
     await DiamondCut.All(diamondGovernance.DAOReferenceFacet),
     await DiamondCut.All(diamondGovernance.PluginFacet),
     await DiamondCut.All(diamondGovernance.AragonAuthFacet),
-    await DiamondCut.All(diamondGovernance.PartialVotingProposalFacet, [PartialVotingProposalFacetSettings]),
+    await DiamondCut.All(diamondGovernance.PartialBurnVotingProposalFacet, [PartialBurnVotingProposalFacetSettings]),
     await DiamondCut.All(diamondGovernance.PartialVotingFacet),
     await DiamondCut.All(diamondGovernance.GithubPullRequestFacet),
     await DiamondCut.Only(diamondGovernance.GovernanceERC20DisabledFacet, ERC20Disabled),
@@ -105,7 +109,8 @@ async function main() {
     await DiamondCut.All(diamondGovernance.ERC20MultiMinterFacet),
     await DiamondCut.All(diamondGovernance.SearchSECOMonetizationFacet, [SearchSECOMonetizationFacetSettings]),
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
-    await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings])
+    await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
+    await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
