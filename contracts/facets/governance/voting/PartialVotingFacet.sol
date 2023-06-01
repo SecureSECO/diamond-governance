@@ -139,7 +139,13 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer, IFacet {
                 }
             }
             
+            // The voters already voted amount would exceed his voting power after this vote
             if (_voteData.amount + alreadyUsedPower > votingPower) {
+                return false;
+            }
+            
+            // The voters already voted amount would exceed the max single wallet power after this vote
+            if (_voteData.amount + alreadyUsedPower > _proposal.parameters.maxSingleWalletPower) {
                 return false;
             }
         }
@@ -148,20 +154,19 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer, IFacet {
             if (_voteData.amount > votingPower) {
                 return false;
             }
-        }
 
-        // In partial vote the voter is not allowed to vote with more voting power than the maximum
-        if (_voteData.amount > _proposal.parameters.maxSingleWalletPower &&
-            _proposal.parameters.votingMode != VotingMode.SingleVote
-        ) {
-            return false;
-        }
-
-        // In single vote the voter is required to vote with all their voting power
-        if (_voteData.amount < votingPower &&
-            _proposal.parameters.votingMode == VotingMode.SingleVote
-        ) {
-            return false;
+            if (_proposal.parameters.votingMode == VotingMode.SingleVote) {
+                // In single vote the voter is required to vote with all their voting power
+                if (_voteData.amount < votingPower) {
+                    return false;
+                }
+            }
+            else {
+                // In partial vote the voter is not allowed to vote with more voting power than the maximum
+                if (_voteData.amount > _proposal.parameters.maxSingleWalletPower) {
+                    return false;
+                }
+            }
         }
 
         return true;

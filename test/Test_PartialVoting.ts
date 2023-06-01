@@ -100,12 +100,7 @@ export async function createProposalWithClient(client : DiamondGovernanceClient)
   const receipt = await tx.wait();
 
   // Retrieve proposal information
-  const IProposal = await client.pure.IProposal();
-  const proposalCreationEvent = getEvents(IProposal, "ProposalCreated", receipt);
-  if (proposalCreationEvent.length < 1) {
-    throw new Error("Proposal creation event not found");
-  }
-  const proposalId = proposalCreationEvent[0].args.proposalId;
+  const proposalId = await client.sugar.GetProposalId(receipt);
   const proposal = await client.sugar.GetProposal(proposalId, false);
 
   return { client, proposal };
@@ -213,6 +208,34 @@ describe("PartialVoting", function () {
 
     const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
     const voteTx = proposal.Vote(VoteOption.Yes, votingPower.add(1));
+
+    expect(voteTx).to.be.revertedWithCustomError(IPartialVotingFacet, "VoteCastForbidden");
+  });
+
+  it("should not allow to vote with amount higher than max single wallet voting power", async function () { 
+    const { client, proposal} = await loadFixture(createProposal);
+    const IPartialVotingFacet = await client.pure.IPartialVotingFacet();
+
+    const votingPower = proposal.data.parameters.maxSingleWalletPower;
+    const voteTx = proposal.Vote(VoteOption.Yes, votingPower.add(1));
+
+    expect(voteTx).to.be.revertedWithCustomError(IPartialVotingFacet, "VoteCastForbidden");
+  });
+
+  it("should not allow to vote with amount higher when voting multiple times", async function () { 
+    const { client, proposal} = await loadFixture(createProposal);
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const IPartialVotingFacet = await client.pure.IPartialVotingFacet();
+    const [owner] = await ethers.getSigners();
+
+    let votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
+    const maxPower = proposal.data.parameters.maxSingleWalletPower;
+    if (votingPower.gt(maxPower)) {
+      votingPower = maxPower;
+    }
+
+    await proposal.Vote(VoteOption.Yes, votingPower);
+    const voteTx = proposal.Vote(VoteOption.Yes, wei.mul(1));
 
     expect(voteTx).to.be.revertedWithCustomError(IPartialVotingFacet, "VoteCastForbidden");
   });

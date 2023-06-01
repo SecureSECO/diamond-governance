@@ -16,10 +16,25 @@ import { DAOReferenceFacet } from "../../facets/aragon/DAOReferenceFacet.sol";
 import { IFacet } from "../../facets/IFacet.sol";
 
 contract AragonAuthFacet is IAuthProvider, IFacet {
+    /// @inheritdoc IFacet
+    function init(bytes memory/* _initParams*/) public virtual override {
+        __AragonAuthFacet_init();
+    }
+
+    function __AragonAuthFacet_init() public virtual {
+        registerInterface(type(IAuthProvider).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IAuthProvider).interfaceId);
+        super.deinit();
+    }
+
     /// @inheritdoc IAuthProvider
-    function auth(bytes32 _permissionId) external view virtual override {
+    function auth(bytes32 _permissionId, address _account) external view virtual override {
       IDAO dao = DAOReferenceFacet(address(this)).dao();
-      if (msg.sender != address(dao)) {
+      if (_account != address(dao)) {
         _auth(dao, address(this), msg.sender, _permissionId, msg.data);
       }
     }

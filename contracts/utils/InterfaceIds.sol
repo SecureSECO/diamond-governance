@@ -17,6 +17,7 @@ import { IERC173 } from "../additional-contracts/IERC173.sol";
 import { IERC6372 } from "../additional-contracts/IERC6372.sol";
 import { IVotes } from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import { IDiamondLoupe } from "../additional-contracts/IDiamondLoupe.sol";
+import { IDiamondCut } from "../additional-contracts/IDiamondCut.sol";
 
 import { IPlugin } from "@aragon/osx/core/plugin/IPlugin.sol";
 import { IDAOReferenceFacet } from "../facets/aragon/IDAOReferenceFacet.sol";
@@ -52,6 +53,8 @@ import { IERC20TieredTimeClaimableFacet } from "../facets/token/ERC20/claiming/t
 
 import { IChangeableTokenContract } from "../facets/token/ERC20/monetary-token/IChangeableTokenContract.sol";
 
+import { IRewardMultiplierFacet } from "../facets/multiplier/IRewardMultiplierFacet.sol";
+
 import { ISearchSECOMonetizationFacet } from "../facets/other/secureseco/searchseco/ISearchSECOMonetizationFacet.sol";
 import { ISearchSECORewardingFacet } from "../facets/other/secureseco/searchseco/ISearchSECORewardingFacet.sol";
 
@@ -65,6 +68,7 @@ library InterfaceIds {
     bytes4 constant public IERC6372_ID = type(IERC6372).interfaceId;
     bytes4 constant public IVotes_ID = type(IVotes).interfaceId;
     bytes4 constant public IDiamondLoupe_ID = type(IDiamondLoupe).interfaceId;
+    bytes4 constant public IDiamondCut_ID = type(IDiamondCut).interfaceId;
     
     bytes4 constant public IPlugin_ID = type(IPlugin).interfaceId;
     bytes4 constant public IDAOReferenceFacet_ID = type(IDAOReferenceFacet).interfaceId;
@@ -99,6 +103,8 @@ library InterfaceIds {
     bytes4 constant public IERC20TieredTimeClaimableFacet_ID = type(IERC20TieredTimeClaimableFacet).interfaceId;
 
     bytes4 constant public IChangeableTokenContract_ID = type(IChangeableTokenContract).interfaceId;
+
+    bytes4 constant public IRewardMultiplierFacet_ID = type(IRewardMultiplierFacet).interfaceId;
 
     bytes4 constant public ISearchSECOMonetizationFacet_ID = type(ISearchSECOMonetizationFacet).interfaceId;
     bytes4 constant public ISearchSECORewardingFacet_ID = type(ISearchSECORewardingFacet).interfaceId;

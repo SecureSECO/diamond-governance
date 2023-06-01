@@ -14,7 +14,7 @@ import { IFacet } from "../IFacet.sol";
 
 contract AlwaysAcceptAuthFacet is IAuthProvider, IFacet {
     /// @inheritdoc IAuthProvider
-    function auth(bytes32 _permissionId) external view virtual override {
+    function auth(bytes32 _permissionId, address _account) external view virtual override {
         
     }
 }
