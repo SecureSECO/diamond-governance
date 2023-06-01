@@ -10,5 +10,5 @@
 pragma solidity ^0.8.0;
 
 interface IAuthProvider {
-    function auth(bytes32 _permissionId) external view;
+    function auth(bytes32 _permissionId, address _account) external view;
 }

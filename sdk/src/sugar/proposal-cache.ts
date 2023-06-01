@@ -6,7 +6,8 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { ProposalData, ProposalStatus, ProposalSorting, SortingOrder } from "./data";
+import { asyncMap } from "../utils";
+import { ProposalStatus, ProposalSorting, SortingOrder } from "./data";
 import { Proposal } from "./proposal";
 
 /**
@@ -81,26 +82,36 @@ export class ProposalCache {
      * @param order Order of results (ascending or descending)
      * @param fromIndex Index to start from
      * @param count Number of proposals to return
-     * @param refreshSorting Refresh the sorting (if false, the sorting will be cached)
+     * @param refreshSorting Refresh the proposals and the sorting (if false, the sorting will be cached)
      * @returns {Promise<Proposal[]>} List of proposals
      */
     public async GetProposals(status : ProposalStatus[], sorting : ProposalSorting, order : SortingOrder, fromIndex : number, count : number, refreshSorting : boolean) : Promise<Proposal[]> {
         const proposalCount = await this.GetProposalCount();
         await this.FillCacheUntil(proposalCount);
 
+        if (refreshSorting) {
+            await asyncMap(this.proposals, prop => prop.Refresh());
+            this.cachedSorting = { };
+        }
+
         const sort = sorting as number;
         const stat = status.reduce((sum, x) => sum + x, 0);
         if (!this.cachedSorting.hasOwnProperty(sort)) {
             this.cachedSorting[sort] = { };
         }
-        if (!this.cachedSorting[sort].hasOwnProperty(stat) || refreshSorting) {
+        if (!this.cachedSorting[sort].hasOwnProperty(stat)) {
             this.cachedSorting[sort][stat] = this.proposals
                 .filter(prop => status.includes(prop.status))
-                .sort(this.getSortingFunc(sorting, order))
+                .sort(this.getSortingFunc(sorting))
                 .map(prop => prop.id);
         }
 
-        return this.cachedSorting[sort][stat].slice(fromIndex, fromIndex + count).map(i => this.proposals[i]);
+        let proposalIds = this.cachedSorting[sort][stat];
+        if (order == SortingOrder.Desc) {
+            proposalIds = proposalIds.reverse();
+        }
+
+        return proposalIds.slice(fromIndex, fromIndex + count).map(i => this.proposals[i]);
     }
     
     /**
@@ -109,14 +120,10 @@ export class ProposalCache {
      * @param order Order of results (ascending or descending)
      * @returns {Function} Function to sort proposals
      */
-    private getSortingFunc(sorting : ProposalSorting, order : SortingOrder) : (prop1: Proposal, prop2: Proposal) => number {
+    private getSortingFunc(sorting : ProposalSorting) : (prop1: Proposal, prop2: Proposal) => number {
         const sort = (x1 : any, x2 : any) => { 
-            // This can be significatly shorted with x1 - x2 (and switch on order reverse), but this is more readable
+            // This can be significatly shorted with x1 - x2, but that might not work for all types (string? BigNumbers?)
             if (x1 == x2) return 0;
-            if (order == SortingOrder.Asc) {
-                if (x1 < x2) return 1;
-                else return -1;
-            }
             else {
                 if (x1 > x2) return 1;
                 else return -1;
@@ -132,7 +139,7 @@ export class ProposalCache {
                 getAttribute = (prop : Proposal) => { return prop.metadata.title; }
                 break;
             case ProposalSorting.TotalVotes:
-                getAttribute = (prop : Proposal) => { return prop.data.tally.abstain.add(prop.data.tally.yes).add(prop.data.tally.no).toNumber(); }
+                getAttribute = (prop : Proposal) => { return prop.data.tally.abstain.add(prop.data.tally.yes).add(prop.data.tally.no); }
                 break;
         }
 
