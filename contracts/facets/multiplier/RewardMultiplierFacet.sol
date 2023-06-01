@@ -10,8 +10,8 @@ import {IRewardMultiplierFacet} from "./IRewardMultiplierFacet.sol";
 import {LibRewardMultiplierStorage} from "../../libraries/storage/LibRewardMultiplierStorage.sol";
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 import {IFacet} from "../IFacet.sol";
-import {ABDKMath64x64} from "./ABDKMath64x64.sol";
-import {LibABDKHelper} from "./LibABDKHelper.sol";
+import {ABDKMath64x64} from "../../libraries/abdk-math/ABDKMath64x64.sol";
+import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 import {LibCalculateGrowth} from "./LibCalculateGrowth.sol";
 
 contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
