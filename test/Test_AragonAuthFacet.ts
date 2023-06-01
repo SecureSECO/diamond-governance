@@ -39,7 +39,7 @@ async function getClient() {
   return createTestingDao(cut, false);
   }
 
-describe.only("AragonAuthFacet", () => {
+describe("AragonAuthFacet", () => {
   it("should allow the plugin itself", async () => {
     const client = await loadFixture(getClient);
     const signer = await ethers.getImpersonatedSigner(client.pure.pluginAddress);
