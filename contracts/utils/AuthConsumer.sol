@@ -16,7 +16,7 @@ abstract contract AuthConsumer {
     /// @param _permissionId The permission identifier required to call the method this modifier is applied to.
     modifier auth(bytes32 _permissionId) {
         if (msg.sender != address(this)) {
-            IAuthProvider(address(this)).auth(_permissionId);
+            IAuthProvider(address(this)).auth(_permissionId, msg.sender);
         }
         _;
     }
