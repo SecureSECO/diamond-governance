@@ -40,18 +40,13 @@ export async function createProposalWithClient(client : DiamondGovernanceClient,
   const receipt = await tx.wait();
 
   // Retrieve proposal information
-  const IProposal = await client.pure.IProposal();
-  const proposalCreationEvent = getEvents(IProposal, "ProposalCreated", receipt);
-  if (proposalCreationEvent.length < 1) {
-    throw new Error("Proposal creation event not found");
-  }
-  const proposalId = proposalCreationEvent[0].args.proposalId;
+  const proposalId = await client.sugar.GetProposalId(receipt);
   const proposal = await client.sugar.GetProposal(proposalId, false);
 
   return proposal;
 }
 
-function getExampleMetaData() : ProposalMetadata {
+export function getExampleMetaData() : ProposalMetadata {
     return {
         title: "Title",
         description: "Description",
