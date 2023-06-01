@@ -14,6 +14,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IFacet} from "../../../IFacet.sol";
 import {ISearchSECORewardingFacet} from "./ISearchSECORewardingFacet.sol";
 import {GenericSignatureHelper} from "../../../../utils/GenericSignatureHelper.sol";
+import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
+import {Ratio} from "../../../../utils/Ratio.sol";
 
 /// @title A contract reward SearchSECO Spider users for submitting new hashes
 /// @author J.S.C.L & T.Y.M.W.
@@ -68,6 +70,9 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         // This is necessary to read from storage
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
+        IMiningRewardPoolFacet miningRewardPoolFacet = IMiningRewardPoolFacet(
+            address(this)
+        );
 
         // Validate the given proof
         require(
@@ -94,8 +99,12 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
 
         assert(repReward + coinReward == s.hashReward);
 
-        // TODO: Reward the user
-        // ...
+        // Reward the user in REP
+
+        // Reward the user in coins
+        // TODO:
+        uint payout = applyRatioCeiled(coinReward, s.miningRewardPoolPayoutRatio);
+        miningRewardPoolFacet.reward(_toReward, coinReward);
     }
 
     /// @inheritdoc ISearchSECORewardingFacet

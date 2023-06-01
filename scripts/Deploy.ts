@@ -81,6 +81,7 @@ async function main() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
+    treasuryRatio: 200_000, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,

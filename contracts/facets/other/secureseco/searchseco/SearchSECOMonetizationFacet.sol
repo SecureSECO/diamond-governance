@@ -8,23 +8,14 @@ pragma solidity ^0.8.0;
 
 import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
-import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {ISearchSECOMonetizationFacet} from "./ISearchSECOMonetizationFacet.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
 import {IFacet} from "../../../IFacet.sol";
-
-// Used for diamond pattern storage
-library SearchSECOMonetizationFacetInit {
-    struct InitParams {
-        uint256 hashCost;
-    }
-
-    function init(InitParams calldata _params) external {
-        LibSearchSECOMonetizationStorage.getStorage().hashCost = _params
-            .hashCost;
-    }
-}
+import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
+import {Ratio} from "../../../../utils/Ratio.sol";
+import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
+import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 
 /// @title SearchSECO monetization facet for the Diamond Governance Plugin
 /// @author J.S.C.L. & T.Y.M.W. @ UU
@@ -38,6 +29,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
 
     struct SearchSECOMonetizationFacetInitParams {
         uint256 hashCost;
+        uint32 treasuryRatio;
     }
 
     /// @inheritdoc IFacet
@@ -51,6 +43,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         SearchSECOMonetizationFacetInitParams memory _params
     ) public virtual {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _params.hashCost;
+        LibSearchSECOMonetizationStorage.getStorage().treasuryRatio = _params.treasuryRatio;
         
         registerInterface(type(ISearchSECOMonetizationFacet).interfaceId);
     }
@@ -65,6 +58,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     function payForHashes(uint _amount, string memory _uniqueId) external virtual override {
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
+        IMiningRewardFacet miningRewardFacet = IMiningRewardFacet(address(this));
         IChangeableTokenContract monetaryTokenFacet = IChangeableTokenContract(address(this));
         IERC20 tokenContract = IERC20(monetaryTokenFacet.getTokenContractAddress());
 
@@ -76,11 +70,21 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
             "Insufficient tokens for this transaction"
         );
 
+        // Calculate the amount of tokens that go to the treasury and the mining reward pool
+        uint ratio = s.treasuryRatio;
+
+        uint totalPayout = s.hashCost * _amount;
+        uint toMiningRewardPool = _applyRatioCeiled(totalPayout, ratio);
+        uint toTreasury = totalPayout - toMiningRewardPool;
+
+        // Transfer the tokens from the sender to the treasury
         tokenContract.transferFrom(
             msg.sender,
-            address(this),
-            s.hashCost * _amount
+            address(IDAOReferenceFacet(address(this)).dao()),
+            totalPayout
         );
+        // "Transfer" to the piggy bank for mining rewards
+        miningRewardFacet.increaseMiningRewardPool(toMiningRewardPool);
 
         // Emit event so back-end can verify payment
         emit PaymentProcessed(msg.sender, _amount, _uniqueId);
