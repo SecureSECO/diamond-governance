@@ -8,6 +8,7 @@
 
 // Framework
 import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 
 // Tests
 import { expect } from "chai";
@@ -16,13 +17,70 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 // Utils
 import { wei } from "../utils/etherUnits";
 import { now, days } from "../utils/timeUnits";
+import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
+import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
+import { DiamondCut } from "../utils/diamondGovernanceHelper";
 
 // Types
 
 // Other
 import { DiamondGovernanceClient, ProposalSorting, ProposalMetadata, Action, SortingOrder, VoteOption } from "../sdk/index";
-import { getClient, getVotingPower } from "./Test_PartialVoting";
+import { getVotingPower } from "./Test_PartialVoting";
 import { getExampleMetaData } from "./Test_PartialVotingProposal";
+
+async function getClient() {
+  await loadFixture(deployTestNetwork);
+  const [owner] = await ethers.getSigners();
+  const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  enum VotingMode {
+      SingleVote,
+      SinglePartialVote,
+      MultiplePartialVote,
+  }
+  const PartialVotingProposalFacetSettings = {
+      votingSettings: {
+          votingMode: VotingMode.MultiplePartialVote,
+          supportThreshold: 1,
+          minParticipation: 1,
+          maxSingleWalletPower: 10**6,
+          minDuration: 1 * days,
+          minProposerVotingPower: wei.mul(1),
+      },
+  };
+  const GovernanceERC20BurnableFacetSettings = {
+    _GovernanceERC20FacetInitParams: {
+      _ERC20VotesFacetInitParams: {
+          _ERC20PermitFacetInitParams: {
+              _ERC20FacetInitParams: {
+                  name: "Token",
+                  symbol: "TOK",
+              }
+          }
+      }
+    }
+  };
+  const cut : DiamondCut[] = [
+      await DiamondCut.All(diamondGovernance.PartialVotingProposalFacet, [PartialVotingProposalFacetSettings]),
+      await DiamondCut.All(diamondGovernance.PartialVotingFacet),
+      await DiamondCut.All(diamondGovernance.GovernanceERC20BurnableFacet, [GovernanceERC20BurnableFacetSettings]),
+      await DiamondCut.All(diamondGovernance.AlwaysMemberTier1Facet),
+  ];
+  return createTestingDao(cut);
+}
+
+async function setVotingPower(client : DiamondGovernanceClient, votingPower : BigNumber) {
+  const IERC20 = await client.pure.IERC20();
+  const address = await client.pure.signer.getAddress();
+  const currentVotingPower = await IERC20.balanceOf(address);
+  if (currentVotingPower.lt(votingPower)) {
+    const IMintableGovernanceStructure = await client.pure.IMintableGovernanceStructure();
+    await IMintableGovernanceStructure.mintVotingPower(address, 0, votingPower.sub(currentVotingPower));
+  }
+  else if (currentVotingPower.gt(votingPower)) {
+    const IBurnableGovernanceStructure = await client.pure.IBurnableGovernanceStructure();
+    await IBurnableGovernanceStructure.burnVotingPower(address, currentVotingPower.sub(votingPower));
+  }
+}
 
 export async function createProposalWithClient(client : DiamondGovernanceClient, metadata : ProposalMetadata, actions : Action[]) {
   // Proposal parameters
@@ -104,15 +162,15 @@ describe("Proposal SDK sugar", function () {
 
   it("should sort the proposals on total votes ascendingly", async function () {
     const client = await loadFixture(getClient);
-    await getVotingPower(client);
-    const votes = [7, 5, 6, 3, 2, 1, 4];
+    const votes = [7, 5, 6, 3, 2, 1, 4].map(i => wei.mul(i));
     await client.sugar.ClearProposalCache();
 
     // Create proposals
     for (let i = 0; i < votes.length; i++) {
+      await setVotingPower(client, votes[i]);
       await createProposalWithClient(client, getExampleMetaData(), []);
       const proposal = await client.sugar.GetProposal(i);
-      await proposal.Vote(VoteOption.Yes, wei.mul(votes[i]));
+      await proposal.Vote(VoteOption.Yes, votes[i]);
       await proposal.Refresh();
     }
 
@@ -125,18 +183,18 @@ describe("Proposal SDK sugar", function () {
   
   it("should use cache correctly", async function () {
     const client = await loadFixture(getClient);
-    await getVotingPower(client);
-    const votes = [7, 5, 6, 3];
+    const votes = [7, 5, 6, 3].map(i => wei.mul(i));
     const titles = ["Empty treasury", "Kick all members", "Delete DAO", "Remove governance plugin"];
     await client.sugar.ClearProposalCache();
 
     // Create proposals
     for (let i = 0; i < votes.length; i++) {
+      await setVotingPower(client, votes[i]);
       let metadata = getExampleMetaData();
       metadata.title = titles[i];
       await createProposalWithClient(client, metadata, []);
       const proposal = await client.sugar.GetProposal(i);
-      await proposal.Vote(VoteOption.Yes, wei.mul(votes[i]));
+      await proposal.Vote(VoteOption.Yes, votes[i]);
       await proposal.Refresh();
     }
     const proposalSortedCreation = await client.sugar.GetProposals(undefined, ProposalSorting.Creation, SortingOrder.Asc);
