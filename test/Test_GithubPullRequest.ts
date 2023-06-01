@@ -36,7 +36,7 @@ describe("GithubPullRequest", () => {
   it("should emit the MergePullRequest event on calling merge", async () => {
     const client = await loadFixture(getClient);
     const IGithubPullRequestFacet = await client.pure.IGithubPullRequestFacet();
-    await expect(IGithubPullRequestFacet.merge("owner", "repo", "0"))
+    expect(await IGithubPullRequestFacet.merge("owner", "repo", "0"))
         .to.emit(IGithubPullRequestFacet, "MergePullRequest")
         .withArgs("owner", "repo", "0");
   });  
