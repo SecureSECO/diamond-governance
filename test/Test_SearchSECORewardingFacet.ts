@@ -103,7 +103,7 @@ const getERC20MonetaryTokenContract = async (
   return ERC20MonetaryToken;
 };
 
-describe.only("SearchSECORewarding", function () {
+describe("SearchSECORewarding", function () {
   it("should get/set mining reward pool payout ratio correctly", async function () {
     const client = await loadFixture(getClient);
     const ISearchSECORewardingFacet =
@@ -148,7 +148,7 @@ describe.only("SearchSECORewarding", function () {
       "someUniqueId"
     );
     // Check if money is in the mining reward pool / treasury
-    const balance = await ERC20MonetaryToken.balanceOf(daoAddress);
+    // const balance = await ERC20MonetaryToken.balanceOf(daoAddress);
     // expect(balance).to.be.equal(costWei);
     const miningRewardPoolBalance =
       await IMiningRewardPoolFacet.getMiningRewardPool();
