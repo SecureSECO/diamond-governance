@@ -196,7 +196,7 @@ describe.only("SearchSECORewarding", function () {
     const newBalanceMiningRewardPool =
       await IMiningRewardPoolFacet.getMiningRewardPool();
 
-    /* -------------------- FUCK IT WE BALL --------------------- */
+    /* -------------------- CALCULATE REWARD --------------------- */
     const miningRewardPoolBeforeReward = costWei // costWei is how much tokens were transferred to the treasury (from the monetization)
       .mul(TREASURY_RATIO)
       .div(1_000_000);
