@@ -85,6 +85,14 @@ contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer, IFacet {
         if (_proposal.voters[_voter].length == 0) {
             // New voter
             _proposal.voterList.push(_voter);
+
+            // Increase abstain with not used voting power, to contribute to participation threshold, but not swing the vote
+            uint256 notUsedPower = IGovernanceStructure(address(this)).walletVotingPower(_voter, _proposal.parameters.snapshotBlock) - _voteData.amount;
+            _proposal.tally.abstain = _proposal.tally.abstain + notUsedPower;
+        }
+        else {
+            // Decrease the abstain that was increased on first vote
+            _proposal.tally.abstain = _proposal.tally.abstain - _voteData.amount;
         }
         _proposal.voters[_voter].push(_voteData);
         

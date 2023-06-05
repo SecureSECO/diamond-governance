@@ -19,7 +19,6 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { wei } from "../utils/etherUnits";
-import { getEvents } from "../utils/utils";
 
 // Types
 
@@ -77,7 +76,6 @@ export async function getVotingPower(client : DiamondGovernanceClient) {
     await IMintableGovernanceStructure.mintVotingPower(owner.address, 0, 10);
 }
 
-
 export async function createProposalWithClient(client : DiamondGovernanceClient) {
   // Proposal parameters
   const startTime = 0; // 0 will get translated to block.timestamp
@@ -109,8 +107,11 @@ export async function createProposalWithClient(client : DiamondGovernanceClient)
 describe("PartialVoting", function () {
   // Allowed simple
   it("should increase yes with the right amount when voting yes on proposal", async function () {
-    const { proposal} = await loadFixture(createProposal);
+    const { client, proposal} = await loadFixture(createProposal);
     const amount = wei.mul(2);
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const [owner] = await ethers.getSigners();
+    const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
 
     const abstainBefore = wei.mul(0);
     const yesBefore = wei.mul(0);
@@ -118,14 +119,17 @@ describe("PartialVoting", function () {
     await proposal.Vote(VoteOption.Yes, amount);
     await proposal.Refresh();
 
-    expect(abstainBefore).to.be.equal(proposal.data.tally.abstain);
+    expect(abstainBefore.add(votingPower.sub(amount))).to.be.equal(proposal.data.tally.abstain);
     expect(yesBefore.add(amount)).to.be.equal(proposal.data.tally.yes);
     expect(noBefore).to.be.equal(proposal.data.tally.no);
   });
 
   it("should increase no with the right amount when voting no on proposal", async function () {
-    const { proposal} = await loadFixture(createProposal);
+    const { client, proposal} = await loadFixture(createProposal);
     const amount = wei.mul(1);
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const [owner] = await ethers.getSigners();
+    const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
 
     const abstainBefore = wei.mul(0);
     const yesBefore = wei.mul(0);
@@ -133,14 +137,17 @@ describe("PartialVoting", function () {
     await proposal.Vote(VoteOption.No, amount);
     await proposal.Refresh();
 
-    expect(abstainBefore).to.be.equal(proposal.data.tally.abstain);
+    expect(abstainBefore.add(votingPower.sub(amount))).to.be.equal(proposal.data.tally.abstain);
     expect(yesBefore).to.be.equal(proposal.data.tally.yes);
     expect(noBefore.add(amount)).to.be.equal(proposal.data.tally.no);
   });
 
   it("should increase abstain with the right amount when voting abstain on proposal", async function () {
-    const { proposal} = await loadFixture(createProposal);
+    const { client, proposal} = await loadFixture(createProposal);
     const amount = wei.mul(4);
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const [owner] = await ethers.getSigners();
+    const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
 
     const abstainBefore = wei.mul(0);
     const yesBefore = wei.mul(0);
@@ -148,15 +155,18 @@ describe("PartialVoting", function () {
     await proposal.Vote(VoteOption.Abstain, amount);
     await proposal.Refresh();
 
-    expect(abstainBefore.add(amount)).to.be.equal(proposal.data.tally.abstain);
+    expect(abstainBefore.add(votingPower)).to.be.equal(proposal.data.tally.abstain);
     expect(yesBefore).to.be.equal(proposal.data.tally.yes);
     expect(noBefore).to.be.equal(proposal.data.tally.no);
   });
 
   //Allowed advanced
   it("should increase yes with the right amount when voting yes multiple times on proposal", async function () {
-    const { proposal} = await loadFixture(createProposal);
-    const amounts = [ wei.mul(1),  wei.mul(2)];
+    const { client, proposal} = await loadFixture(createProposal);
+    const amounts = [wei.mul(1),  wei.mul(2)];
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const [owner] = await ethers.getSigners();
+    const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
 
     const abstainBefore = wei.mul(0);
     const yesBefore = wei.mul(0);
@@ -168,15 +178,18 @@ describe("PartialVoting", function () {
     }
     await proposal.Refresh();
 
-    expect(abstainBefore).to.be.equal(proposal.data.tally.abstain);
+    expect(abstainBefore.add(votingPower.sub(total))).to.be.equal(proposal.data.tally.abstain);
     expect(yesBefore.add(total)).to.be.equal(proposal.data.tally.yes);
     expect(noBefore).to.be.equal(proposal.data.tally.no);
   });
 
   it("should increase yes and no with the right amount when voting yes and no on proposal", async function () {
-    const { proposal} = await loadFixture(createProposal);
+    const { client, proposal} = await loadFixture(createProposal);
     const amountYes = wei.mul(1);
     const amountNo = wei.mul(2);
+    const IGovernanceStructure = await client.pure.IGovernanceStructure();
+    const [owner] = await ethers.getSigners();
+    const votingPower = await IGovernanceStructure.walletVotingPower(owner.address, proposal.data.parameters.snapshotBlock);
 
     const abstainBefore = wei.mul(0);
     const yesBefore = wei.mul(0);
@@ -185,7 +198,7 @@ describe("PartialVoting", function () {
     await proposal.Vote(VoteOption.No, amountNo);
     await proposal.Refresh();
 
-    expect(abstainBefore).to.be.equal(proposal.data.tally.abstain);
+    expect(abstainBefore.add(votingPower.sub(amountYes).sub(amountNo))).to.be.equal(proposal.data.tally.abstain);
     expect(yesBefore.add(amountYes)).to.be.equal(proposal.data.tally.yes);
     expect(noBefore.add(amountNo)).to.be.equal(proposal.data.tally.no);
   });
