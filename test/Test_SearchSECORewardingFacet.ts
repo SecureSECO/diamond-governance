@@ -25,6 +25,7 @@ import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
 import { createSignature2 } from "../utils/signatureHelper";
 import { DiamondGovernanceClient } from "../sdk";
+import { to18Decimal } from "../utils/decimals18Helper";
 
 // Types
 
@@ -37,6 +38,8 @@ const INITIAL_MINT_AMOUNT = 1_000_000;
 const REP_FRAC = 400_000; // 40%
 const NUM_HASHES_MINED = 100;
 const NUM_HASHES_QUERY = 100;
+const HASH_DEVALUATION_FACTOR = 0.125;
+const HASH_DEVALUATION_FACTOR_18 = to18Decimal(HASH_DEVALUATION_FACTOR);
 
 async function getClient() {
   await loadFixture(deployTestNetwork);
@@ -44,11 +47,12 @@ async function getClient() {
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO, // 1%
+    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO, 
+    hashDevaluationFactor: HASH_DEVALUATION_FACTOR_18, 
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
-    treasuryRatio: TREASURY_RATIO, // 20%
+    treasuryRatio: TREASURY_RATIO, 
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address,
@@ -198,7 +202,7 @@ describe.only("SearchSECORewarding", function () {
       .div(1_000_000);
     const decimals18 = BigNumber.from(10).pow(18);
     const coinFrac = Math.round(
-      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) / 1_000_000
+      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) / 1_000_000 * HASH_DEVALUATION_FACTOR
     );
     const decimals18PowHashes = decimals18.pow(coinFrac);
     const reversePayoutRatio = decimals18

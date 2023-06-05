@@ -37,7 +37,8 @@ contract SearchSECORewardingFacet is
 
     struct SearchSECORewardingFacetInitParams {
         address signer;
-        uint miningRewardPoolPayoutRatio;
+        uint32 miningRewardPoolPayoutRatio;
+        uint hashDevaluationFactor;
     }
 
     /// @inheritdoc IFacet
@@ -60,6 +61,9 @@ contract SearchSECORewardingFacet is
         s.miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
             _params.miningRewardPoolPayoutRatio,
             1_000_000
+        );
+        s.hashDevaluationFactor = LibABDKHelper.from18Decimals(
+            _params.hashDevaluationFactor
         );
 
         registerInterface(type(ISearchSECORewardingFacet).interfaceId);
@@ -138,7 +142,11 @@ contract SearchSECORewardingFacet is
                 ABDKMath64x64.exp(
                     ABDKMath64x64.mul(
                         // The hash count reserved for the coin reward (coinFrac)
-                        ABDKMath64x64.sub(hashCount64x64, numHashDivided),
+                        // This is divided by a constant factor: hashDevaluationFactor
+                        ABDKMath64x64.mul(
+                            ABDKMath64x64.sub(hashCount64x64, numHashDivided),
+                            s.hashDevaluationFactor
+                        ),
                         ABDKMath64x64.ln(
                             ABDKMath64x64.sub(
                                 ABDKMath64x64.fromUInt(1),
@@ -207,9 +215,13 @@ contract SearchSECORewardingFacet is
         s.signer = _rewardingSigner;
     }
 
-    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
-    /// @return The ratio in ppm
-    function getMiningRewardPoolPayoutRatio() external view returns (uint32) {
+    /// @inheritdoc ISearchSECORewardingFacet
+    function getMiningRewardPoolPayoutRatio()
+        external
+        view
+        override
+        returns (uint32)
+    {
         // Cast from 64.64 to ppm
         return
             uint32(
@@ -222,17 +234,42 @@ contract SearchSECORewardingFacet is
             );
     }
 
-    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
-    /// @param _miningRewardPoolPayoutRatio The new ratio
+    /// @inheritdoc ISearchSECORewardingFacet
     function setMiningRewardPoolPayoutRatio(
         uint32 _miningRewardPoolPayoutRatio
-    ) external {
+    ) external override {
         // Cast from ppm to 64.64
         LibSearchSECORewardingStorage
             .getStorage()
             .miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
             _miningRewardPoolPayoutRatio,
             1_000_000
+        );
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function getHashDevaluationFactor()
+        external
+        view
+        override
+        returns (uint)
+    {
+        // Cast from 64.64 to ppm
+        return
+            LibABDKHelper.to18Decimals(
+                LibSearchSECORewardingStorage.getStorage().hashDevaluationFactor
+            );
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function setHashDevaluationFactor(
+        uint _hashDevaluationFactor
+    ) external override {
+        // Cast from ppm to 64.64
+        LibSearchSECORewardingStorage
+            .getStorage()
+            .hashDevaluationFactor = LibABDKHelper.from18Decimals(
+            _hashDevaluationFactor
         );
     }
 }
