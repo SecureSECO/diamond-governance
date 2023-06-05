@@ -28,6 +28,8 @@ interface ISearchSECORewardingFacet {
     /// @return The hash count
     function getHashCount(address _user) external view returns (uint);
 
+    /// @notice Returns the hash reward (REP), in 18 decimals precision
+    /// @return The hash reward
     function getHashReward() external view returns (uint);
 
     /// @notice Sets the hash reward (REP)
@@ -41,4 +43,12 @@ interface ISearchSECORewardingFacet {
     /// @notice Sets the signer used for signature verification
     /// @param _rewardingSigner The new signer
     function setRewardingSigner(address _rewardingSigner) external;
+
+    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
+    /// @return The ratio in ppm
+    function getMiningRewardPoolPayoutRatio() external view returns (uint32);
+
+    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
+    /// @param _ratio The new ratio
+    function setMiningRewardPoolPayoutRatio(uint32 _ratio) external;
 }

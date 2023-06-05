@@ -6,7 +6,7 @@
 
 pragma solidity ^0.8.0;
 
-import {ABDKMath64x64} from "./ABDKMath64x64.sol";
+import {ABDKMath64x64} from "../../libraries/abdk-math/ABDKMath64x64.sol";
 
 library LibCalculateGrowth {
     /// @notice Calculate linear growth

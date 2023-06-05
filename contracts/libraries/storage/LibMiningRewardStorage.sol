@@ -12,7 +12,7 @@ library LibMiningRewardStorage {
 
     struct Storage {
         /// @notice Represents the piggy bank for rewarding the miners.
-        uint256 piggyBank;
+        uint256 miningRewardPool;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

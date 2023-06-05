@@ -13,9 +13,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
 import {IFacet} from "../../../IFacet.sol";
 import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
-import {Ratio} from "../../../../utils/Ratio.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
+import "../../../../utils/Ratio.sol";
 
 /// @title SearchSECO monetization facet for the Diamond Governance Plugin
 /// @author J.S.C.L. & T.Y.M.W. @ UU
@@ -58,7 +58,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     function payForHashes(uint _amount, string memory _uniqueId) external virtual override {
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
-        IMiningRewardFacet miningRewardFacet = IMiningRewardFacet(address(this));
+        IMiningRewardPoolFacet miningRewardFacet = IMiningRewardPoolFacet(address(this));
         IChangeableTokenContract monetaryTokenFacet = IChangeableTokenContract(address(this));
         IERC20 tokenContract = IERC20(monetaryTokenFacet.getTokenContractAddress());
 
@@ -75,7 +75,6 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
 
         uint totalPayout = s.hashCost * _amount;
         uint toMiningRewardPool = _applyRatioCeiled(totalPayout, ratio);
-        uint toTreasury = totalPayout - toMiningRewardPool;
 
         // Transfer the tokens from the sender to the treasury
         tokenContract.transferFrom(

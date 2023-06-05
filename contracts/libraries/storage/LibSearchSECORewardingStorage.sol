@@ -18,7 +18,7 @@ library LibSearchSECORewardingStorage {
         uint hashReward;
 
         /// @notice Defines the percentage of the pool that is paid out to the miner.
-        uint32 miningRewardPoolPayoutRatio; // ppm
+        int128 miningRewardPoolPayoutRatio; // 64.64
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

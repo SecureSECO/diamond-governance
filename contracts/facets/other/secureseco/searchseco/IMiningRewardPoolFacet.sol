@@ -15,4 +15,6 @@ interface IMiningRewardPoolFacet {
     function increaseMiningRewardPool(uint _amount) external;
 
     function decreaseMiningRewardPool(uint _amount) external;
+
+    function rewardCoinsToMiner(address _miner, uint _amount) external;
 }

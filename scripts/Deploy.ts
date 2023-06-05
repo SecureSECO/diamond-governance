@@ -88,6 +88,7 @@ async function main() {
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
+    miningRewardPoolPayoutRatio: 10_000 // 1%
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address

@@ -6,7 +6,6 @@
 
 pragma solidity ^0.8.0;
 
-import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECORewardingStorage} from "../../../../libraries/storage/LibSearchSECORewardingStorage.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,12 +14,19 @@ import {IFacet} from "../../../IFacet.sol";
 import {ISearchSECORewardingFacet} from "./ISearchSECORewardingFacet.sol";
 import {GenericSignatureHelper} from "../../../../utils/GenericSignatureHelper.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
-import {Ratio} from "../../../../utils/Ratio.sol";
+import {ABDKMath64x64} from "../../../../libraries/abdk-math/ABDKMath64x64.sol";
+import {LibABDKHelper} from "../../../../libraries/abdk-math/LibABDKHelper.sol";
+import {IMintableGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 
 /// @title A contract reward SearchSECO Spider users for submitting new hashes
 /// @author J.S.C.L & T.Y.M.W.
 /// @notice This contract is used to reward users for submitting new hashes
-contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISearchSECORewardingFacet, IFacet {
+contract SearchSECORewardingFacet is
+    AuthConsumer,
+    GenericSignatureHelper,
+    ISearchSECORewardingFacet,
+    IFacet
+{
     // Permission used by the setHashReward function
     bytes32 public constant UPDATE_HASH_REWARD_PERMISSION_ID =
         keccak256("UPDATE_HASH_REWARD_PERMISSION_ID");
@@ -31,6 +37,7 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
 
     struct SearchSECORewardingFacetInitParams {
         address signer;
+        uint miningRewardPoolPayoutRatio;
     }
 
     /// @inheritdoc IFacet
@@ -46,9 +53,14 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         SearchSECORewardingFacetInitParams memory _params
     ) public virtual {
         // Set signer for signature verification
-        LibSearchSECORewardingStorage.Storage storage s = LibSearchSECORewardingStorage.getStorage();
+        LibSearchSECORewardingStorage.Storage
+            storage s = LibSearchSECORewardingStorage.getStorage();
         s.signer = _params.signer;
         s.hashReward = 1;
+        s.miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
+            _params.miningRewardPoolPayoutRatio,
+            1_000_000
+        );
 
         registerInterface(type(ISearchSECORewardingFacet).interfaceId);
     }
@@ -76,7 +88,11 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
 
         // Validate the given proof
         require(
-            verify(s.signer, keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)), _proof),
+            verify(
+                s.signer,
+                keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)),
+                _proof
+            ),
             "Proof is not valid"
         );
 
@@ -94,21 +110,67 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
         );
 
         // Calculate the reward
-        uint repReward = ((_hashCount * s.hashReward) * _repFrac) / 1_000_000;
-        uint coinReward = (_hashCount * s.hashReward) - repReward;
+        // 1. Split number of hashes up according to the given "repFrac"
+        int128 hashCount64x64 = ABDKMath64x64.fromUInt(_hashCount);
+        // This is the number of hashes for the REP reward, the rest is for the coin reward
+        int128 numHashDivided = ABDKMath64x64.mul(
+            hashCount64x64,
+            ABDKMath64x64.divu(_repFrac, 1_000_000)
+        ); // div by 1_000_000 to get fraction
 
-        assert(repReward + coinReward == s.hashReward);
+        // 2. Calculate the reputation reward by multiplying the fraction
+        //    for the REP reward (calculated in step 1) to the hash reward (from storage)
+        int128 repReward = ABDKMath64x64.mul(
+            numHashDivided,
+            ABDKMath64x64.fromUInt(s.hashReward)
+        );
+
+        // 3. Calculate the coin reward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
+        // (don't mind the variable name, this is to minimize the amount of variables used)
+        // coinFrac = (hashCount - numHashDivided)
+
+        // coinReward = (1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac) * miningRewardPool
+        int128 coinReward = ABDKMath64x64.mul(
+            // coinReward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
+            ABDKMath64x64.sub(
+                ABDKMath64x64.fromUInt(1),
+                // coinReward = (1 - miningRewardPoolPayoutRatio) ^ coinFrac
+                ABDKMath64x64.exp(
+                    ABDKMath64x64.mul(
+                        // The hash count reserved for the coin reward (coinFrac)
+                        ABDKMath64x64.sub(hashCount64x64, numHashDivided),
+                        ABDKMath64x64.ln(
+                            ABDKMath64x64.sub(
+                                ABDKMath64x64.fromUInt(1),
+                                s.miningRewardPoolPayoutRatio
+                            )
+                        )
+                    )
+                )
+            ),
+            ABDKMath64x64.fromUInt(miningRewardPoolFacet.getMiningRewardPool())
+        );
 
         // Reward the user in REP
+        // Assume ERC20 token has 18 decimals
+        IMintableGovernanceStructure(address(this)).mintVotingPower(
+            _toReward,
+            0,
+            LibABDKHelper.to18Decimals(repReward)
+        );
 
         // Reward the user in coins
-        // TODO:
-        uint payout = applyRatioCeiled(coinReward, s.miningRewardPoolPayoutRatio);
-        miningRewardPoolFacet.reward(_toReward, coinReward);
+        // Assume ERC20 token has 18 decimals
+        miningRewardPoolFacet.rewardCoinsToMiner(
+            _toReward,
+            ABDKMath64x64.toUInt(coinReward)
+        );
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getHashCount(address _user) public view virtual override returns (uint) {
+    function getHashCount(
+        address _user
+    ) public view virtual override returns (uint) {
         return LibSearchSECORewardingStorage.getStorage().hashCount[_user];
     }
 
@@ -118,20 +180,59 @@ contract SearchSECORewardingFacet is AuthConsumer, GenericSignatureHelper, ISear
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function setHashReward(uint _hashReward) public virtual override auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
+    function setHashReward(
+        uint _hashReward
+    ) public virtual override auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
         LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getRewardingSigner() external view virtual override returns (address) {
+    function getRewardingSigner()
+        external
+        view
+        virtual
+        override
+        returns (address)
+    {
         return LibSearchSECORewardingStorage.getStorage().signer;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function setRewardingSigner(address _rewardingSigner) external virtual override auth(UPDATE_REWARDING_SIGNER_PERMISSION_ID) {
+    function setRewardingSigner(
+        address _rewardingSigner
+    ) external virtual override auth(UPDATE_REWARDING_SIGNER_PERMISSION_ID) {
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
 
         s.signer = _rewardingSigner;
+    }
+
+    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
+    /// @return The ratio in ppm
+    function getMiningRewardPoolPayoutRatio() external view returns (uint32) {
+        // Cast from 64.64 to ppm
+        return
+            uint32(
+                ABDKMath64x64.mulu(
+                    LibSearchSECORewardingStorage
+                        .getStorage()
+                        .miningRewardPoolPayoutRatio,
+                    1_000_000
+                )
+            );
+    }
+
+    /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
+    /// @param _miningRewardPoolPayoutRatio The new ratio
+    function setMiningRewardPoolPayoutRatio(
+        uint32 _miningRewardPoolPayoutRatio
+    ) external {
+        // Cast from ppm to 64.64
+        LibSearchSECORewardingStorage
+            .getStorage()
+            .miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
+            _miningRewardPoolPayoutRatio,
+            1_000_000
+        );
     }
 }
