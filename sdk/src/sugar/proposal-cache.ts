@@ -18,11 +18,12 @@ import { Proposal } from "./proposal";
  */
 export class ProposalCache {
     private proposals: Proposal[];
+    private unorderedProposals: { [index: number]: Proposal } = { };
     private getProposal: (i : number) => Promise<Proposal>;
     private getProposalCount: () => Promise<number>;
     //ProposalSorting cast to number as id, same for status (only keep track of indexes, so refreshing is easier)
     //Actually should not be allowed to cache total votes on open proposals... (Refresh all open proposal upon selecting this filter?)
-    private cachedSorting: { [sort: number]: { [stat: number]: number[] } }; 
+    private cachedSorting: { [stat: number]: { [sort: number]: number[] } }; 
 
     /**
      * @param _getProposal Function to get proposal data from the blockchain
@@ -43,9 +44,27 @@ export class ProposalCache {
      */
     private async FillCacheUntil(until : number) {
         for (let i = this.proposals.length; i < until; i++) {
+            if (this.unorderedProposals.hasOwnProperty(i)) {
+                this.proposals[i] = this.unorderedProposals[i];
+                delete this.unorderedProposals[i];
+                continue;
+            }
+
             const prop = await this.getProposal(i);
             this.proposals[i] = prop;
         }
+    }
+
+    private async TryGetProposalFromCache(index : number) {
+        if (this.unorderedProposals.hasOwnProperty(index)) {
+            return this.unorderedProposals[index];
+        }
+        if (this.proposals.length > index) {
+            return this.proposals[index];
+        }
+
+        this.unorderedProposals[index] = await this.getProposal(index);
+        return this.unorderedProposals[index];
     }
 
     /**
@@ -54,6 +73,30 @@ export class ProposalCache {
      */
     public async GetProposalCount() : Promise<number> {
         return await this.getProposalCount();
+    }
+
+    /**
+     * Asynchronously retrieve the number of proposals from the blockchain with a certain status filter applied
+     * @returns {Promise<number>} The number of proposals
+     */
+    public async GetFilteredProposalCount(status : ProposalStatus[]) : Promise<number> {
+        const proposalCount = await this.GetProposalCount();
+        await this.FillCacheUntil(proposalCount);
+
+        const sorting = ProposalSorting.Creation;
+        const sort = sorting as number;
+        const stat = status.reduce((sum, x) => sum + x, 0);
+        if (!this.cachedSorting.hasOwnProperty(stat)) {
+            this.cachedSorting[stat] = { };
+        }
+        if (!this.cachedSorting[stat].hasOwnProperty(sort)) {
+            this.cachedSorting[stat][sort] = this.proposals
+                .filter(prop => status.includes(prop.status))
+                .sort(this.getSortingFunc(sorting))
+                .map(prop => prop.id);
+        }
+
+        return this.cachedSorting[stat][sort].length;
     }
 
     /**
@@ -71,8 +114,7 @@ export class ProposalCache {
             return await this.getProposal(this.proposals.length);
         }
 
-        await this.FillCacheUntil(id + 1);
-        return this.proposals[id];
+        return this.TryGetProposalFromCache(id);
     }
 
     /**
@@ -86,6 +128,11 @@ export class ProposalCache {
      * @returns {Promise<Proposal[]>} List of proposals
      */
     public async GetProposals(status : ProposalStatus[], sorting : ProposalSorting, order : SortingOrder, fromIndex : number, count : number, refreshSorting : boolean) : Promise<Proposal[]> {
+        if (status.length == Object.keys(ProposalStatus).length && sorting == ProposalSorting.Creation) {
+            // No need to fetch all proposals for sorting / filtering
+            return await this.GetProposalsEfficient(order, fromIndex, count);
+        }
+        
         const proposalCount = await this.GetProposalCount();
         await this.FillCacheUntil(proposalCount);
 
@@ -96,22 +143,37 @@ export class ProposalCache {
 
         const sort = sorting as number;
         const stat = status.reduce((sum, x) => sum + x, 0);
-        if (!this.cachedSorting.hasOwnProperty(sort)) {
-            this.cachedSorting[sort] = { };
+        if (!this.cachedSorting.hasOwnProperty(stat)) {
+            this.cachedSorting[stat] = { };
         }
-        if (!this.cachedSorting[sort].hasOwnProperty(stat)) {
-            this.cachedSorting[sort][stat] = this.proposals
+        if (!this.cachedSorting[stat].hasOwnProperty(sort)) {
+            this.cachedSorting[stat][sort] = this.proposals
                 .filter(prop => status.includes(prop.status))
                 .sort(this.getSortingFunc(sorting))
                 .map(prop => prop.id);
         }
 
-        let proposalIds = this.cachedSorting[sort][stat];
+        let proposalIds = this.cachedSorting[stat][sort];
         if (order == SortingOrder.Desc) {
-            proposalIds = proposalIds.reverse();
+            proposalIds = [...proposalIds].reverse();
         }
 
         return proposalIds.slice(fromIndex, fromIndex + count).map(i => this.proposals[i]);
+    }
+
+    private async GetProposalsEfficient(order : SortingOrder, fromIndex : number, count : number) : Promise<Proposal[]> {
+        const proposals : Proposal[] = [];
+        const proposalCount = await this.getProposalCount();
+        for (let i = fromIndex; i < count; i++) {
+            let index = i;
+            if (order == SortingOrder.Desc) {
+                index = proposalCount - 1 - i;
+            }
+            if (index < 0 || index >= proposalCount) break;
+
+            proposals.push(await this.TryGetProposalFromCache(index));
+        }
+        return proposals;
     }
     
     /**

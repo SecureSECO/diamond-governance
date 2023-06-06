@@ -34,7 +34,7 @@ interface IPartialVotingFacet {
     /// @param voter The voter casting the vote.
     /// @param voteData The casted vote option and the voting power behind this vote.
     event VoteCast(
-        uint256  proposalId,
+        uint256 proposalId,
         address indexed voter,
         PartialVote voteData
     );

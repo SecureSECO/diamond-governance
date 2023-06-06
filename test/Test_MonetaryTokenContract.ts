@@ -18,7 +18,8 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { ERC20MonetaryToken, IERC20, Ownable } from "../typechain-types";
+import { ERC20MonetaryToken } from "../typechain-types";
+import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 
 // Types
 
@@ -28,28 +29,22 @@ import { ERC20MonetaryToken, IERC20, Ownable } from "../typechain-types";
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
+  const deployer = new FixedSupplyDeployer();
+  const monetaryToken = await deployer.beforeDAODeploy();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const MonetaryTokenFacetSettings = {
-    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address,
+    monetaryTokenContractAddress: monetaryToken,
   };
   const cut : DiamondCut[] = [
       await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
   ];
-  return createTestingDao(cut);
+  const client = await createTestingDao(cut);
+  const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
+  await deployer.afterDAODeploy(await IDAOReferenceFacet.dao(), client.pure.pluginAddress);
+  return client;
 }
 
 describe("MonetaryTokenContract", () => {
-  it("should have the correct monetary token contract address", async () => {
-    const client = await loadFixture(getClient);
-    const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
-
-    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
-    const monetaryTokenContractAddress = diamondGovernance.ERC20MonetaryToken.address;
-    
-    expect(await IChangeableTokenContract.getTokenContractAddress()).to.equal(monetaryTokenContractAddress);
-  });
-
   it("should update contract address on set", async () => {
     const client = await loadFixture(getClient);
     
@@ -62,10 +57,10 @@ describe("MonetaryTokenContract", () => {
   it("should be able to mint monetary token once", async () => {
     const client = await loadFixture(getClient);
     const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
     const mintAmount = 10;
 
-    const monetaryTokenContractAddress = diamondGovernance.ERC20MonetaryToken.address;
+    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
+    const monetaryTokenContractAddress = await IChangeableTokenContract.getTokenContractAddress();
     const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
 
     const balanceBefore = await ERC20MonetaryToken.balanceOf(owner.address);
@@ -77,9 +72,9 @@ describe("MonetaryTokenContract", () => {
   it("should not be able to mint monetary token twice", async () => {
     const client = await loadFixture(getClient);
     const [owner] = await ethers.getSigners();
-    const diamondGovernance = await getDeployedDiamondGovernance(owner);
 
-    const monetaryTokenContractAddress = diamondGovernance.ERC20MonetaryToken.address;
+    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
+    const monetaryTokenContractAddress = await IChangeableTokenContract.getTokenContractAddress();
     const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
 
     await ERC20MonetaryToken.init(owner.address, 10);

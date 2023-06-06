@@ -11,10 +11,9 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days } from "../utils/timeUnits";
-import { ether } from "../utils/etherUnits";
+import { ether, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
-import { GetTypedContractAt } from "../utils/contractHelper";
-import { ERC20MonetaryToken } from "../typechain-types";
+import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -24,6 +23,30 @@ async function main() {
 
   const [owner] = await ethers.getSigners();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
+
+  const ABCDeployerSettings : ABCDeployerSettings = {
+    curveParameters: {
+      theta: 0,
+      friction: 0,
+      reserveRatio: 0,
+    },
+    hatchParameters: {
+      initialPrice: wei.mul(0),
+      minimumRaise: wei.mul(0),
+      maximumRaise: wei.mul(0),
+      hatchDeadline: 0,
+    },
+    vestingSchedule: {
+      cliff: 0,
+      start: 0,
+      duration: 0,
+      slicePeriodSeconds: 1,
+      revocable: false,
+    },
+  };
+  const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
+  monetaryTokenDeployer.runVerification = true;
+  const MonetaryToken = await monetaryTokenDeployer.beforeDAODeploy();
 
   const ERC20Disabled = [
     "transfer(address, uint256)",
@@ -67,12 +90,12 @@ async function main() {
   }
   const VerificationFacetSettings = {
     verificationContractAddress: diamondGovernance.SignVerification.address, //address
-    providers: ["github", "proofofhumanity"], //string[]
-    rewards: [3, 10], //uint256[]
+    providers: ["github", "proofofhumanity", "whitelist"], //string[]
+    rewards: [3, 10, 9999], //uint256[]
   };
   const ERC20TieredTimeClaimableFacetSettings = {
-    tiers: [3, 10], //uint256[]
-    rewards: [ether.mul(1), ether.mul(3)], //uint256[]
+    tiers: [3, 10, 9999], //uint256[]
+    rewards: [ether.mul(1), ether.mul(3), ether.mul(3)], //uint256[]
     _ERC20TimeClaimableFacetInitParams: {
       timeTillReward: 1 * days, //uint256
       maxTimeRewarded: 10 * days, //uint256
@@ -89,9 +112,12 @@ async function main() {
     signer: owner.address,
   };
   const MonetaryTokenFacetSettings = {
-    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
+    monetaryTokenContractAddress: MonetaryToken,
   };
-
+  const ABCConfigureFacetSettings = {
+    marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,
+  };
+  
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
     await DiamondCut.All(diamondGovernance.DiamondLoupeFacet),
@@ -111,6 +137,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
+    await DiamondCut.All(diamondGovernance.ABCConfigureFacet, [ABCConfigureFacetSettings]),
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
@@ -135,8 +162,7 @@ async function main() {
   console.log("DAO:", dao.dao.address);
   console.log("Diamond Governance:", dao.diamondGovernance.address);
   
-  const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", diamondGovernance.ERC20MonetaryToken.address, owner);
-  ERC20MonetaryToken.init(dao.dao.address, ether.mul(1000000));
+  await monetaryTokenDeployer.afterDAODeploy(dao.dao.address, dao.diamondGovernance.address);
 
   console.log("Deploy finished!");
 }

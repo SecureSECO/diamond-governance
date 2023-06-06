@@ -84,14 +84,26 @@ export class DiamondGovernanceSugar {
     }
 
     /**
-     * Retrieve the number of proposals from the cache, if the cache is not initialized it will be initialized
-     * @returns {Promise<number>} Number of proposals (in the cache) -> are these all proposals or only the ones that are open?
+     * Retrieve the number of proposals
+     * @returns {Promise<number>} Number of proposals
      */
     public async GetProposalCount() : Promise<number> {
         if (this.proposalCache == null) {
             this.proposalCache = await this.InitProposalCache();
         }
         return await this.proposalCache.GetProposalCount()
+    }
+
+    /**
+     * Retrieve the number of proposals with a certain status filter active
+     * @param status The status filter
+     * @returns {Promise<number>} Number of proposals
+     */
+    public async GetFilteredProposalCount(status : ProposalStatus[]) : Promise<number> {
+        if (this.proposalCache == null) {
+            this.proposalCache = await this.InitProposalCache();
+        }
+        return await this.proposalCache.GetFilteredProposalCount(status);
     }
 
     public async ClearProposalCache() {
