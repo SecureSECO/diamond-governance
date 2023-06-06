@@ -84,9 +84,11 @@ async function main() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
+    treasuryRatio: 200_000, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
+    miningRewardPoolPayoutRatio: 10_000 // 1%
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
