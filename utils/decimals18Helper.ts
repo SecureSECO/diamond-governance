@@ -19,3 +19,5 @@ export const tenFoldUntilLimit = (
 
   return { amount: Math.round(amount), exponent: i };
 };
+
+export const DECIMALS_18 = to18Decimal(1);

@@ -37,7 +37,7 @@ contract SearchSECORewardingFacet is
 
     struct SearchSECORewardingFacetInitParams {
         address signer;
-        uint32 miningRewardPoolPayoutRatio;
+        uint miningRewardPoolPayoutRatio;
         uint hashDevaluationFactor;
     }
 
@@ -58,13 +58,8 @@ contract SearchSECORewardingFacet is
             storage s = LibSearchSECORewardingStorage.getStorage();
         s.signer = _params.signer;
         s.hashReward = 1;
-        s.miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
-            _params.miningRewardPoolPayoutRatio,
-            1_000_000
-        );
-        s.hashDevaluationFactor = LibABDKHelper.from18Decimals(
-            _params.hashDevaluationFactor
-        );
+        _setMiningRewardPoolPayoutRatio(_params.miningRewardPoolPayoutRatio);
+        _setHashDevaluationFactor(_params.hashDevaluationFactor);
 
         registerInterface(type(ISearchSECORewardingFacet).interfaceId);
     }
@@ -76,7 +71,7 @@ contract SearchSECORewardingFacet is
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function reward(
+    function rewardMinerForHashes(
         address _toReward,
         uint _hashCount,
         uint _nonce,
@@ -220,31 +215,20 @@ contract SearchSECORewardingFacet is
         external
         view
         override
-        returns (uint32)
+        returns (uint)
     {
-        // Cast from 64.64 to ppm
+        // Cast from dec18 to ppm
         return
-            uint32(
-                ABDKMath64x64.mulu(
-                    LibSearchSECORewardingStorage
-                        .getStorage()
-                        .miningRewardPoolPayoutRatio,
-                    1_000_000
-                )
+            LibABDKHelper.to18Decimals(
+                LibSearchSECORewardingStorage.getStorage().miningRewardPoolPayoutRatio
             );
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
     function setMiningRewardPoolPayoutRatio(
-        uint32 _miningRewardPoolPayoutRatio
+        uint _miningRewardPoolPayoutRatio
     ) external override {
-        // Cast from ppm to 64.64
-        LibSearchSECORewardingStorage
-            .getStorage()
-            .miningRewardPoolPayoutRatio = ABDKMath64x64.divu(
-            _miningRewardPoolPayoutRatio,
-            1_000_000
-        );
+        _setMiningRewardPoolPayoutRatio(_miningRewardPoolPayoutRatio);
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
@@ -254,7 +238,7 @@ contract SearchSECORewardingFacet is
         override
         returns (uint)
     {
-        // Cast from 64.64 to ppm
+        // Cast from dec18 to ppm
         return
             LibABDKHelper.to18Decimals(
                 LibSearchSECORewardingStorage.getStorage().hashDevaluationFactor
@@ -265,7 +249,26 @@ contract SearchSECORewardingFacet is
     function setHashDevaluationFactor(
         uint _hashDevaluationFactor
     ) external override {
-        // Cast from ppm to 64.64
+        _setHashDevaluationFactor(_hashDevaluationFactor);
+    }
+
+    function _setMiningRewardPoolPayoutRatio(
+        uint _miningRewardPoolPayoutRatio
+    ) internal {
+        // No need to waste gas checking >= 0, since it's uint
+        require(_miningRewardPoolPayoutRatio <= 1e18, "Error: invalid mining reward pool payout ratio");
+        // Cast from dec18 to 64.64
+        LibSearchSECORewardingStorage
+            .getStorage()
+            .miningRewardPoolPayoutRatio = LibABDKHelper.from18Decimals(
+            _miningRewardPoolPayoutRatio
+        );
+    }
+
+    function _setHashDevaluationFactor(
+        uint _hashDevaluationFactor
+    ) internal {
+        // Cast from dec18 to 64.64
         LibSearchSECORewardingStorage
             .getStorage()
             .hashDevaluationFactor = LibABDKHelper.from18Decimals(

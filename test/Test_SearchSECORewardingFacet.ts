@@ -25,7 +25,7 @@ import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
 import { createSignature2 } from "../utils/signatureHelper";
 import { DiamondGovernanceClient } from "../sdk";
-import { to18Decimal } from "../utils/decimals18Helper";
+import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
 
 // Types
 
@@ -33,7 +33,8 @@ import { to18Decimal } from "../utils/decimals18Helper";
 
 // Constants
 const TREASURY_RATIO = 200_000; // 20%
-const MINING_REWARD_POOL_PAYOUT_RATIO = 10_000; // 1%
+const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%
+const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO);
 const INITIAL_MINT_AMOUNT = 1_000_000;
 const REP_FRAC = 400_000; // 40%
 const NUM_HASHES_MINED = 100;
@@ -47,7 +48,7 @@ async function getClient() {
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO, 
+    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18, 
     hashDevaluationFactor: HASH_DEVALUATION_FACTOR_18, 
   };
   const SearchSECOMonetizationFacetSettings = {
@@ -111,14 +112,15 @@ describe("SearchSECORewarding", function () {
 
     const ratio =
       await ISearchSECORewardingFacet.getMiningRewardPoolPayoutRatio();
-    expect(ratio).to.be.approximately(MINING_REWARD_POOL_PAYOUT_RATIO, 1);
+    expect(ratio).to.be.approximately(MINING_REWARD_POOL_PAYOUT_RATIO_18, 1);
 
+    const miningRewardPoolPayoutRatioTwice = MINING_REWARD_POOL_PAYOUT_RATIO_18.mul(2);
     await ISearchSECORewardingFacet.setMiningRewardPoolPayoutRatio(
-      2 * MINING_REWARD_POOL_PAYOUT_RATIO
+      miningRewardPoolPayoutRatioTwice
     );
     const ratio2 =
       await ISearchSECORewardingFacet.getMiningRewardPoolPayoutRatio();
-    expect(ratio2).to.be.approximately(2 * MINING_REWARD_POOL_PAYOUT_RATIO, 1);
+    expect(ratio2).to.be.approximately(miningRewardPoolPayoutRatioTwice, 1);
   });
 
   it("should reward for hashes/mining properly", async function () {
@@ -182,7 +184,7 @@ describe("SearchSECORewarding", function () {
       0,
       owner
     );
-    await ISearchSECORewardingFacet.reward(
+    await ISearchSECORewardingFacet.rewardMinerForHashes(
       owner.address,
       NUM_HASHES_MINED,
       0,
@@ -206,7 +208,7 @@ describe("SearchSECORewarding", function () {
     );
     const decimals18PowHashes = decimals18.pow(coinFrac);
     const reversePayoutRatio = decimals18
-      .sub(decimals18.mul(MINING_REWARD_POOL_PAYOUT_RATIO).div(1_000_000))
+      .sub(decimals18.mul(MINING_REWARD_POOL_PAYOUT_RATIO_18).div(DECIMALS_18))
       .pow(coinFrac);
     const payoutRatio = decimals18PowHashes.sub(reversePayoutRatio);
     const payout = payoutRatio
