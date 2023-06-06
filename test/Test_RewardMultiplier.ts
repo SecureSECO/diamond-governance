@@ -18,6 +18,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
+import { tenFoldUntilLimit, to18Decimal, DECIMALS_18 } from "../utils/decimals18Helper";
 
 // Types
 
@@ -50,30 +51,9 @@ const numberOfDecimals = (number: number): number => {
   return (number.toString().split(".")[1] || []).length;
 };
 
-const to18Decimal = (amount: number): BigNumber => {
-  const { amount: newAmount, exponent } = tenFoldUntilLimit(amount);
-
-  return BigNumber.from(newAmount).mul(BigNumber.from(10).pow(18 - exponent));
-};
-
-const tenFoldUntilLimit = (
-  amount: number
-): { amount: number; exponent: number } => {
-  let i = 0;
-  for (; i <= 18; i++) {
-    if (Number.MAX_SAFE_INTEGER / 10 < amount) {
-      break;
-    }
-    amount *= 10;
-  }
-
-  return { amount: Math.round(amount), exponent: i };
-};
-
 /* CONSTANTS */
 const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 decimal version
 const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT);
-const DECIMALS_18 = to18Decimal(1);
 const MAX_BLOCKS_PASSED = 1000;
 
 const SLOPE_N = 1001;

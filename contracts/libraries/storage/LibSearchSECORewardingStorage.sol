@@ -16,6 +16,12 @@ library LibSearchSECORewardingStorage {
         address signer;
         /// @notice The reward that is given to a user for submitting a new hash
         uint hashReward;
+
+        /// @notice Defines the percentage of the pool that is paid out to the miner.
+        int128 miningRewardPoolPayoutRatio; // 64.64
+
+        /// @notice Defines the constant factor by which the hash reward is devaluated. 
+        int128 hashDevaluationFactor; // 64.64
     }
 
     function getStorage() internal pure returns (Storage storage ds) {
