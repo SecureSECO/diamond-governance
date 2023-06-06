@@ -14,7 +14,7 @@ import {IFacet} from "../../../IFacet.sol";
 import {ISearchSECORewardingFacet} from "./ISearchSECORewardingFacet.sol";
 import {GenericSignatureHelper} from "../../../../utils/GenericSignatureHelper.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
-import {ABDKMath64x64} from "../../../../libraries/abdk-math/ABDKMath64x64.sol";
+import {ABDKMathQuad} from "../../../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../../../libraries/abdk-math/LibABDKHelper.sol";
 import {IMintableGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 
@@ -110,18 +110,18 @@ contract SearchSECORewardingFacet is
 
         // Calculate the reward
         // 1. Split number of hashes up according to the given "repFrac"
-        int128 hashCount64x64 = ABDKMath64x64.fromUInt(_hashCount);
+        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(_hashCount);
         // This is the number of hashes for the REP reward, the rest is for the coin reward
-        int128 numHashDivided = ABDKMath64x64.mul(
-            hashCount64x64,
-            ABDKMath64x64.divu(_repFrac, 1_000_000)
+        bytes16 numHashDivided = ABDKMathQuad.mul(
+            hashCountQuad,
+            ABDKMathQuad.div(ABDKMathQuad.fromUInt(_repFrac), ABDKMathQuad.fromUInt(1_000_000))
         ); // div by 1_000_000 to get fraction
 
         // 2. Calculate the reputation reward by multiplying the fraction
         //    for the REP reward (calculated in step 1) to the hash reward (from storage)
-        int128 repReward = ABDKMath64x64.mul(
+        bytes16 repReward = ABDKMathQuad.mul(
             numHashDivided,
-            ABDKMath64x64.fromUInt(s.hashReward)
+            ABDKMathQuad.fromUInt(s.hashReward)
         );
 
         // 3. Calculate the coin reward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
@@ -129,29 +129,29 @@ contract SearchSECORewardingFacet is
         // coinFrac = (hashCount - numHashDivided)
 
         // coinReward = (1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac) * miningRewardPool
-        int128 coinReward = ABDKMath64x64.mul(
+        bytes16 coinReward = ABDKMathQuad.mul(
             // coinReward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
-            ABDKMath64x64.sub(
-                ABDKMath64x64.fromUInt(1),
+            ABDKMathQuad.sub(
+                ABDKMathQuad.fromUInt(1),
                 // coinReward = (1 - miningRewardPoolPayoutRatio) ^ coinFrac
-                ABDKMath64x64.exp(
-                    ABDKMath64x64.mul(
+                ABDKMathQuad.exp(
+                    ABDKMathQuad.mul(
                         // The hash count reserved for the coin reward (coinFrac)
                         // This is divided by a constant factor: hashDevaluationFactor
-                        ABDKMath64x64.mul(
-                            ABDKMath64x64.sub(hashCount64x64, numHashDivided),
+                        ABDKMathQuad.mul(
+                            ABDKMathQuad.sub(hashCountQuad, numHashDivided),
                             s.hashDevaluationFactor
                         ),
-                        ABDKMath64x64.ln(
-                            ABDKMath64x64.sub(
-                                ABDKMath64x64.fromUInt(1),
+                        ABDKMathQuad.ln(
+                            ABDKMathQuad.sub(
+                                ABDKMathQuad.fromUInt(1),
                                 s.miningRewardPoolPayoutRatio
                             )
                         )
                     )
                 )
             ),
-            ABDKMath64x64.fromUInt(miningRewardPoolFacet.getMiningRewardPool())
+            ABDKMathQuad.fromUInt(miningRewardPoolFacet.getMiningRewardPool())
         );
 
         // Reward the user in REP
@@ -159,14 +159,14 @@ contract SearchSECORewardingFacet is
         IMintableGovernanceStructure(address(this)).mintVotingPower(
             _toReward,
             0,
-            LibABDKHelper.to18Decimals(repReward)
+            LibABDKHelper.to18DecimalsQuad(repReward)
         );
 
         // Reward the user in coins
         // Assume ERC20 token has 18 decimals
         miningRewardPoolFacet.rewardCoinsToMiner(
             _toReward,
-            ABDKMath64x64.toUInt(coinReward)
+            ABDKMathQuad.toUInt(coinReward)
         );
     }
 
@@ -217,9 +217,9 @@ contract SearchSECORewardingFacet is
         override
         returns (uint)
     {
-        // Cast from dec18 to ppm
+        // Cast from quad float to dec18
         return
-            LibABDKHelper.to18Decimals(
+            LibABDKHelper.to18DecimalsQuad(
                 LibSearchSECORewardingStorage.getStorage().miningRewardPoolPayoutRatio
             );
     }
@@ -238,9 +238,9 @@ contract SearchSECORewardingFacet is
         override
         returns (uint)
     {
-        // Cast from dec18 to ppm
+        // Cast from quad float to dec18
         return
-            LibABDKHelper.to18Decimals(
+            LibABDKHelper.to18DecimalsQuad(
                 LibSearchSECORewardingStorage.getStorage().hashDevaluationFactor
             );
     }
@@ -257,10 +257,10 @@ contract SearchSECORewardingFacet is
     ) internal {
         // No need to waste gas checking >= 0, since it's uint
         require(_miningRewardPoolPayoutRatio <= 1e18, "Error: invalid mining reward pool payout ratio");
-        // Cast from dec18 to 64.64
+        // Cast from dec18 to quad float
         LibSearchSECORewardingStorage
             .getStorage()
-            .miningRewardPoolPayoutRatio = LibABDKHelper.from18Decimals(
+            .miningRewardPoolPayoutRatio = LibABDKHelper.from18DecimalsQuad(
             _miningRewardPoolPayoutRatio
         );
     }
@@ -268,10 +268,10 @@ contract SearchSECORewardingFacet is
     function _setHashDevaluationFactor(
         uint _hashDevaluationFactor
     ) internal {
-        // Cast from dec18 to 64.64
+        // Cast from dec18 to quad float
         LibSearchSECORewardingStorage
             .getStorage()
-            .hashDevaluationFactor = LibABDKHelper.from18Decimals(
+            .hashDevaluationFactor = LibABDKHelper.from18DecimalsQuad(
             _hashDevaluationFactor
         );
     }
