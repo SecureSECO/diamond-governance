@@ -12,6 +12,7 @@ import {ABDKMathQuad} from "./ABDKMathQuad.sol";
 library LibABDKHelper {
     // This is a precalculated value of 1e18 in 64.64 fixed point
     int128 constant DECIMALS_18 = 18446744073709551616000000000000000000;
+    // This is a precalculated value of 1e18 in quad float fixed point
     bytes16 constant DECIMALS_18_QUAD = 0x403abc16d674ec800000000000000000;
 
     /// @notice Convert uint to 64x64 fixed point

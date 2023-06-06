@@ -13,7 +13,7 @@ library LibCalculateGrowth {
     /// @param _initialAmount b
     /// @param _time x
     /// @param _slope a
-    /// @return result in 64.64
+    /// @return result in quad float
     function calculateLinearGrowth(
         bytes16 _initialAmount,
         uint _time,
@@ -31,7 +31,7 @@ library LibCalculateGrowth {
     /// @param _initialAmount b
     /// @param _time x
     /// @param _base a
-    /// @return result in 64.64
+    /// @return result in quad float
     function calculateExponentialGrowth(
         bytes16 _initialAmount,
         uint _time,

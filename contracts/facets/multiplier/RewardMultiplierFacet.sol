@@ -111,7 +111,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
     /// @notice Return multiplier for a variable
     /// @param _name Name of the variable
-    /// @return int128 Multiplier in 64.64
+    /// @return int128 Multiplier in quad float
     function _getMultiplierQuad(
         string memory _name
     ) internal view returns (bytes16) {

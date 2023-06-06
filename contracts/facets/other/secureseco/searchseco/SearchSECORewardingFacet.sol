@@ -110,10 +110,10 @@ contract SearchSECORewardingFacet is
 
         // Calculate the reward
         // 1. Split number of hashes up according to the given "repFrac"
-        bytes16 hashCount64x64 = ABDKMathQuad.fromUInt(_hashCount);
+        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(_hashCount);
         // This is the number of hashes for the REP reward, the rest is for the coin reward
         bytes16 numHashDivided = ABDKMathQuad.mul(
-            hashCount64x64,
+            hashCountQuad,
             ABDKMathQuad.div(ABDKMathQuad.fromUInt(_repFrac), ABDKMathQuad.fromUInt(1_000_000))
         ); // div by 1_000_000 to get fraction
 
@@ -139,7 +139,7 @@ contract SearchSECORewardingFacet is
                         // The hash count reserved for the coin reward (coinFrac)
                         // This is divided by a constant factor: hashDevaluationFactor
                         ABDKMathQuad.mul(
-                            ABDKMathQuad.sub(hashCount64x64, numHashDivided),
+                            ABDKMathQuad.sub(hashCountQuad, numHashDivided),
                             s.hashDevaluationFactor
                         ),
                         ABDKMathQuad.ln(
