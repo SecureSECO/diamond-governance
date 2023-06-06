@@ -28,7 +28,7 @@ contract CounterFacet is ICounterFacet, IFacet {
    * detect the parameters for initialization.
    */
   function __CounterFacet_init(CounterFacetInitParams memory _initParams) public virtual { 
-    LibCounterStorage.Storage storage ds = LibCounterStorage.getStorage();
+    // LibCounterStorage.Storage storage ds = LibCounterStorage.getStorage();
   }
 
   /// @inheritdoc IFacet

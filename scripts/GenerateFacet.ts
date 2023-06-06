@@ -47,8 +47,8 @@ async function main() {
     storageDirectory,
     `Lib${name}Storage.sol`
   );
-  const relativeIFacetPath = path.relative(outputFacetPath, iFacetLocation);
-  const relativeStoragePath = path.relative(outputFacetPath, outputStoragePath);
+  const relativeIFacetPath = path.normalize(path.relative(outputFacetPath, iFacetLocation));
+  const relativeStoragePath = path.normalize(path.relative(outputFacetPath, outputStoragePath));
 
   const outputFacet = fs
     .readFileSync(templateFacetFile, "utf-8")
