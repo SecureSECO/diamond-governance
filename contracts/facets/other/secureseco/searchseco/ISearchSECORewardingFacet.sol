@@ -49,7 +49,7 @@ interface ISearchSECORewardingFacet {
     function getMiningRewardPoolPayoutRatio() external view returns (uint);
 
     /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
-    /// @dev Stores the devaluation factor as a 64.64 fraction 
+    /// @dev Stores the devaluation factor as a quad float fraction 
     /// @param _miningRewardPoolPayoutRatio The new ratio (in 18 decimals)
     function setMiningRewardPoolPayoutRatio(uint _miningRewardPoolPayoutRatio) external;
 
@@ -58,7 +58,7 @@ interface ISearchSECORewardingFacet {
     function getHashDevaluationFactor() external view returns (uint);
 
     /// @notice Sets the devaluation factor for hashes
-    /// @dev Stores the devaluation factor as a 64.64 fraction 
+    /// @dev Stores the devaluation factor as a quad float fraction 
     /// @param _hashDevaluationFactor The new devaluation factor (in 18 decimals)
     function setHashDevaluationFactor(uint _hashDevaluationFactor) external;
 }

@@ -18,16 +18,16 @@ abstract contract IRewardMultiplierFacet {
     /* The following structs are used to store the multiplier information for each reward multiplier. */
     struct MultiplierInfo {
         uint startBlock;
-        int128 initialAmount;
+        bytes16 initialAmount;
         MultiplierType multiplierType;
     }
 
     struct LinearParams {
-        int128 slope;
+        bytes16 slope;
     }
 
     struct ExponentialParams {
-        int128 base;
+        bytes16 base;
     }
 
     /// @notice This function applies a multiplier to a number while keeping the most precision

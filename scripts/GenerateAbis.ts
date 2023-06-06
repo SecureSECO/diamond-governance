@@ -12,7 +12,7 @@ import hre from "hardhat";
 const outputFile = "./generated/abis.json";
 
 async function main() {
-  console.log("Start copying abis from artifcats...");
+  console.log("Start copying abis from artifacts...");
   let abis : { [name : string] : any[] } = { };
   const artifactNames = await hre.artifacts.getAllFullyQualifiedNames();
   for (let i = 0; i < artifactNames.length; i++) {
