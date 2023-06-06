@@ -12,7 +12,8 @@ import { ICounterFacet } from "./ICounterFacet.sol";
 
 contract CounterFacet is ICounterFacet, IFacet {
   struct CounterFacetInitParams {
-    uint deleteMe;
+    // TODO: DELETE THIS VARIABLE!
+    uint deleteMe; 
   }
 
   /// @inheritdoc IFacet

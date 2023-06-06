@@ -12,6 +12,7 @@ library LibCounterStorage {
 
     // Put your storage variables here
     struct Storage {
+        // TODO: DELETE THIS VARIABLE!
         uint deleteMe;
     }
 

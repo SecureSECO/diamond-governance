@@ -9,9 +9,9 @@
 import fs from "fs";
 import path from "path";
 
-const templateFacetFile = "./example-facet/barebones/CounterFacet.sol";
-const templateInterfaceFile = "./example-facet/barebones/ICounterFacet.sol";
-const templateStorageFile = "./example-facet/barebones/CounterStorage.sol";
+const templateFacetFile = "./example-facet/barebones/TemplateFacet.sol.example";
+const templateInterfaceFile = "./example-facet/barebones/ITemplateFacet.sol.example";
+const templateStorageFile = "./example-facet/barebones/LibTemplateStorage.sol.example";
 const iFacetLocation = "./contracts/facets/IFacet.sol"
 const storageDirectory = "./contracts/libraries/storage"
 const outputFile = "./example.facet/NewFacet.sol";
@@ -47,8 +47,8 @@ async function main() {
   const outputFacet = fs
     .readFileSync(templateFacetFile, "utf-8")
     .replaceAll("Counter", name)
-    .replace("/* INSERT IFACET IMPORT HERE */", `import { IFacet } from ${relativeIFacetPath};`)
-    .replace("/* INSERT STORAGE IMPORT HERE */", `import { Lib${name}Storage } from ${relativeStoragePath};`);
+    .replace("/* INSERT IFACET IMPORT HERE */", `import { IFacet } from "${relativeIFacetPath}";`)
+    .replace("/* INSERT STORAGE IMPORT HERE */", `import { Lib${name}Storage } from "${relativeStoragePath}";`);
   
 
   const outputInterface = fs
