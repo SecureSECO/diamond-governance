@@ -43,6 +43,7 @@ async function main() {
       slicePeriodSeconds: 1,
       revocable: false,
     },
+    externalERC20: "0x0000000000000000000000000000000000001010",
   };
   const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
   monetaryTokenDeployer.runVerification = true;
@@ -118,6 +119,7 @@ async function main() {
   };
   const ABCConfigureFacetSettings = {
     marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,
+    hatcher: monetaryTokenDeployer.deployedContracts.SimpleHatch,
   };
   
   const cut : DiamondCut[] = [

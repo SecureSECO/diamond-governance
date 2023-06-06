@@ -25,7 +25,6 @@ import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 
 // Other
 
-
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();

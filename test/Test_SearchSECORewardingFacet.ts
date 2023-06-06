@@ -24,8 +24,9 @@ import { GetTypedContractAt } from "../utils/contractHelper";
 import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
 import { createSignature2 } from "../utils/signatureHelper";
-import { DiamondGovernanceClient } from "../sdk";
+import { DiamondGovernanceClient } from "../sdk/index";
 import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
+import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 
 // Types
 
@@ -45,6 +46,8 @@ const HASH_DEVALUATION_FACTOR_18 = to18Decimal(HASH_DEVALUATION_FACTOR);
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
+  const deployer = new FixedSupplyDeployer();
+  const monetaryToken = await deployer.beforeDAODeploy();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
@@ -56,7 +59,7 @@ async function getClient() {
     treasuryRatio: TREASURY_RATIO, 
   };
   const MonetaryTokenFacetSettings = {
-    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address,
+    monetaryTokenContractAddress: monetaryToken,
   };
   const GovernanceERC20FacetSettings = {
     _ERC20VotesFacetInitParams: {
@@ -84,7 +87,10 @@ async function getClient() {
     ]),
     await DiamondCut.All(diamondGovernance.ExecuteAnythingFacet),
   ];
-  return createTestingDao(cut);
+  const client = await createTestingDao(cut);
+  // const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
+  // await deployer.afterDAODeploy(await IDAOReferenceFacet.dao(), client.pure.pluginAddress);
+  return client;
 }
 
 const getERC20MonetaryTokenContract = async (

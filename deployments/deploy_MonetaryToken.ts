@@ -82,11 +82,11 @@ export interface ABCDeployerSettings {
     slicePeriodSeconds: number,
     revocable: boolean,
   },
+  externalERC20: string,
 } 
 
 export class ABCDeployer extends MonetaryTokenDeployer {
-  private ExternalERC20 = "0x0000000000000000000000000000000000001010" as const;
-  private settings : ABCDeployerSettings;
+  public settings : ABCDeployerSettings;
 
   constructor(_settings : ABCDeployerSettings) {
     super();
@@ -135,7 +135,7 @@ export class ABCDeployer extends MonetaryTokenDeployer {
       formula: BancorBondingCurve.address
     };
     const MarketMakerContract = await ethers.getContractFactory("MarketMaker");
-    const MarketMaker = await MarketMakerContract.deploy(ERC20BondedToken.address, this.ExternalERC20, curveParameters);
+    const MarketMaker = await MarketMakerContract.deploy(ERC20BondedToken.address, this.settings.externalERC20, curveParameters);
     await MarketMaker.deployed();
   
     
@@ -152,7 +152,7 @@ export class ABCDeployer extends MonetaryTokenDeployer {
     }
 
     const hatchParameters : HatchParametersStruct = {
-      externalToken: this.ExternalERC20,
+      externalToken: this.settings.externalERC20,
       bondedToken: ERC20BondedToken.address,
       pool: MarketMaker.address,
       initialPrice: this.settings.hatchParameters.initialPrice,

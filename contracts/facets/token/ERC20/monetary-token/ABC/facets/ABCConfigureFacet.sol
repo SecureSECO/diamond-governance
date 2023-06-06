@@ -20,6 +20,7 @@ contract ABCConfigureFacet is IABCConfigureFacet, AuthConsumer, IFacet {
 
     struct ABCConfigureFacetInitParams {
         address marketMaker;
+        address hatcher;
     }
 
     /// @inheritdoc IFacet
@@ -29,7 +30,9 @@ contract ABCConfigureFacet is IABCConfigureFacet, AuthConsumer, IFacet {
     }
 
     function __ABCConfigureFacet_init(ABCConfigureFacetInitParams memory _params) public virtual {
-        LibABCConfigureStorage.getStorage().marketMaker = _params.marketMaker;
+        LibABCConfigureStorage.Storage storage s = LibABCConfigureStorage.getStorage();
+        s.marketMaker = _params.marketMaker;
+        s.hatcher = _params.hatcher;
 
         registerInterface(type(IABCConfigureFacet).interfaceId);
     }
@@ -48,6 +51,16 @@ contract ABCConfigureFacet is IABCConfigureFacet, AuthConsumer, IFacet {
     /// @inheritdoc IABCConfigureFacet
     function setMarketMaker(address _marketMaker) external virtual override auth(CONFIGURE_ABC_PERMISSION_ID) {
         LibABCConfigureStorage.getStorage().marketMaker = _marketMaker;
+    }
+    
+    /// @inheritdoc IABCConfigureFacet
+    function getHatcher() external view virtual override returns (address) {
+        return LibABCConfigureStorage.getStorage().hatcher;
+    }
+
+    /// @inheritdoc IABCConfigureFacet
+    function setHatcher(address _hatcher) external virtual override auth(CONFIGURE_ABC_PERMISSION_ID) {
+        LibABCConfigureStorage.getStorage().hatcher = _hatcher;
     }
 
     /// @inheritdoc IABCConfigureFacet

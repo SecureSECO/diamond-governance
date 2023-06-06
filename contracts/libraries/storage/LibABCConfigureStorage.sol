@@ -16,6 +16,7 @@ library LibABCConfigureStorage {
 
     struct Storage {
         address marketMaker;
+        address hatcher;
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

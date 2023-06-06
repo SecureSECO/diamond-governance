@@ -9,6 +9,9 @@ pragma solidity ^0.8.0;
 interface IABCConfigureFacet {
     function getMarketMaker() external view returns (address);
     function setMarketMaker(address _marketMaker) external;
+    
+    function getHatcher() external view returns (address);
+    function setHatcher(address _hatcher) external;
 
     function getThetaABC() external view returns (uint32);
     function setThetaABC(uint32 _thetaABC) external;

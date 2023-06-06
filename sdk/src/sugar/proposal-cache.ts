@@ -18,7 +18,7 @@ import { Proposal } from "./proposal";
  */
 export class ProposalCache {
     private proposals: Proposal[];
-    private unorderedProposals: { [index: number]: Proposal } = { };
+    private unorderedProposals: { [index: number]: Proposal };
     private getProposal: (i : number) => Promise<Proposal>;
     private getProposalCount: () => Promise<number>;
     //ProposalSorting cast to number as id, same for status (only keep track of indexes, so refreshing is easier)
@@ -34,32 +34,32 @@ export class ProposalCache {
         _getProposalCount : () => Promise<number>
     ) {
         this.proposals = [];
+        this.unorderedProposals = { };
         this.getProposal = _getProposal;
         this.getProposalCount = _getProposalCount;
-        this.cachedSorting =  { };
+        this.cachedSorting = { };
     }
 
     /**
      * @param until Fill the cache until this index (exclusive)
      */
     private async FillCacheUntil(until : number) {
-        for (let i = this.proposals.length; i < until; i++) {
-            if (this.unorderedProposals.hasOwnProperty(i)) {
-                this.proposals[i] = this.unorderedProposals[i];
-                delete this.unorderedProposals[i];
-                continue;
+        const indexes = [...Array(until - this.proposals.length).keys()].map(i => i + this.proposals.length);
+        await asyncMap(indexes, async (index) => {
+            if (this.unorderedProposals.hasOwnProperty(index)) {
+                this.proposals[index] = this.unorderedProposals[index];
+                delete this.unorderedProposals[index];
+            } else {
+                this.proposals[index] = await this.getProposal(index);
             }
-
-            const prop = await this.getProposal(i);
-            this.proposals[i] = prop;
-        }
+        });
     }
 
     private async TryGetProposalFromCache(index : number) {
         if (this.unorderedProposals.hasOwnProperty(index)) {
             return this.unorderedProposals[index];
         }
-        if (this.proposals.length > index) {
+        if (index < this.proposals.length) {
             return this.proposals[index];
         }
 
@@ -128,7 +128,7 @@ export class ProposalCache {
      * @returns {Promise<Proposal[]>} List of proposals
      */
     public async GetProposals(status : ProposalStatus[], sorting : ProposalSorting, order : SortingOrder, fromIndex : number, count : number, refreshSorting : boolean) : Promise<Proposal[]> {
-        if (status.length == Object.keys(ProposalStatus).length && sorting == ProposalSorting.Creation) {
+        if (status.length == Object.values(ProposalStatus).length/2 && sorting == ProposalSorting.Creation) {
             // No need to fetch all proposals for sorting / filtering
             return await this.GetProposalsEfficient(order, fromIndex, count);
         }
@@ -162,7 +162,7 @@ export class ProposalCache {
     }
 
     private async GetProposalsEfficient(order : SortingOrder, fromIndex : number, count : number) : Promise<Proposal[]> {
-        const proposals : Proposal[] = [];
+        const proposals : number[] = [];
         const proposalCount = await this.getProposalCount();
         for (let i = fromIndex; i < count; i++) {
             let index = i;
@@ -171,9 +171,9 @@ export class ProposalCache {
             }
             if (index < 0 || index >= proposalCount) break;
 
-            proposals.push(await this.TryGetProposalFromCache(index));
+            proposals.push(index);
         }
-        return proposals;
+        return asyncMap(proposals, p => this.TryGetProposalFromCache(p));
     }
     
     /**
