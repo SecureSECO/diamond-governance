@@ -17,6 +17,23 @@ const templateStorageFile =
 const iFacetLocation = "./contracts/facets/IFacet.sol";
 const storageDirectory = "./contracts/libraries/storage";
 
+const printHelpMessage = () => {
+  console.log(
+    "Example usage: "
+      + `npm run generate-facet --name="VeryCool" --output="./contracts/facets/aragon" --includeStorage=false` +
+      + "\r\n"
+      + "Arguments:"
+      + "\t--name=<YOUR_FACET_NAME>"
+      + "\t\tResulting name will be <YOUR_FACET_NAME>Facet.sol"
+      + "\r\n"
+      + "\t--output=<DIRECTORY>"
+      + "\t\tDirectory where facet will be generated"
+      + "\r\n"
+      + "\tincludeStorage=<BOOLEAN>"
+      + "\t\tWhether to generate a storage library for your facet"
+  );
+};
+
 async function main() {
   console.log({
     name: process.env.npm_config_name,
@@ -24,15 +41,19 @@ async function main() {
     includeStorage: process.env.npm_config_includeStorage,
   });
   if (!process.env.npm_config_name) {
-    throw new Error("No name provided; use --name=NAME");
+    console.log("No name provided; use --name=NAME\r\n");
+    printHelpMessage();
+    return;
   }
   if (!process.env.npm_config_output) {
-    throw new Error("No output provided; use --output=PATH");
+    console.log("No output provided; use --output=PATH\r\n");
+    printHelpMessage();
+    return;
   }
   const name: string = process.env.npm_config_name;
   const outputDirectory: string = process.env.npm_config_output;
   const includeStorage: boolean =
-    process.env.npm_config_includeStorage === "true";
+    process.env.npm_config_includeStorage !== "false";
 
   if (!fs.existsSync(outputDirectory)) {
     console.log(`Creating directory: ${outputDirectory}`);
@@ -47,8 +68,12 @@ async function main() {
     storageDirectory,
     `Lib${name}Storage.sol`
   );
-  const relativeIFacetPath = path.normalize(path.relative(outputFacetPath, iFacetLocation));
-  const relativeStoragePath = path.normalize(path.relative(outputFacetPath, outputStoragePath));
+  const relativeIFacetPath = path.normalize(
+    path.relative(outputFacetPath, iFacetLocation)
+  );
+  const relativeStoragePath = path.normalize(
+    path.relative(outputFacetPath, outputStoragePath)
+  );
 
   const outputFacet = fs
     .readFileSync(templateFacetFile, "utf-8")
