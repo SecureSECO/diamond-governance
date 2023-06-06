@@ -15,22 +15,26 @@ const templateInterfaceFile =
 const templateStorageFile =
   "./example-facet/barebones/LibTemplateStorage.sol.example";
 const iFacetLocation = "./contracts/facets/IFacet.sol";
+const facetDirectory = "./contracts/facets";
 const storageDirectory = "./contracts/libraries/storage";
 
 const printHelpMessage = () => {
+  const exampleUsage = `npm run generate-facet --name="VeryCool" --output="/aragon" --includeStorage=true`;
   console.log(
-    "Example usage: "
-      + `npm run generate-facet --name="VeryCool" --output="./contracts/facets/aragon" --includeStorage=false` +
-      + "\r\n"
-      + "Arguments:"
-      + "\t--name=<YOUR_FACET_NAME>"
-      + "\t\tResulting name will be <YOUR_FACET_NAME>Facet.sol"
-      + "\r\n"
-      + "\t--output=<DIRECTORY>"
-      + "\t\tDirectory where facet will be generated"
-      + "\r\n"
-      + "\tincludeStorage=<BOOLEAN>"
-      + "\t\tWhether to generate a storage library for your facet"
+
+`Example usage: ${exampleUsage}
+
+Arguments:
+\t--name=<YOUR_FACET_NAME>
+\t\t[REQUIRED] Resulting name will be <YOUR_FACET_NAME>Facet.sol
+
+\t--output=<DIRECTORY>
+\t\t[REQUIRED] Directory where facet will be generated. This is appended to \"./contracts/facets\"
+
+\t--includeStorage=<BOOLEAN>"
+\t\t[OPTIONAL] Whether to generate a storage library for your facet. Defaults to false.
+`
+
   );
 };
 
@@ -51,9 +55,9 @@ async function main() {
     return;
   }
   const name: string = process.env.npm_config_name;
-  const outputDirectory: string = process.env.npm_config_output;
+  const outputDirectory: string = path.join(facetDirectory, process.env.npm_config_output);
   const includeStorage: boolean =
-    process.env.npm_config_includeStorage !== "false";
+    process.env.npm_config_includeStorage === "true";
 
   if (!fs.existsSync(outputDirectory)) {
     console.log(`Creating directory: ${outputDirectory}`);
@@ -68,12 +72,10 @@ async function main() {
     storageDirectory,
     `Lib${name}Storage.sol`
   );
-  const relativeIFacetPath = path.normalize(
-    path.relative(outputFacetPath, iFacetLocation)
-  );
-  const relativeStoragePath = path.normalize(
-    path.relative(outputFacetPath, outputStoragePath)
-  );
+  const relativeIFacetPath = 
+    path.relative(outputDirectory, iFacetLocation).replaceAll("\\", "\/");
+  const relativeStoragePath = 
+    path.relative(outputDirectory, outputStoragePath).replaceAll("\\", "\/");
 
   const outputFacet = fs
     .readFileSync(templateFacetFile, "utf-8")
