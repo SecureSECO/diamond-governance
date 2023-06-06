@@ -104,7 +104,7 @@ const getERC20MonetaryTokenContract = async (
   return ERC20MonetaryToken;
 };
 
-describe.only("SearchSECORewarding", function () {
+describe("SearchSECORewarding", function () {
   it("should get/set mining reward pool payout ratio correctly", async function () {
     const client = await loadFixture(getClient);
     const ISearchSECORewardingFacet =
