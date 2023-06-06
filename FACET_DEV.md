@@ -21,6 +21,8 @@ If this doesn't work you can try running `npx hardhat clean` (before running the
 - [Facet initialization](#facet-initialization)
   - [Write an init function](#write-an-init-function)
   - [Add your parameters](#add-your-parameters)
+- [Exposing getters/setters](#exposing-getterssetters)
+- [Inheriting from interfaces](#inheriting-from-interfaces)
 - [Testing your facets](#testing-your-facets)
   - [With the whole diamond](#deploying-the-whole-diamond)
   - [Isolated testing](#deploying-just-the-base-diamond)
@@ -196,8 +198,7 @@ It will also call the init function upon cutting the facet into the diamond.
 You will still need to add the parameters to the deployment script though.
 
 ### Add your parameters
-<!-- TODO: change this function name -->
-Now in the **createDiamondGovernanceRepo()** function (in `Deploy.ts`), add your parameters/settings:
+Now in the **main()** function (in `Deploy.ts`), add your parameters/settings:
 
 #### **`Deploy.ts`**
 ```ts
@@ -212,6 +213,43 @@ const cut : DiamondCut[] = [
 ```
 
 That's about it for the initialization stuff.
+
+## Exposing getters/setters
+It is possible to automatically expose getters/setters (for the storage variables) in your facet through the sdk.
+This is done by following the following naming convention (the sdk will automatically detect this):
+
+```solidity
+function get<variableName> () external view returns (<variableType>) {}
+set<variableName> (<variableType> _<variableName>) external {}
+```
+
+In our example that would be:
+
+```solidity
+contract CounterFacet {
+  /* ... init related functions */
+
+  function getMyNumber() external view returns (uint) {
+    return LibCounterStorage.getStorage().myNumber;
+  }
+
+  function setMyNumber(uint _myNumber) external {
+    LibCounterStorage.getStorage().myNumber = _myNumber;
+  }
+}
+```
+
+Note that the function name should be camelCase and the first letter of the variable should be capitalized.
+The parameter name should be the same as the variable name but with an `_` in front of it.
+You can freely add other modifiers to these functions as well. 
+
+These getters/setters are now available through the sdk:
+
+```ts
+const allVariables = await client.sugar.GetVariables();
+```
+
+This function only returns the variable names and relevant interfaces, so you'll still have to call the functions yourself.
 
 ## Inheriting from interfaces
 Interfaces are really nice. 

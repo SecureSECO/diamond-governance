@@ -57,6 +57,7 @@ import { IRewardMultiplierFacet } from "../facets/multiplier/IRewardMultiplierFa
 
 import { ISearchSECOMonetizationFacet } from "../facets/other/secureseco/searchseco/ISearchSECOMonetizationFacet.sol";
 import { ISearchSECORewardingFacet } from "../facets/other/secureseco/searchseco/ISearchSECORewardingFacet.sol";
+import { IMiningRewardPoolFacet } from "../facets/other/secureseco/searchseco/IMiningRewardPoolFacet.sol";
 
 import { IABCConfigureFacet } from "../facets/token/ERC20/monetary-token/ABC/facets/IABCConfigureFacet.sol";
 
@@ -110,6 +111,7 @@ library InterfaceIds {
 
     bytes4 constant public ISearchSECOMonetizationFacet_ID = type(ISearchSECOMonetizationFacet).interfaceId;
     bytes4 constant public ISearchSECORewardingFacet_ID = type(ISearchSECORewardingFacet).interfaceId;
+    bytes4 constant public IMiningRewardPoolFacet_ID = type(IMiningRewardPoolFacet).interfaceId;
     
     bytes4 constant public IABCConfigureFacet_ID = type(IABCConfigureFacet).interfaceId;
 }

@@ -13,6 +13,9 @@ library LibSearchSECOMonetizationStorage {
     struct Storage {
         /// @notice how much a single hash costs
         uint256 hashCost;
+
+        /// @notice Defines the ratio between what goes to the treasury and what goes to rewarding the miners.
+        uint32 treasuryRatio; // ppm
     }
 
     function getStorage() internal pure returns (Storage storage ds) {

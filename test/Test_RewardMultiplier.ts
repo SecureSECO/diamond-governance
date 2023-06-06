@@ -18,6 +18,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
+import { tenFoldUntilLimit, to18Decimal, DECIMALS_18 } from "../utils/decimals18Helper";
 
 // Types
 
@@ -45,35 +46,9 @@ const currentBlockNumber = async (): Promise<number> => {
   return blockNumber;
 };
 
-const numberOfDecimals = (number: number): number => {
-  if (Math.floor(number.valueOf()) === number.valueOf()) return 0;
-  return (number.toString().split(".")[1] || []).length;
-};
-
-const to18Decimal = (amount: number): BigNumber => {
-  const { amount: newAmount, exponent } = tenFoldUntilLimit(amount);
-
-  return BigNumber.from(newAmount).mul(BigNumber.from(10).pow(18 - exponent));
-};
-
-const tenFoldUntilLimit = (
-  amount: number
-): { amount: number; exponent: number } => {
-  let i = 0;
-  for (; i <= 18; i++) {
-    if (Number.MAX_SAFE_INTEGER / 10 < amount) {
-      break;
-    }
-    amount *= 10;
-  }
-
-  return { amount: Math.round(amount), exponent: i };
-};
-
 /* CONSTANTS */
 const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 decimal version
 const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT);
-const DECIMALS_18 = to18Decimal(1);
 const MAX_BLOCKS_PASSED = 1000;
 
 const SLOPE_N = 1001;
@@ -137,11 +112,11 @@ describe("RewardMultiplier", function () {
     const blocksPassed = blockNumber - pastBlock;
     const total = calculateLinearGrowth(blocksPassed);
 
-    expect(multiplierAfterLinear).to.be.approximately(total, 10); // For rounding errors
+    expect(multiplierAfterLinear).to.be.approximately(total, 1); // For rounding errors
 
     // Check that the multiplier is not approximately the same if the block number is different
     const wrongTotal = calculateLinearGrowth(blocksPassed + 1);
-    expect(multiplierAfterLinear).to.not.be.approximately(wrongTotal, 10); // For rounding errors
+    expect(multiplierAfterLinear).to.not.be.approximately(wrongTotal, 1); // For rounding errors
   });
 
   it("should give multiplier based on exponential growth", async function () {
@@ -168,7 +143,7 @@ describe("RewardMultiplier", function () {
 
     expect(multiplierAfterExponential).to.be.approximately(
       multiplier,
-      INITIAL_AMOUNT_18.div(DECIMALS_18)
+      1
     ); // For rounding errors
 
     // Check that the multiplier is not approximately the same if the exponent is different
@@ -205,14 +180,14 @@ describe("RewardMultiplier", function () {
     const bigGrowth = calculateExponentialAppliedMultiplier(exponent);
     expect(multipliedReward).to.be.approximately(
       bigGrowth,
-      INITIAL_AMOUNT_18.mul(BASE_REWARD_18).div(DECIMALS_18).div(DECIMALS_18)
+      1
     ); // For rounding errors
 
     /* Check that the multiplier is not approximately the same if the exponent is different */
     const wrongMultiplier = calculateExponentialAppliedMultiplier(exponent + 1);
     expect(multipliedReward).to.be.not.approximately(
       wrongMultiplier,
-      INITIAL_AMOUNT_18.mul(BASE_REWARD_18).div(DECIMALS_18).div(DECIMALS_18)
+      1
     ); // For rounding errors
   });
 });
