@@ -6,7 +6,7 @@
 
 pragma solidity ^0.8.0;
 
-import {ABDKMath64x64} from "../../libraries/abdk-math/ABDKMath64x64.sol";
+import {ABDKMathQuad} from "../../libraries/abdk-math/ABDKMathQuad.sol";
 
 library LibCalculateGrowth {
     /// @notice Calculate linear growth
@@ -15,16 +15,16 @@ library LibCalculateGrowth {
     /// @param _slope a
     /// @return result in 64.64
     function calculateLinearGrowth(
-        int128 _initialAmount,
+        bytes16 _initialAmount,
         uint _time,
-        int128 _slope
-    ) internal pure returns (int128 result) {
-        int128 growth = ABDKMath64x64.mul(
+        bytes16 _slope
+    ) internal pure returns (bytes16 result) {
+        bytes16 growth = ABDKMathQuad.mul(
             _slope,
-            ABDKMath64x64.fromUInt(_time)
+            ABDKMathQuad.fromUInt(_time)
         );
 
-        result = ABDKMath64x64.add(_initialAmount, growth);
+        result = ABDKMathQuad.add(_initialAmount, growth);
     }
 
     /// @notice Calculate exponential growth
@@ -33,12 +33,12 @@ library LibCalculateGrowth {
     /// @param _base a
     /// @return result in 64.64
     function calculateExponentialGrowth(
-        int128 _initialAmount,
+        bytes16 _initialAmount,
         uint _time,
-        int128 _base
-    ) internal pure returns (int128 result) {
-        int128 growth = ABDKMath64x64.pow(_base, _time);
+        bytes16 _base
+    ) internal pure returns (bytes16 result) {
+        bytes16 growth = ABDKMathQuad.exp(ABDKMathQuad.mul(ABDKMathQuad.ln(_base), ABDKMathQuad.fromUInt(_time)));
 
-        result = ABDKMath64x64.mul(_initialAmount, growth);
+        result = ABDKMathQuad.mul(_initialAmount, growth);
     }
 }

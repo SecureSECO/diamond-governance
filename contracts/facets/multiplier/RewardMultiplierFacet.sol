@@ -10,7 +10,7 @@ import {IRewardMultiplierFacet} from "./IRewardMultiplierFacet.sol";
 import {LibRewardMultiplierStorage} from "../../libraries/storage/LibRewardMultiplierStorage.sol";
 import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 import {IFacet} from "../IFacet.sol";
-import {ABDKMath64x64} from "../../libraries/abdk-math/ABDKMath64x64.sol";
+import {ABDKMathQuad} from "../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 import {LibCalculateGrowth} from "./LibCalculateGrowth.sol";
 
@@ -39,16 +39,16 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string memory _name,
         uint _amount
     ) public view virtual override returns (uint) {
-        int128 multiplier = _getMultiplier64x64(_name);
-        return ABDKMath64x64.mulu(multiplier, _amount);
+        bytes16 multiplier = _getMultiplierQuad(_name);
+        return ABDKMathQuad.toUInt(ABDKMathQuad.mul(multiplier, ABDKMathQuad.fromUInt(_amount)));
     }
 
     /// @inheritdoc IRewardMultiplierFacet
     function getMultiplier(
         string memory _name
     ) public view virtual override returns (uint) {
-        int128 multiplier = _getMultiplier64x64(_name);
-        return LibABDKHelper.to18Decimals(multiplier);
+        bytes16 multiplier = _getMultiplierQuad(_name);
+        return LibABDKHelper.to18DecimalsQuad(multiplier);
     }
 
     /// @inheritdoc IRewardMultiplierFacet
@@ -61,7 +61,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            LibABDKHelper.from18Decimals(_initialAmount),
+            LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.CONSTANT
         );
     }
@@ -78,10 +78,10 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            LibABDKHelper.from18Decimals(_initialAmount),
+            LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.LINEAR
         );
-        int128 _slope = ABDKMath64x64.divu(_slopeN, _slopeD);
+        bytes16 _slope = ABDKMathQuad.div(ABDKMathQuad.fromUInt(_slopeN), ABDKMathQuad.fromUInt(_slopeD));
 
         s.linearParams[_name] = LinearParams(_slope);
     }
@@ -98,13 +98,13 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
             _startBlock,
-            LibABDKHelper.from18Decimals(_initialAmount),
+            LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.EXPONENTIAL
         );
 
-        int128 _base = ABDKMath64x64.div(
-            ABDKMath64x64.fromUInt(_baseN),
-            ABDKMath64x64.fromUInt(_baseD)
+        bytes16 _base = ABDKMathQuad.div(
+            ABDKMathQuad.fromUInt(_baseN),
+            ABDKMathQuad.fromUInt(_baseD)
         );
         s.exponentialParams[_name] = ExponentialParams(_base);
     }
@@ -112,9 +112,9 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     /// @notice Return multiplier for a variable
     /// @param _name Name of the variable
     /// @return int128 Multiplier in 64.64
-    function _getMultiplier64x64(
+    function _getMultiplierQuad(
         string memory _name
-    ) internal view returns (int128) {
+    ) internal view returns (bytes16) {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
 
