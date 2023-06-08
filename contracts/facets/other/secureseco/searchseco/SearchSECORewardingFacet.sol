@@ -17,6 +17,7 @@ import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 import {ABDKMathQuad} from "../../../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../../../libraries/abdk-math/LibABDKHelper.sol";
 import {IMintableGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
+import {IRewardMultiplierFacet} from "../../../IRewardMultiplierFacet.sol";
 
 /// @title A contract reward SearchSECO Spider users for submitting new hashes
 /// @author J.S.C.L & T.Y.M.W.

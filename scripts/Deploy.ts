@@ -93,6 +93,13 @@ async function main() {
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address
   };
+  const RewardMultiplierSettings = {
+    name: "inflation",
+    startBlock: await owner.provider?.getBlockNumber(),
+    initialAmount: 1,
+    slopeN: 1,
+    slopeD: 1,
+  };
 
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
@@ -113,6 +120,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
+    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [RewardMultiplierSettings]),
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
