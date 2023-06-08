@@ -15,6 +15,7 @@ import { ether, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { to18Decimal } from "../utils/decimals18Helper";
+import { BigNumber } from "ethers";
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -122,7 +123,7 @@ async function main() {
     marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,
     hatcher: monetaryTokenDeployer.deployedContracts.SimpleHatch,
   };
-  
+
   const cut : DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.DiamondCutFacet),
     await DiamondCut.All(diamondGovernance.DiamondLoupeFacet),
@@ -142,7 +143,6 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
-    await DiamondCut.All(diamondGovernance.ABCConfigureFacet, [ABCConfigureFacetSettings]),
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,

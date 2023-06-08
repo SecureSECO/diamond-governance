@@ -15,6 +15,7 @@ import { IERC20TimeClaimableFacet } from "./IERC20TimeClaimableFacet.sol";
 import { IERC20ClaimableFacet } from "../IERC20ClaimableFacet.sol";
 import { ITieredMembershipStructure } from "../../../../../facets/governance/structure/membership/ITieredMembershipStructure.sol";
 import { AuthConsumer } from "../../../../../utils/AuthConsumer.sol";
+import { IRewardMultiplierFacet } from "../../../../multiplier/IRewardMultiplierFacet.sol";
 
 import { LibERC20TimeClaimableStorage } from "../../../../../libraries/storage/LibERC20TimeClaimableStorage.sol";
 import { IFacet } from "../../../../../facets/IFacet.sol";
@@ -91,6 +92,8 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
         // uint256 timePassed = _timeStamp - s.lastClaim[_claimer];
         // uint256 timeRewarded = Math.min(s.maxTimeRewarded, timePassed);
         // return timeRewarded / s.timeTillReward;
-        return (Math.min(s.maxTimeRewarded, _timeStamp - s.lastClaim[_claimer]) / s.timeTillReward);
+
+        // Apply (inflation) multiplier to the amount of tokens claimable (based on time passed since last claim)
+        return IRewardMultiplierFacet(address(this)).applyMultiplier("inflation", Math.min(s.maxTimeRewarded, _timeStamp - s.lastClaim[_claimer]) / s.timeTillReward);
     }
 }
