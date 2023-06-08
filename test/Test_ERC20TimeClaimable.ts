@@ -18,6 +18,7 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { days } from "../utils/timeUnits";
+import { DECIMALS_18 } from "../utils/decimals18Helper";
 
 // Types
 
@@ -41,9 +42,17 @@ async function getClient() {
       timeTillReward: 1 * days,
       maxTimeRewarded: 10 * days,
   };
+  const RewardMultiplierSettings = {
+    name: "inflation",
+    startBlock: await owner.provider?.getBlockNumber(),
+    initialAmount: DECIMALS_18,
+    slopeN: 0,
+    slopeD: 1,
+  };
   const cut : DiamondCut[] = [
       await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),
       await DiamondCut.All(diamondGovernance.ERC20TimeClaimableFacet, [ERC20TimeClaimableFacetSettings]),
+      await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [RewardMultiplierSettings]),
   ];
   return createTestingDao(cut);
   }
