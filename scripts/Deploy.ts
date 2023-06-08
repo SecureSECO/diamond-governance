@@ -119,6 +119,13 @@ async function main() {
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
   };
+  const RewardMultiplierSettings = {
+    name: "inflation",
+    startBlock: await owner.provider?.getBlockNumber(),
+    initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
+    slopeN: 1,
+    slopeD: 1,
+  };
   const ABCConfigureFacetSettings = {
     marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,
     hatcher: monetaryTokenDeployer.deployedContracts.SimpleHatch,
@@ -143,6 +150,8 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
+    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [RewardMultiplierSettings]),
+    await DiamondCut.All(diamondGovernance.ABCConfigureFacet, [ABCConfigureFacetSettings]),
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
