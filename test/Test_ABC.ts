@@ -357,7 +357,7 @@ describe("ABC", () => {
       expect(MarketMaker.burn(amount, expectedTokens.add(1))).to.be.revertedWithCustomError(MarketMaker, "WouldRecieveLessThanMinRecieve");
     });
 
-    it.only("should give you less tokens on burn than what you paid to mint", async () => {
+    it("should give you less tokens on burn than what you paid to mint", async () => {
       const MarketMaker = await loadFixture(GetMarketMaker);
       const [owner] = await ethers.getSigners();
       const mintAmount = ether.mul(1);
