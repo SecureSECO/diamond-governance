@@ -6,16 +6,21 @@
 
 pragma solidity ^0.8.0;
 
-import { IGithubPullRequestFacet } from "./IGitHubPullRequestFacet.sol";
-import { AuthConsumer } from "../../../utils/AuthConsumer.sol";
-import { IFacet } from "../../IFacet.sol";
+import {IGithubPullRequestFacet} from "./IGitHubPullRequestFacet.sol";
+import {AuthConsumer} from "../../../utils/AuthConsumer.sol";
+import {IFacet} from "../../IFacet.sol";
 
-contract GithubPullRequestFacet is IGithubPullRequestFacet, AuthConsumer, IFacet {
+contract GithubPullRequestFacet is
+    IGithubPullRequestFacet,
+    AuthConsumer,
+    IFacet
+{
     /// @notice The permission identifier to merge pull requests.
-    bytes32 public constant MERGE_PR_PERMISSION_ID = keccak256("MERGE_PR_PERMISSION");
+    bytes32 public constant MERGE_PR_PERMISSION_ID =
+        keccak256("MERGE_PR_PERMISSION");
 
     /// @inheritdoc IFacet
-    function init(bytes memory/* _initParams*/) public virtual override {
+    function init(bytes memory /* _initParams*/) public virtual override {
         __GithubPullRequestFacet_init();
     }
 
@@ -33,7 +38,13 @@ contract GithubPullRequestFacet is IGithubPullRequestFacet, AuthConsumer, IFacet
     /// @param _owner Owner of the repository
     /// @param _repo Name of the repository
     /// @param _pull_number Number of the pull request
-    function merge(string memory _owner, string memory _repo, string memory _pull_number) external virtual override auth(MERGE_PR_PERMISSION_ID) {
-        emit MergePullRequest(_owner, _repo, _pull_number);
+    /// @param _sha SHA of the commit to merge
+    function merge(
+        string memory _owner,
+        string memory _repo,
+        string memory _pull_number,
+        string memory _sha
+    ) external virtual override auth(MERGE_PR_PERMISSION_ID) {
+        emit MergePullRequest(_owner, _repo, _pull_number, _sha);
     }
 }
