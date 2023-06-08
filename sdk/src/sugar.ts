@@ -9,6 +9,8 @@ import { ContractReceipt, ContractTransaction } from "ethers";
 import { getEvents } from "../../utils/utils";
 import variableSelectorsJson from "../../generated/variableSelectors.json";
 import { VariableSelectorsJson } from "../../utils/jsonTypes";
+import { MarketMaker, SimpleHatch } from "../../typechain-types";
+import { GetTypedContractAt } from "../../utils/contractHelper";
 
 export * from "./sugar/data"; 
 export * from "./sugar/proposal";
@@ -24,6 +26,16 @@ export class DiamondGovernanceSugar {
     public async GetVerificationContractAddress() : Promise<string> {
         const IVerificationFacet = await this.pure.IVerificationFacet();
         return IVerificationFacet.getVerificationContractAddress();
+    }
+
+    public async GetABCHatcher() : Promise<SimpleHatch> {
+        const IABCConfigureFacet = await this.pure.IABCConfigureFacet();
+        return GetTypedContractAt<SimpleHatch>("SimpleHatch", await IABCConfigureFacet.getHatcher(), this.pure.signer);
+    }
+
+    public async GetABCMarketMaker() : Promise<MarketMaker> {
+        const IABCConfigureFacet = await this.pure.IABCConfigureFacet();
+        return GetTypedContractAt<MarketMaker>("MarketMaker", await IABCConfigureFacet.getMarketMaker(), this.pure.signer);
     }
 
     /**

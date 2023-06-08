@@ -14,7 +14,7 @@ import { GetTypedContractAt } from "../utils/contractHelper";
 import { ERC20MonetaryToken, ERC20BondedToken, MarketMaker, SimpleHatch } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
 import { CurveParametersStruct } from "../typechain-types/contracts/facets/token/ERC20/monetary-token/ABC/core/MarketMaker";
-import { HatchParametersStruct, VestingScheduleStruct } from "../typechain-types/contracts/facets/token/ERC20/monetary-token/ABC/core/SimpleHatch";
+import { HatchParametersStruct } from "../typechain-types/contracts/facets/token/ERC20/monetary-token/ABC/core/SimpleHatch";
 
 // Utils
 
@@ -145,7 +145,7 @@ export class ABCDeployer extends MonetaryTokenDeployer {
         await new Promise(f => setTimeout(f, 10 * 1000));
         await hre.run("verify:verify", {
           address: MarketMaker.address,
-          constructorArguments: ["SecureSECO Coin", "SECOIN"],
+          constructorArguments: [ERC20BondedToken.address, this.settings.externalERC20, curveParameters],
         });
       } catch { }
     }

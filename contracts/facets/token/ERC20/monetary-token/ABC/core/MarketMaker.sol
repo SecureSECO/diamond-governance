@@ -277,14 +277,10 @@ contract MarketMaker is PluginStandalone, Modifiers {
     function calculateMint(uint256 _amount) public view returns (uint256) {
         return _curve.formula.getContinuousMintReward({
             depositAmount: _amount,
-            continuousSupply: totalSupply() + _amount - calculateFee(_amount),
+            continuousSupply: totalSupply(),
             reserveBalance: reserveBalance(),
             reserveRatio: reserveRatio()
         });
-    }
-
-    function calculateMintReverse(uint256 _toRecieve) external view returns (uint256) {
-        return calculateBurn(_toRecieve);
     }
 
     /**
@@ -294,7 +290,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
      * @return uint The amount of Ether that can be refunded by burning {_amount} token.
      */
     function calculateBurn(uint256 _amount) public view returns (uint256) {
-        return _curve.formula.getContinuousBurnRefund(_amount, totalSupply() - _amount, reserveBalance(), reserveRatio());
+        return _curve.formula.getContinuousBurnRefund(_amount, totalSupply(), reserveBalance(), reserveRatio());
     }
 
     function calculateFee(uint256 _burnAmount) public view returns (uint256) {

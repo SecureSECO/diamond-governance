@@ -10,7 +10,7 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 // import { deployTestNetwork } from "../test/utils/testDeployer";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
-import { days } from "../utils/timeUnits";
+import { days, hours, now } from "../utils/timeUnits";
 import { ether, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
@@ -31,22 +31,22 @@ async function main() {
       friction: 0.01 * 10**6, // 1%
       reserveRatio: 0.2 * 10**6, // 20%
     },
-    hatchParameters: { // No hatching phase, start right away
-      initialPrice: wei.mul(0),
-      minimumRaise: wei.mul(0),
-      maximumRaise: wei.mul(0),
-      hatchDeadline: 0,
+    hatchParameters: {
+      initialPrice: wei.mul(1),
+      minimumRaise: wei.mul(1),
+      maximumRaise: wei.mul(1),
+      hatchDeadline: now() + 24 * hours,
     },
-    vestingSchedule: { // No hatching means no vesting
+    vestingSchedule: {
       cliff: 0,
-      start: 0,
-      duration: 0,
+      start: now() + 24 * hours,
+      duration: 1 * hours,
       revocable: false,
     },
     externalERC20: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889", // Uniswap WMATIC
   };
   const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
-  monetaryTokenDeployer.runVerification = false;
+  monetaryTokenDeployer.runVerification = true;
   const MonetaryToken = await monetaryTokenDeployer.beforeDAODeploy();
 
   const ERC20Disabled = [

@@ -33,7 +33,7 @@ const hatchParameters = {
   initialPrice: ether.mul(1),
   minimumRaise: ether.mul(10),
   maximumRaise: ether.mul(20),
-  hatchDeadlineTime: 10 * minutes,
+  hatchDeadlineTime: now() + 10 * minutes,
 };
 const vestingSchedule = { 
   cliff: 5 * minutes,
@@ -50,9 +50,9 @@ async function getClient() {
 
   const ABCDeployerSettings : ABCDeployerSettings = {
     curveParameters: {
-      theta: 1,
-      friction: 2,
-      reserveRatio: 3,
+      theta: 0.05 * 10**6,
+      friction: 0.01 * 10**6,
+      reserveRatio: 0.2 * 10**6,
     },
     hatchParameters: {
       initialPrice: hatchParameters.initialPrice,
@@ -355,6 +355,21 @@ describe("ABC", () => {
       expectedTokens = expectedTokens.sub(await MarketMaker.calculateFee(expectedTokens));
 
       expect(MarketMaker.burn(amount, expectedTokens.add(1))).to.be.revertedWithCustomError(MarketMaker, "WouldRecieveLessThanMinRecieve");
+    });
+
+    it.only("should give you less tokens on burn than what you paid to mint", async () => {
+      const MarketMaker = await loadFixture(GetMarketMaker);
+      const [owner] = await ethers.getSigners();
+      const mintAmount = ether.mul(1);
+
+      const externalERC20 = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
+      const balanceBefore = await externalERC20.balanceOf(owner.address);
+      await MarketMaker.mint(mintAmount, wei.mul(0));
+      const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
+      const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
+      await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
+
+      expect(await externalERC20.balanceOf(owner.address)).to.be.lt(balanceBefore);
     });
   });
 });
