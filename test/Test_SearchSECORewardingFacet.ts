@@ -68,6 +68,13 @@ async function getClient() {
       },
     },
   };
+  const RewardMultiplierSettings = {
+    name: "inflation",
+    startBlock: await owner.provider?.getBlockNumber(),
+    initialAmount: DECIMALS_18,
+    slopeN: 0,
+    slopeD: 1,
+  };
   const cut: DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [
       SearchSECORewardingFacetSettings,
@@ -83,6 +90,9 @@ async function getClient() {
       GovernanceERC20FacetSettings,
     ]),
     await DiamondCut.All(diamondGovernance.ExecuteAnythingFacet),
+    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [
+      RewardMultiplierSettings,
+    ]),
   ];
   return createTestingDao(cut);
 }

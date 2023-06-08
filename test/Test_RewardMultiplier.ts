@@ -18,7 +18,11 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
-import { tenFoldUntilLimit, to18Decimal, DECIMALS_18 } from "../utils/decimals18Helper";
+import {
+  tenFoldUntilLimit,
+  to18Decimal,
+  DECIMALS_18,
+} from "../utils/decimals18Helper";
 
 // Types
 
@@ -28,8 +32,17 @@ async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
+  const RewardMultiplierSettings = {
+    name: "inflation",
+    startBlock: await owner.provider?.getBlockNumber(),
+    initialAmount: 1,
+    slopeN: 1,
+    slopeD: 1,
+  };
   const cut: DiamondCut[] = [
-    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet),
+    await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [
+      RewardMultiplierSettings,
+    ]),
   ];
   return createTestingDao(cut);
 }
@@ -141,10 +154,7 @@ describe("RewardMultiplier", function () {
     const exponent = blockNumber - pastBlock;
     const multiplier = calculateExponentialGrowth(exponent);
 
-    expect(multiplierAfterExponential).to.be.approximately(
-      multiplier,
-      1
-    ); // For rounding errors
+    expect(multiplierAfterExponential).to.be.approximately(multiplier, 1); // For rounding errors
 
     // Check that the multiplier is not approximately the same if the exponent is different
     const wrongMultiplier = calculateExponentialGrowth(exponent + 1);
@@ -178,17 +188,11 @@ describe("RewardMultiplier", function () {
     /* Calculate modifier + growth in js with BigNumber for precision */
     const exponent = blockNumber - pastBlock;
     const bigGrowth = calculateExponentialAppliedMultiplier(exponent);
-    expect(multipliedReward).to.be.approximately(
-      bigGrowth,
-      1
-    ); // For rounding errors
+    expect(multipliedReward).to.be.approximately(bigGrowth, 1); // For rounding errors
 
     /* Check that the multiplier is not approximately the same if the exponent is different */
     const wrongMultiplier = calculateExponentialAppliedMultiplier(exponent + 1);
-    expect(multipliedReward).to.be.not.approximately(
-      wrongMultiplier,
-      1
-    ); // For rounding errors
+    expect(multipliedReward).to.be.not.approximately(wrongMultiplier, 1); // For rounding errors
   });
 });
 

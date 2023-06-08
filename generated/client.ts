@@ -150,7 +150,7 @@ class DiamondGovernancePure {
     }
 
     public async IRewardMultiplierFacet() : Promise<IRewardMultiplierFacet> {
-        return await this._get<IRewardMultiplierFacet>(DiamondGovernanceInterfaces.IRewardMultiplierFacet, "0x185ef1aa");
+        return await this._get<IRewardMultiplierFacet>(DiamondGovernanceInterfaces.IRewardMultiplierFacet, "0xfc4a5cc0");
     }
 
     public async ISearchSECOMonetizationFacet() : Promise<ISearchSECOMonetizationFacet> {
