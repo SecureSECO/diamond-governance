@@ -17,7 +17,7 @@ import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 import {ABDKMathQuad} from "../../../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../../../libraries/abdk-math/LibABDKHelper.sol";
 import {IMintableGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
-import {IRewardMultiplierFacet} from "../../../IRewardMultiplierFacet.sol";
+import {IRewardMultiplierFacet} from "../../../multiplier/IRewardMultiplierFacet.sol";
 
 /// @title A contract reward SearchSECO Spider users for submitting new hashes
 /// @author J.S.C.L & T.Y.M.W.
@@ -124,6 +124,8 @@ contract SearchSECORewardingFacet is
             numHashDivided,
             ABDKMathQuad.fromUInt(s.hashReward)
         );
+        // Multiply for inflation
+        repReward = ABDKMathQuad.mul(IRewardMultiplierFacet(address(this)).getMultiplierQuad("inflation"), repReward);
 
         // 3. Calculate the coin reward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
         // (don't mind the variable name, this is to minimize the amount of variables used)

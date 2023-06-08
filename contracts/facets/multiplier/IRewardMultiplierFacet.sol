@@ -6,6 +6,8 @@
 
 pragma solidity ^0.8.0;
 
+import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
+
 abstract contract IRewardMultiplierFacet {
     enum MultiplierType {
         NONE,
@@ -45,7 +47,16 @@ abstract contract IRewardMultiplierFacet {
     /// @return uint The multiplier
     function getMultiplier(
         string memory _name
-    ) public view virtual returns (uint);
+    ) public view virtual returns (uint) {
+        return LibABDKHelper.to18DecimalsQuad(getMultiplierQuad(_name));
+    }
+
+    /// @notice Return multiplier for a variable
+    /// @param _name Name of the variable
+    /// @return int128 Multiplier in quad float
+    function getMultiplierQuad(
+        string memory _name
+    ) public view virtual returns (bytes16);
 
     /* ========== SETTER FUNCTIONS ========== */
     /* The following functions are used to set the multiplier type of a reward multiplier variable.

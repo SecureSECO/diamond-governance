@@ -55,7 +55,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string memory _name,
         uint _amount
     ) public view virtual override returns (uint) {
-        bytes16 multiplier = _getMultiplierQuad(_name);
+        bytes16 multiplier = getMultiplierQuad(_name);
         return
             ABDKMathQuad.toUInt(
                 ABDKMathQuad.mul(multiplier, ABDKMathQuad.fromUInt(_amount))
@@ -63,11 +63,39 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     }
 
     /// @inheritdoc IRewardMultiplierFacet
-    function getMultiplier(
+    function getMultiplierQuad(
         string memory _name
-    ) public view virtual override returns (uint) {
-        bytes16 multiplier = _getMultiplierQuad(_name);
-        return LibABDKHelper.to18DecimalsQuad(multiplier);
+    ) public view override returns (bytes16) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+
+        MultiplierInfo memory _info = s.rewardMultiplier[_name];
+
+        uint _numBlocksPassed = block.number - _info.startBlock;
+
+        // If the multiplier has not started yet, return 0
+        if (_info.multiplierType == MultiplierType.CONSTANT) {
+            return _info.initialAmount;
+        } else if (_info.multiplierType == MultiplierType.LINEAR) {
+            LinearParams memory params = s.linearParams[_name];
+
+            return
+                LibCalculateGrowth.calculateLinearGrowth(
+                    _info.initialAmount,
+                    _numBlocksPassed,
+                    params.slope
+                );
+        } else if (_info.multiplierType == MultiplierType.EXPONENTIAL) {
+            ExponentialParams memory params = s.exponentialParams[_name];
+            return
+                LibCalculateGrowth.calculateExponentialGrowth(
+                    _info.initialAmount,
+                    _numBlocksPassed,
+                    params.base
+                );
+        }
+
+        return 0;
     }
 
     /// @inheritdoc IRewardMultiplierFacet
@@ -169,42 +197,5 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             ABDKMathQuad.fromUInt(_baseD)
         );
         s.exponentialParams[_name] = ExponentialParams(_base);
-    }
-
-    /// @notice Return multiplier for a variable
-    /// @param _name Name of the variable
-    /// @return int128 Multiplier in quad float
-    function _getMultiplierQuad(
-        string memory _name
-    ) internal view returns (bytes16) {
-        LibRewardMultiplierStorage.Storage
-            storage s = LibRewardMultiplierStorage.getStorage();
-
-        MultiplierInfo memory _info = s.rewardMultiplier[_name];
-
-        uint _numBlocksPassed = block.number - _info.startBlock;
-
-        // If the multiplier has not started yet, return 0
-        if (_info.multiplierType == MultiplierType.CONSTANT) {
-            return _info.initialAmount;
-        } else if (_info.multiplierType == MultiplierType.LINEAR) {
-            LinearParams memory params = s.linearParams[_name];
-            return
-                LibCalculateGrowth.calculateLinearGrowth(
-                    _info.initialAmount,
-                    _numBlocksPassed,
-                    params.slope
-                );
-        } else if (_info.multiplierType == MultiplierType.EXPONENTIAL) {
-            ExponentialParams memory params = s.exponentialParams[_name];
-            return
-                LibCalculateGrowth.calculateExponentialGrowth(
-                    _info.initialAmount,
-                    _numBlocksPassed,
-                    params.base
-                );
-        }
-
-        return 0;
     }
 }
