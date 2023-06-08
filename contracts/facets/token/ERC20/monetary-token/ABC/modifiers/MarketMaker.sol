@@ -37,12 +37,12 @@ abstract contract Modifiers {
     }
 
     modifier postHatch(bool _hatched) {
-        if (_hatched == false) revert Errors.HatchingNotStarted();
+        if (!_hatched) revert Errors.HatchingNotStarted();
         _;
     }
 
     modifier preHatch(bool _hatched) {
-        if (_hatched == true) revert Errors.HatchingAlreadyStarted();
+        if (_hatched) revert Errors.HatchingAlreadyStarted();
         _;
     }
 }

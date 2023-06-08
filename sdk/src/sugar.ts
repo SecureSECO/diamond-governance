@@ -5,7 +5,7 @@ import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { ContractReceipt, ContractTransaction } from "ethers";
 import { getEvents } from "../../utils/utils";
 import variableSelectorsJson from "../../generated/variableSelectors.json";
 import { VariableSelectorsJson } from "../../utils/jsonTypes";
@@ -96,14 +96,15 @@ export class DiamondGovernanceSugar {
 
     /**
      * Retrieve the number of proposals with a certain status filter active
-     * @param status The status filter
+     * @param status The status filter, undefined means no filter and returns GetProposalCount
      * @returns {Promise<number>} Number of proposals
      */
-    public async GetFilteredProposalCount(status : ProposalStatus[]) : Promise<number> {
+    public async GetFilteredProposalCount(status : ProposalStatus[] | undefined = undefined) : Promise<number> {
         if (this.proposalCache == null) {
             this.proposalCache = await this.InitProposalCache();
         }
-        return await this.proposalCache.GetFilteredProposalCount(status);
+        if (status == undefined) return await this.GetProposalCount();
+        else return await this.proposalCache.GetFilteredProposalCount(status);
     }
 
     public async ClearProposalCache() {

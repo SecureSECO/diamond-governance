@@ -8,7 +8,7 @@
 pragma solidity >=0.8.17;
 
 import { Errors } from "../lib/Errors.sol";
-import { VestingState } from "../lib/Types.sol";
+import { VestingState, VestingSchedule } from "../lib/Types.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 abstract contract Modifiers {
@@ -75,15 +75,14 @@ abstract contract Modifiers {
      *
      * @param beneficiary The beneficiary's address
      * @param token The token's address
-     * @param state The vesting state
+     * @param schedule The vesting schedule
      */
-    modifier validateInitialize(address beneficiary, IERC20 token, VestingState memory state) {
-        if (state.schedule.duration == 0) revert Errors.DurationCannotBeZero();
-        if (state.schedule.slicePeriodSeconds == 0) revert Errors.SlicePeriodCannotBeZero();
-        if (state.schedule.duration < state.schedule.cliff) revert Errors.DurationCannotBeLessThanCliff();
-        if (state.amountTotal > token.balanceOf(address(this))) {
+    modifier validateInitialize(address beneficiary, IERC20 token, VestingSchedule memory schedule, uint256 amountTotal) {
+        if (schedule.duration == 0) revert Errors.DurationCannotBeZero();
+        if (schedule.duration < schedule.cliff) revert Errors.DurationCannotBeLessThanCliff();
+        if (amountTotal > token.balanceOf(address(this))) {
             revert Errors.InsufficientReserve({
-                requested: state.amountTotal,
+                requested: amountTotal,
                 available: token.balanceOf(address(this))
             });
         }

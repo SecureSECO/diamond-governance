@@ -45,8 +45,6 @@ struct VestingSchedule {
     uint256 start;
     // duration of the vesting period in seconds
     uint256 duration;
-    // duration of a slice period for the vesting in seconds
-    uint256 slicePeriodSeconds;
     // whether or not the vesting is revocable
     bool revocable;
 }

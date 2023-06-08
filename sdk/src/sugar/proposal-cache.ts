@@ -164,10 +164,10 @@ export class ProposalCache {
     private async GetProposalsEfficient(order : SortingOrder, fromIndex : number, count : number) : Promise<Proposal[]> {
         const proposals : number[] = [];
         const proposalCount = await this.getProposalCount();
-        for (let i = fromIndex; i < count; i++) {
-            let index = i;
+        for (let i = 0; i < count; i++) {
+            let index = fromIndex + i;
             if (order == SortingOrder.Desc) {
-                index = proposalCount - 1 - i;
+                index = proposalCount - 1 - index;
             }
             if (index < 0 || index >= proposalCount) break;
 

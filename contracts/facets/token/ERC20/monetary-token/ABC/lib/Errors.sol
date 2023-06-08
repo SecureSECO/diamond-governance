@@ -30,6 +30,9 @@ library Errors {
 
     /// @notice Error thrown when the owner of the contract tries to mint tokens continuously.
     error OwnerCanNotContinuousMint();
+    
+    /// @notice Error thrown when the caller would receive less tokens then they specified to recieve at least.
+    error WouldRecieveLessThanMinRecieve();
 
     /// @notice Error thrown when the owner of the contract tries to burn tokens continuously.
     error OwnerCanNotContinuousBurn();

@@ -79,7 +79,6 @@ export interface ABCDeployerSettings {
     cliff: number,
     start: number,
     duration: number,
-    slicePeriodSeconds: number,
     revocable: boolean,
   },
   externalERC20: string,
@@ -196,6 +195,10 @@ export class ABCDeployer extends MonetaryTokenDeployer {
     const SimpleHatch = await GetTypedContractAt<SimpleHatch>("SimpleHatch", this.deployedContracts.SimpleHatch, owner);
     
     await MarketMaker.grantPermission(await MarketMaker.CONFIGURE_PERMISSION_ID(), diamondGovernance);
+    
+    await ERC20BondedToken.setDao(dao);
+    await MarketMaker.setDao(dao);
+    await SimpleHatch.setDao(dao);
 
     await ERC20BondedToken.transferOwnership(diamondGovernance);
     await MarketMaker.transferOwnership(diamondGovernance);

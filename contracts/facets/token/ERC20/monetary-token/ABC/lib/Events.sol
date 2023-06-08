@@ -13,12 +13,9 @@ library Events {
      * @param buyer The address of the account that initiated the minting process.
      * @param minted The amount of tokens that were minted.
      * @param depositAmount The amount of ether that was deposited to mint the tokens.
-     * @param reserveAmount The amount of ether that was added to the reserve.
      * @param fundingAmount The amount of ether that was sent to the owner as funding.
      */
-    event ContinuousMint(
-        address indexed buyer, uint256 minted, uint256 depositAmount, uint256 reserveAmount, uint256 fundingAmount
-    );
+    event ContinuousMint(address indexed buyer, uint256 minted, uint256 depositAmount, uint256 fundingAmount);
 
     /**
      * @dev Emitted when tokens are burned continuously (the normal burning process).

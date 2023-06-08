@@ -136,26 +136,21 @@ contract Vesting is ReentrancyGuard, Modifiers {
      * @return The releasable amount
      */
     function computeReleasableAmount() public view returns (uint256) {
-        // Retrieve the current time.
-        uint256 currentTime = block.timestamp;
         // If the current time is before the cliff, no tokens are releasable.
-        if ((currentTime < _state.schedule.cliff) || _state.revoked) {
+        if ((block.timestamp < _state.schedule.start + _state.schedule.cliff) || _state.revoked) {
             return 0;
         }
         // If the current time is after the vesting period, all tokens are releasable,
         // minus the amount already released.
-        else if (currentTime >= _state.schedule.start + _state.schedule.duration) {
+        else if (block.timestamp >= _state.schedule.start + _state.schedule.duration) {
             return _state.amountTotal - _state.released;
         }
         // Otherwise, some tokens are releasable.
         else {
             // Compute the number of full vesting periods that have elapsed.
-            uint256 timeFromStart = currentTime - _state.schedule.start;
-            uint256 secondsPerSlice = _state.schedule.slicePeriodSeconds;
-            uint256 vestedSlicePeriods = timeFromStart / secondsPerSlice;
-            uint256 vestedSeconds = vestedSlicePeriods * secondsPerSlice;
+            uint256 timeFromStart = block.timestamp - _state.schedule.start;
             // Compute the amount of tokens that are vested.
-            uint256 vestedAmount = (_state.amountTotal * vestedSeconds) / _state.schedule.duration;
+            uint256 vestedAmount = (_state.amountTotal * timeFromStart) / _state.schedule.duration;
             // Subtract the amount already released and return.
             return vestedAmount - _state.released;
         }

@@ -22,8 +22,8 @@ contract SimpleHatch is PluginStandalone, Modifiers {
     VestingSchedule internal _schedule;
 
     mapping(address => uint256) internal _contributions;
-
-    address internal _transferRaisedTo;
+    
+    mapping(address => Vesting) internal vestingContracts;
 
     event Contribute(address indexed contributor, uint256 amount);
 
@@ -55,12 +55,18 @@ contract SimpleHatch is PluginStandalone, Modifiers {
         _contributions[msg.sender] = 0;
     }
 
-    function claimVesting() external validateClaimVesting(_state, _contributions[msg.sender]) returns (Vesting vesting) {
-        vesting = new Vesting(dao(), msg.sender, _state.params.bondedToken, _schedule, _contributions[msg.sender] * _state.params.initialPrice);
+    function claimVesting() external validateClaimVesting(_state, _contributions[msg.sender]) {
+        Vesting vesting = new Vesting(dao(), msg.sender, _state.params.bondedToken, _schedule, _contributions[msg.sender] * _state.params.initialPrice);
 
         _state.params.bondedToken.transfer(address(vesting), _contributions[msg.sender] * _state.params.initialPrice);
         
         _contributions[msg.sender] = 0;
+
+        vestingContracts[msg.sender] = vesting;
+    }
+
+    function viewVesting() external view returns (Vesting) {
+        return vestingContracts[msg.sender];
     }
 
     function hatch() external validateHatch(_state) {
@@ -68,7 +74,7 @@ contract SimpleHatch is PluginStandalone, Modifiers {
             // Early hatch
             _schedule.start = block.timestamp;
         }
-        _state.params.externalToken.transfer(_transferRaisedTo, _state.raised);
+        _state.params.externalToken.transfer(address(_state.params.pool), _state.raised);
         _state.params.pool.hatch(_state.raised * _state.params.initialPrice, address(this));
         _state.status = HatchStatus.HATCHED;
     }

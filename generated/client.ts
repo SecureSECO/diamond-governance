@@ -14,15 +14,16 @@ import { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, I
 enum DiamondGovernanceInterfaces { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IChangeableTokenContract, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVotes }
 
 class DiamondGovernancePure {
-    public pluginAddress : string;
-    public signer : Signer;
+    public readonly pluginAddress : string;
+    public readonly signer : Signer;
+    public skipInterfaceCheck : boolean;
     private cache: { [id: string] : Contract }
 
     public constructor(_pluginAddress : string, _signer : Signer) {
         this.pluginAddress = _pluginAddress;
         this.signer = _signer;
+        this.skipInterfaceCheck = false;
         this.cache = { };
-        Object.freeze(this);
     }
 
     public async IERC165() : Promise<IERC165> {
@@ -200,7 +201,7 @@ class DiamondGovernancePure {
             return this.cache[_interface] as Type;
         }
         
-        if (_interface !== DiamondGovernanceInterfaces.IERC165) {
+        if (_interface !== DiamondGovernanceInterfaces.IERC165 && !this.skipInterfaceCheck) {
             if (_interfaceId === null || _interfaceId === undefined) {
                 throw new Error("InterfaceId not provided");
             }

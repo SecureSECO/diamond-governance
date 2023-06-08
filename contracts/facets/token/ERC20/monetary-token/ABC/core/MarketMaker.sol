@@ -114,8 +114,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
         // validate there is Liquidity to hatch with
         if (amount == 0) revert Errors.InitialReserveCannotBeZero();
 
-        uint256 theta = (amount * _curve.theta) / DENOMINATOR_PPM; // Calculate the funding amount
-        uint256 liquidity = amount - theta;
+        uint256 theta = calculateFee(amount); // Calculate the funding amount
         _externalToken.transfer(dao(), theta);
 
         // mint the hatched tokens to the hatcher
@@ -123,7 +122,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
         emit Events.Hatch(hatchTo, hatchTo == address(0) ? 0 : initialSupply);
 
         // this event parameters are not consistent and confusing, change them
-        emit Events.ContinuousMint(hatchTo, initialSupply, amount, liquidity, theta);
+        emit Events.ContinuousMint(hatchTo, initialSupply, amount, theta);
     }
 
     // =============================================================== //
@@ -135,27 +134,32 @@ contract MarketMaker is PluginStandalone, Modifiers {
      * Reverts if the sender is the contract owner or if no ether is sent.
      * Emits a {ContinuousMint} event.
      * @param _amount The amount of external tokens used to mint.
+     * @param _minAmountReceived The amount of bonded tokens to receive at least, otherwise the transaction will be reverted.
      */
-    function mint(uint256 _amount) public isDepositZero(_amount) postHatch(_hatched) {
+    function mint(uint256 _amount, uint256 _minAmountReceived) public isDepositZero(_amount) postHatch(_hatched) {
+        if (msg.sender == dao())
+            revert Errors.OwnerCanNotContinuousMint();
+
+        // Calculate the reward amount and mint the tokens
+        uint256 rewardAmount = calculateMint(_amount); // Calculate the reward amount
+
         _externalToken.transferFrom(msg.sender, address(this), _amount);
 
         // Calculate the funding portion and the reserve portion
-        uint256 fundingAmount = (_amount * _curve.theta) / DENOMINATOR_PPM; // Calculate the funding amount
-        uint256 reserveAmount = _amount - fundingAmount; // Calculate the reserve amount
+        uint256 fundingAmount = calculateFee(_amount); // Calculate the funding amount
 
         // transfer the funding amount to the funding pool
         // could the DAO reenter? 🧐
         _externalToken.transfer(dao(), fundingAmount);
 
-        // Calculate the reward amount and mint the tokens
-        uint256 rewardAmount = calculateMint(_amount); // Calculate the reward amount
-
+        if (rewardAmount < _minAmountReceived)
+            revert Errors.WouldRecieveLessThanMinRecieve();
         // Mint the tokens to the sender
         // but this is being called with static call
         _bondedToken.mint(msg.sender, rewardAmount);
 
         // Emit the ContinuousMint event
-        emit Events.ContinuousMint(msg.sender, rewardAmount, _amount, reserveAmount, fundingAmount);
+        emit Events.ContinuousMint(msg.sender, rewardAmount, _amount, fundingAmount);
     }
 
     /**
@@ -165,19 +169,25 @@ contract MarketMaker is PluginStandalone, Modifiers {
      * Emits a {ContinuousBurn} event.
      *
      * @param _amount The amount of tokens to burn.
+     * @param _minAmountReceived The amount of bonded tokens to receive at least, otherwise the transaction will be reverted.
      */
-    function burn(uint256 _amount) public isDepositZero(_amount) postHatch(_hatched) {
-        _bondedToken.burn(msg.sender, _amount);
+    function burn(uint256 _amount, uint256 _minAmountReceived) public isDepositZero(_amount) postHatch(_hatched) {
+        if (msg.sender == dao())
+            revert Errors.OwnerCanNotContinuousBurn();
 
         // Calculate the refund amount
         uint256 refundAmount = calculateBurn(_amount);
 
+        _bondedToken.burn(msg.sender, _amount);
+
         // Calculate the exit fee
-        uint256 exitFeeAmount = (refundAmount * _curve.friction) / DENOMINATOR_PPM;
+        uint256 exitFeeAmount = calculateFee(refundAmount);
 
         // Calculate the refund amount minus the exit fee
         uint256 refundAmountLessFee = refundAmount - exitFeeAmount;
 
+        if (refundAmountLessFee < _minAmountReceived)
+            revert Errors.WouldRecieveLessThanMinRecieve();
         // transfer the refund amount minus the exit fee to the sender
         _externalToken.transfer(msg.sender, refundAmountLessFee);
 
@@ -267,10 +277,14 @@ contract MarketMaker is PluginStandalone, Modifiers {
     function calculateMint(uint256 _amount) public view returns (uint256) {
         return _curve.formula.getContinuousMintReward({
             depositAmount: _amount,
-            continuousSupply: totalSupply(),
+            continuousSupply: totalSupply() + _amount - calculateFee(_amount),
             reserveBalance: reserveBalance(),
             reserveRatio: reserveRatio()
         });
+    }
+
+    function calculateMintReverse(uint256 _toRecieve) external view returns (uint256) {
+        return calculateBurn(_toRecieve);
     }
 
     /**
@@ -280,7 +294,11 @@ contract MarketMaker is PluginStandalone, Modifiers {
      * @return uint The amount of Ether that can be refunded by burning {_amount} token.
      */
     function calculateBurn(uint256 _amount) public view returns (uint256) {
-        return _curve.formula.getContinuousBurnRefund(_amount, totalSupply(), reserveBalance(), _curve.reserveRatio);
+        return _curve.formula.getContinuousBurnRefund(_amount, totalSupply() - _amount, reserveBalance(), reserveRatio());
+    }
+
+    function calculateFee(uint256 _burnAmount) public view returns (uint256) {
+        return (_burnAmount * _curve.friction) / DENOMINATOR_PPM;
     }
 
     /**

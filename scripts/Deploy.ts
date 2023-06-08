@@ -7,17 +7,18 @@
   */
 
 import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from "../deployments/deploy_DiamondGovernance";
-//import { deployTestNetwork } from "../test/utils/testDeployer";
+// import { deployTestNetwork } from "../test/utils/testDeployer";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days } from "../utils/timeUnits";
 import { ether, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
+import { to18Decimal } from "../utils/decimals18Helper";
 
 async function main() {
   console.log("Deploying to", network.name);
-  //await deployTestNetwork();
+  // await deployTestNetwork();
   await deployDiamondGovernance();
   await createDiamondGovernanceRepoIfNotExists();
 
@@ -26,27 +27,26 @@ async function main() {
 
   const ABCDeployerSettings : ABCDeployerSettings = {
     curveParameters: {
-      theta: 0,
-      friction: 0,
-      reserveRatio: 0,
+      theta: 0.05 * 10**6, // 5%
+      friction: 0.01 * 10**6, // 1%
+      reserveRatio: 0.2 * 10**6, // 20%
     },
-    hatchParameters: {
+    hatchParameters: { // No hatching phase, start right away
       initialPrice: wei.mul(0),
       minimumRaise: wei.mul(0),
       maximumRaise: wei.mul(0),
       hatchDeadline: 0,
     },
-    vestingSchedule: {
+    vestingSchedule: { // No hatching means no vesting
       cliff: 0,
       start: 0,
       duration: 0,
-      slicePeriodSeconds: 1,
       revocable: false,
     },
-    externalERC20: "0x0000000000000000000000000000000000001010",
+    externalERC20: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889", // Uniswap WMATIC
   };
   const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
-  monetaryTokenDeployer.runVerification = true;
+  monetaryTokenDeployer.runVerification = false;
   const MonetaryToken = await monetaryTokenDeployer.beforeDAODeploy();
 
   const ERC20Disabled = [
@@ -108,11 +108,12 @@ async function main() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
-    treasuryRatio: 200_000, // 20%
+    treasuryRatio: 0.2 * 10**6, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: 10_000 // 1%
+    miningRewardPoolPayoutRatio: to18Decimal(0.01), // 1%
+    hashDevaluationFactor: wei.mul(1).mul(wei.mul(10).pow(18-4)), // 10000 hashes for 1% of mining reward pool
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
@@ -145,7 +146,7 @@ async function main() {
   ];
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
-    daoURI: "https://securesecodao.science.uu.nl/",
+    daoURI: "https://dao.secureseco.org/",
     subdomain: "dao" + Math.round(Math.random() * 100000),
     metadata: {
       name: "SecureSECO DAO",
