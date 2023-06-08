@@ -8,7 +8,8 @@
     "test": "npm run generate-sdk && npx hardhat test --typecheck",
     "deploy": "npm run generate-abis && npx hardhat run scripts/Deploy.ts --network mumbai",
     "generate-sdk": "npm run generate-abis && npx hardhat run scripts/GenerateSDK.ts",
-    "generate-abis": "npm run compile && npx hardhat run scripts/GenerateAbis.ts"
+    "generate-abis": "npm run compile && npx hardhat run scripts/GenerateAbis.ts",
+    "generate-facet": "npx hardhat run scripts/GenerateFacet.ts"
   },
   "repository": {
     "type": "git",

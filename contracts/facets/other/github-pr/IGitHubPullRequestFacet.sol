@@ -11,7 +11,17 @@ interface IGithubPullRequestFacet {
     /// @param owner Owner of the repository
     /// @param repo Name of the repository
     /// @param pull_number Number of the pull request
-    event MergePullRequest(string owner, string repo, string pull_number);
+    event MergePullRequest(
+        string owner,
+        string repo,
+        string pull_number,
+        string sha
+    );
 
-    function merge(string memory _owner, string memory _repo, string memory _pull_number) external;
+    function merge(
+        string memory _owner,
+        string memory _repo,
+        string memory _pull_number,
+        string memory _sha
+    ) external;
 }

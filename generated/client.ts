@@ -106,7 +106,7 @@ class DiamondGovernancePure {
     }
 
     public async IGithubPullRequestFacet() : Promise<IGithubPullRequestFacet> {
-        return await this._get<IGithubPullRequestFacet>(DiamondGovernanceInterfaces.IGithubPullRequestFacet, "0xa1ff1300");
+        return await this._get<IGithubPullRequestFacet>(DiamondGovernanceInterfaces.IGithubPullRequestFacet, "0xbad30a18");
     }
 
     public async IGovernanceStructure() : Promise<IGovernanceStructure> {

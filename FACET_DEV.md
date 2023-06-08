@@ -8,6 +8,8 @@ You can follow this [CryptoZombies](https://cryptozombies.io/) course to get sta
 Everytime you modify your solidity files and get a type error somewhere, don't forget to run `npm run compile` or `npx hardhat compile`. 
 If this doesn't work you can try running `npx hardhat clean` (before running the previous command again) and see if that works.
 
+The complete example facet (and other files used in this guide) can be found in the [`example-facet`](/example-facet) directory.
+
 <!-- If that doesn't work consider having written faulty code and stop blaming other people/things for your own mistakes <3. -->
 
 ## Contents
@@ -60,7 +62,7 @@ contract CounterFacet is IFacet {
   }
 
   /// @notice This function increments a number by 1
-  /// @returns uint The new value of our number
+  /// @return uint The new value of our number
   function incrementCounter() external returns (uint) {
     return 0; // This value will be replaced with the new incremented value of our integer later 
   }
@@ -136,7 +138,7 @@ contract CounterFacet {
   }
 
   /// @notice Returns the current value of our number
-  /// @returns uint The current value of our number
+  /// @return uint The current value of our number
   function getCounter() external view returns (uint) {
     return LibCounterStorage.getStorage().myNumber;
   }
@@ -258,12 +260,20 @@ Another neat thing about interfaces is that we can fairly easily swap out our cu
 
 Suppose we have the following interface (we can add this in the same folder as we added `CounterFacet.ts`):
 
-#### **`ICounter.sol`**
+#### **`ICounterFacet.sol`**
 ```solidity
-interface ICounter {
+interface ICounterFacet {
   /// @notice This function increments a number by 1
-  /// @returns uint The new value of our number
+  /// @return uint The new value of our number
   function incrementCounter() external returns (uint);
+
+  /// @notice This function returns our number
+  /// @return uint The value of our number
+  function getMyNumber() external view returns (uint);
+
+  /// @notice This function sets our number
+  /// @param _myNumber The new value of our number
+  function setMyNumber(uint _myNumber) external;
 }
 ```
 
@@ -271,11 +281,17 @@ We can implement it as follows.
 
 #### **`CounterFacet.sol`**
 ```solidity
-contract CounterFacet is ICounter, IFacet {
+contract CounterFacet is ICounterFacet, IFacet {
   /* ... init related functions */
 
-  /// @inheritdoc ICounter
+  /// @inheritdoc ICounterFacet
   function incrementCounter() external override returns (uint) { /*...*/ }
+
+  /// @inheritdoc ICounterFacet
+  function getMyNumber() external view override returns (uint) { /*...*/ }
+  
+  /// @inheritdoc ICounterFacet
+  function setMyNumber(uint _myNumber) external override { /*...*/ }
 }
 ```
 
@@ -302,7 +318,7 @@ The interface should be unregistered in the deinit function.
 
 #### **`CounterFacet.sol`**
 ```solidity
-contract CounterFacet is ICounter, IFacet {
+contract CounterFacet is ICounterFacet, IFacet {
   /* ... init related functions */
 
   /// @inheritdoc IFacet
@@ -310,7 +326,7 @@ contract CounterFacet is ICounter, IFacet {
     super.deinit(); // call the deinit() function of the superclass as convention.
 
     // This function comes from IFacet, it removes the interface from the supported interfaces
-    unregisterInterface(type(ICounter).interfaceId); // Change this here
+    unregisterInterface(type(ICounterFacet).interfaceId); // Change this here
   }
 
   /* ... other functions */
