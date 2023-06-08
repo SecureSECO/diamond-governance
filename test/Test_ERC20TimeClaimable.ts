@@ -57,7 +57,7 @@ async function getClient() {
   return createTestingDao(cut);
   }
 
-describe.only("ERC20TimeClaimable", function () {
+describe("ERC20TimeClaimable", function () {
   it("should give 10 tokens on first claim", async function () {
     const client = await loadFixture(getClient);
     const IERC20TimeClaimableFacet = await client.pure.IERC20TimeClaimableFacet();
