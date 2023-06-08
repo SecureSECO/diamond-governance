@@ -33,8 +33,8 @@ import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
 
 // Constants
 const TREASURY_RATIO = 200_000; // 20%
-const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%
-const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO);
+const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%, never used except for calculating the 18 decimal version
+const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO.toString());
 const INITIAL_MINT_AMOUNT = 1_000_000;
 const REP_FRAC = 400_000; // 40%
 const NUM_HASHES_MINED = 100;
