@@ -68,7 +68,7 @@ This facet is an extension of Governance ERC20, allowing the token to be burned.
 ##### Governance ERC20 Disabled
 This facet is an alteration of Governance ERC20, allowing functionality to be disabled. This will most often be used to create non-transferable and/or non-delegatable tokens.
 ### ERC721 and ERC1155
-These token types are planned for the future. In all the code written so far, they have been kept in mind, so after implementation, they will be compatible with the existing facets.
+These token types can be implemented the future. In all the code written so far, they have been kept in mind, so after implementation, they will be compatible with the existing facets.
 #### Claiming
 ##### Time based
 Allows time based rewards to be available to be claimed by members of the DAO. There is also a tiered version that allows members of different tiers to get different rewards. There is also a configurable maximum amount of claimable tokens at once, preventing inactive members from being able to claim a large sum of tokens after a long period of inactivity.
