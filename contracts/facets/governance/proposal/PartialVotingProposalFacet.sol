@@ -93,8 +93,8 @@ contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFac
         ProposalData storage proposal_ = LibPartialVotingProposalStorage.getStorage().proposals[_proposalId];
 
         uint256 noVotesWorstCase = IGovernanceStructure(address(this)).totalVotingPower(proposal_.parameters.snapshotBlock) -
-            proposal_.tally.yes -
-            proposal_.tally.abstain;
+            proposal_.tally.yes;
+            // Abstain is removed here, as this is increased with not used voting power on partial voting and can still be changed to no later
 
         // The code below implements the formula of the early execution support criterion explained in the top of this file.
         // `(1 - supportThreshold) * N_yes > supportThreshold *  N_no,worst-case`

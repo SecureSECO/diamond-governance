@@ -33,7 +33,7 @@ export const tenFoldUntilLimit = (
   amount: number
 ): { amount: number; exponent: number } => {
   let i = 0;
-  for (; i <= 18; i++) {
+  for (; i < 18; i++) {
     if (Number.MAX_SAFE_INTEGER / 10 < amount) {
       break;
     }
