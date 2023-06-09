@@ -26,7 +26,7 @@
 </p>
 
 # Diamond Governance
-Diamond Governance is a very flexible plugin for AragonOSx. It acts as a bridge between the Aragon framework and [ERC-2535 facets](https://eips.ethereum.org/EIPS/eip-2535). Multiple facets to customize the plugin are included in the project. Currently, the plugin is only available on Mumbai, but it will launch on Polygon before the end of June. A website to easily create a DAO with Diamond Governance and configure it to your use case is planned but not yet finished.
+Diamond Governance is a very flexible plugin for AragonOSx. It acts as a bridge between the Aragon framework and [ERC-2535 facets](https://eips.ethereum.org/EIPS/eip-2535). Multiple facets to customize the plugin are included in the project. Currently, the plugin is only available on Mumbai, but it will launch on Polygon before the end of June. 
 
 # SDK
 A typescript sdk is available for this plugin, allowing developers to easily communicate with the plugin in their projects. It can be found on [npm](https://www.npmjs.com/package/@plopmenz/diamond-governance-sdk?activeTab=readme).
@@ -74,6 +74,10 @@ These token types are planned for the future. In all the code written so far, th
 Allows time based rewards to be available to be claimed by members of the DAO. There is also a tiered version that allows members of different tiers to get different rewards. There is also a configurable maximum amount of claimable tokens at once, preventing inactive members from being able to claim a large sum of tokens after a long period of inactivity.
 ##### One time
 Allows for a one-time reward to be claimed. The most basic claimable facet of this type will be claimable once per wallet, given that the wallet is a member of the DAO. There is a second, more advanced version that allows users to claim a reward for every verification that they pass.
+#### Monetary ERC20
+An option for a monetary token next to the governance token is provided. This allows a second way of rewarding people in the DAO. This token is stored in the DAO treasury, but it might require the DAO to approve the Diamond Governance to spend funds on its behalf for some functionality to work. Currently 2 options are provided for this monetary token, either a fixed supply that will mint all tokens on creation to the DAO treasury, or an augmented bonding curve.
+## Variable growth
+Linear, exponential and contrant growth multipliers are supported. This allows certain rewards or number to grow over time according to a certain variable. 
 ## Permissions
 The permission management defines which wallets are allowed to do certain actions. 
 ### AragonOSx
@@ -83,14 +87,7 @@ Currently, this is the only permission provider using the grant functionality of
 Diamond Governance is the plugin to implement [Secure SECO Verification](https://github.com/SecureSECODAO/SecureSECOVerification), allowing wallets to become members of the DAO by verifying with their 1-year-old GitHub account or proof of humanity.
 ### GitHub Pull Request Merger
 Allows the plugin to merge pull requests on GitHub. This means that DAO members will be able to maintain the GitHub without needing to trust a centralized team of reviewers. This does however require some setup, which can be found on [their GitHub](https://github.com/SecureSECODAO/SecureSECOPullRequestMerger).
-## Planned
-This functionality is planned to be added to the project in the future. These are based on requests seen in the Aragon Discord.
-### Role-based membership
-Wallets are granted certain roles, and based on this, they are allowed to use certain functionality of the plugin.
-### NFT governance
-Voting power based on certain ERC721 or ERC1155 tokens present in the wallet.
-### Dashboard
-Web portal to allow users to easily create a DAO with the Diamond Governance plugin and create proposals to alter the Diamond Governance plugin in existing DAOs.
+
 
 **This point onward is meant for developers of the projects; there will be no interesting information for regular users.**
 # Setup
@@ -118,16 +115,15 @@ If the user would like to deploy to a different network, they can use the comman
 ## npm test
 Runs the unit tests.  
 
-## npm generate-sdk
+## npm run generate-abis
+Copies the abis from the hardhat artifacts to abis.json, this allows us to fetch contract using ethers based on name and thus eliminates the hardhat dependancy of the SDK. This command is run automatically everywhere it is needed.
+
+## npm run generate-sdk
 Generates the sdk with the latest interfaces defined in contracts/utils/IntefaceIds.sol.  
-To publish to npm (`npm i -g typescript` needed to be run once before):
-```
-cd sdk
-npm version patch / npm version minor / npm version major
-tsc --declaration
-npm publish
-```
-Publishing to npm will be done automatically on merging with main in the future.
+Publishing to npm is done automatically on creating a release on the GitHub repo.  
+
+## npm run generate-facet --name --output --includeStorage
+This command will generate a facet, interface and optionally a storage contract for you based on the naming schemes. In case you want to add a facet, it is highly recommended to use this approach for developer comfort and to prevent typos. Please do note that output directory is from contract/facets onwards, was facets should not be placed in different directories.
 
 ### Facet development
 To learn more about facet development you can look into the [`FACET_DEV.md`](/FACET_DEV.md) file.
