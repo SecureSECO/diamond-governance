@@ -141,7 +141,7 @@ contract SearchSECORewardingFacet is
                     ABDKMathQuad.mul(
                         // The hash count reserved for the coin reward (coinFrac)
                         // This is divided by a constant factor: hashDevaluationFactor
-                        ABDKMathQuad.mul(
+                        ABDKMathQuad.div(
                             ABDKMathQuad.sub(hashCountQuad, numHashDivided),
                             s.hashDevaluationFactor
                         ),
@@ -271,11 +271,10 @@ contract SearchSECORewardingFacet is
     function _setHashDevaluationFactor(
         uint _hashDevaluationFactor
     ) internal {
-        // Cast from dec18 to quad float
+        // Cast from uint to quad float, don't multiply or divide by anything.
+        // This number is used as is to divide the number of hashes by.
         LibSearchSECORewardingStorage
             .getStorage()
-            .hashDevaluationFactor = LibABDKHelper.from18DecimalsQuad(
-            _hashDevaluationFactor
-        );
+            .hashDevaluationFactor = ABDKMathQuad.fromUInt(_hashDevaluationFactor);
     }
 }

@@ -34,14 +34,13 @@ import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 
 // Constants
 const TREASURY_RATIO = 200_000; // 20%
-const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%
-const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO);
+const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%, never used except for calculating the 18 decimal version
+const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO.toString());
 const INITIAL_MINT_AMOUNT = 1_000_000;
 const REP_FRAC = 400_000; // 40%
 const NUM_HASHES_MINED = 100;
 const NUM_HASHES_QUERY = 100;
-const HASH_DEVALUATION_FACTOR = 0.125;
-const HASH_DEVALUATION_FACTOR_18 = to18Decimal(HASH_DEVALUATION_FACTOR);
+const HASH_DEVALUATION_FACTOR = 8;
 
 async function getClient() {
   await loadFixture(deployTestNetwork);
@@ -52,7 +51,7 @@ async function getClient() {
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
     miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18, 
-    hashDevaluationFactor: HASH_DEVALUATION_FACTOR_18, 
+    hashDevaluationFactor: HASH_DEVALUATION_FACTOR, 
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
@@ -220,7 +219,7 @@ describe("SearchSECORewarding", function () {
       .div(1_000_000);
     const decimals18 = BigNumber.from(10).pow(18);
     const coinFrac = Math.round(
-      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) / 1_000_000 * HASH_DEVALUATION_FACTOR
+      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) / 1_000_000 / HASH_DEVALUATION_FACTOR
     );
     const decimals18PowHashes = decimals18.pow(coinFrac);
     const reversePayoutRatio = decimals18
