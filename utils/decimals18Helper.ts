@@ -17,8 +17,10 @@ export const to18Decimal = (value: string): BigNumber => {
     return valueRounded18;
   } else {
     const afterTheComma = value.split(".")[1];
+    // pad with zeros
+    const afterTheCommaPadded = afterTheComma.padEnd(18, "0").substring(0, 18);
 
-    return valueRounded18.add(BigNumber.from(afterTheComma));
+    return valueRounded18.add(BigNumber.from(afterTheCommaPadded));
   }
 };
 
