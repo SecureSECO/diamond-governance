@@ -113,8 +113,8 @@ async function main() {
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: to18Decimal(0.01), // 1%
-    hashDevaluationFactor: wei.mul(1).mul(wei.mul(10).pow(18-4)), // 10000 hashes for 1% of mining reward pool
+    miningRewardPoolPayoutRatio: to18Decimal(0.01.toString()), // 1%
+    hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
