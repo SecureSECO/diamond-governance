@@ -125,6 +125,9 @@ Publishing to npm is done automatically on creating a release on the GitHub repo
 ## npm run generate-facet --name --output --includeStorage
 This command will generate a facet, interface and optionally a storage contract for you based on the naming schemes. In case you want to add a facet, it is highly recommended to use this approach for developer comfort and to prevent typos. Please do note that output directory is from contract/facets onwards, was facets should not be placed in different directories.
 
+## npx hardhat run ./scripts/GenerateDiamondCutProposal.ts --network mumbai
+Use this command to generate a proposal with a specific diamond cut, please provide the file with the desired cut and proposal metadata before running this command. Also make sure you private key is filled in the .env with a verified DAO member able to create proposals.
+
 ### Facet development
 To learn more about facet development you can look into the [`FACET_DEV.md`](/FACET_DEV.md) file.
 

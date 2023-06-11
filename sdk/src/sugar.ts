@@ -5,10 +5,12 @@ import { Proposal } from "./sugar/proposal";
 import { EncodeMetadata } from "./sugar/proposal-metadata";
 import { ToAction } from "./sugar/actions";
 import { asyncFilter, asyncMap, ToBlockchainDate } from "./utils";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { ContractReceipt, ContractTransaction } from "ethers";
 import { getEvents } from "../../utils/utils";
 import variableSelectorsJson from "../../generated/variableSelectors.json";
 import { VariableSelectorsJson } from "../../utils/jsonTypes";
+import { MarketMaker, SimpleHatch } from "../../typechain-types";
+import { GetTypedContractAt } from "../../utils/contractHelper";
 
 export * from "./sugar/data"; 
 export * from "./sugar/proposal";
@@ -24,6 +26,16 @@ export class DiamondGovernanceSugar {
     public async GetVerificationContractAddress() : Promise<string> {
         const IVerificationFacet = await this.pure.IVerificationFacet();
         return IVerificationFacet.getVerificationContractAddress();
+    }
+
+    public async GetABCHatcher() : Promise<SimpleHatch> {
+        const IABCConfigureFacet = await this.pure.IABCConfigureFacet();
+        return GetTypedContractAt<SimpleHatch>("SimpleHatch", await IABCConfigureFacet.getHatcher(), this.pure.signer);
+    }
+
+    public async GetABCMarketMaker() : Promise<MarketMaker> {
+        const IABCConfigureFacet = await this.pure.IABCConfigureFacet();
+        return GetTypedContractAt<MarketMaker>("MarketMaker", await IABCConfigureFacet.getMarketMaker(), this.pure.signer);
     }
 
     /**
@@ -84,14 +96,27 @@ export class DiamondGovernanceSugar {
     }
 
     /**
-     * Retrieve the number of proposals from the cache, if the cache is not initialized it will be initialized
-     * @returns {Promise<number>} Number of proposals (in the cache) -> are these all proposals or only the ones that are open?
+     * Retrieve the number of proposals
+     * @returns {Promise<number>} Number of proposals
      */
     public async GetProposalCount() : Promise<number> {
         if (this.proposalCache == null) {
             this.proposalCache = await this.InitProposalCache();
         }
         return await this.proposalCache.GetProposalCount()
+    }
+
+    /**
+     * Retrieve the number of proposals with a certain status filter active
+     * @param status The status filter, undefined means no filter and returns GetProposalCount
+     * @returns {Promise<number>} Number of proposals
+     */
+    public async GetFilteredProposalCount(status : ProposalStatus[] | undefined = undefined) : Promise<number> {
+        if (this.proposalCache == null) {
+            this.proposalCache = await this.InitProposalCache();
+        }
+        if (status == undefined) return await this.GetProposalCount();
+        else return await this.proposalCache.GetFilteredProposalCount(status);
     }
 
     public async ClearProposalCache() {

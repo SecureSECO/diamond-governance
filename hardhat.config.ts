@@ -30,6 +30,7 @@ module.exports = {
         count: 20,
         passphrase: "",
       },
+      allowBlocksWithSameTimestamp: true,
     },
     mumbai: {
       url: "https://polygon-mumbai.g.alchemy.com/v2/GFsknWbazmwCAkh0yVuOs_PrhfXo_DsT",

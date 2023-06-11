@@ -23,15 +23,13 @@ import diamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
 const deployJsonFile = "./generated/deployed_DiamondGovernance.json";
 const repoJsonFile = "./generated/diamondGovernanceRepo.json";
 
-const additionalContracts = [
+const additionalContracts : string[] = [
   "DiamondGovernanceSetup",
   "SignVerification",
-  "ERC20MonetaryToken",
 ];
 
-// This should actually only be deployed on creating a DAO, when DAO creation is split from deployment
-const alwaysRedeploy = [
-  "ERC20MonetaryToken",
+const alwaysRedeploy : string[] = [
+
 ];
 
 const specialDeployment : { [contractName : string]: () => Promise<string> } = 
@@ -53,25 +51,6 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
 
     return SignVerification.address;
   },
-  ERC20MonetaryToken: async () => {
-    const ERC20MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
-    const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("SecureSECO Coin", "SECOIN");
-    await ERC20MonetaryToken.deployed();
-
-    if (!testing()) {
-      try {
-        console.log("Starting verification");
-        // Wait for etherscan to process the deployment
-        await new Promise(f => setTimeout(f, 10 * 1000));
-        await hre.run("verify:verify", {
-          address: ERC20MonetaryToken.address,
-          constructorArguments: ["SecureSECO Coin", "SECOIN"],
-        });
-      } catch { }
-    }
-
-    return ERC20MonetaryToken.address;
-  }
 }
 
 export async function deployDiamondGovernance() : Promise<{ [contractName: string]: { address: string, fileHash: number } }> {

@@ -12,8 +12,8 @@ pragma solidity ^0.8.0;
 interface ISearchSECORewardingFacet {
     /// @notice Rewards the user for submitting new hashes
     /// @param _toReward The address of the user to reward
-    /// @param _hashCount The number of new hashes the user has submitted
-    /// @param _nonce A nonce
+    /// @param _hashCount The (new) total number of hashes the user has submitted
+    /// @param _nonce A nonce, the current number of hashes the user has submitted
     /// @param _proof The proof that the user received from the server
     function rewardMinerForHashes(
         address _toReward,
@@ -49,16 +49,18 @@ interface ISearchSECORewardingFacet {
     function getMiningRewardPoolPayoutRatio() external view returns (uint);
 
     /// @notice Sets the percentage of the mining pool that is paid out to the miner (per hash).
-    /// @dev Stores the devaluation factor as a quad float fraction 
+    /// @dev Stores the devaluation factor as a quad float fraction
     /// @param _miningRewardPoolPayoutRatio The new ratio (in 18 decimals)
-    function setMiningRewardPoolPayoutRatio(uint _miningRewardPoolPayoutRatio) external;
+    function setMiningRewardPoolPayoutRatio(
+        uint _miningRewardPoolPayoutRatio
+    ) external;
 
     /// @notice Returns the devaluation factor for hashes
     /// @return The devaluation factor (in 18 decimals precision)
     function getHashDevaluationFactor() external view returns (uint);
 
     /// @notice Sets the devaluation factor for hashes
-    /// @dev Stores the devaluation factor as a quad float fraction 
+    /// @dev Stores the devaluation factor as a quad float fraction
     /// @param _hashDevaluationFactor The new devaluation factor (in 18 decimals)
     function setHashDevaluationFactor(uint _hashDevaluationFactor) external;
 }
