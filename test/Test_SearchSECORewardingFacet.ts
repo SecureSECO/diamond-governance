@@ -35,7 +35,9 @@ import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 // Constants
 const TREASURY_RATIO = 200_000; // 20%
 const MINING_REWARD_POOL_PAYOUT_RATIO = 0.01; // 1%, never used except for calculating the 18 decimal version
-const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(MINING_REWARD_POOL_PAYOUT_RATIO.toString());
+const MINING_REWARD_POOL_PAYOUT_RATIO_18 = to18Decimal(
+  MINING_REWARD_POOL_PAYOUT_RATIO.toString()
+);
 const INITIAL_MINT_AMOUNT = 1_000_000;
 const REP_FRAC = 400_000; // 40%
 const NUM_HASHES_MINED = 100;
@@ -50,12 +52,12 @@ async function getClient() {
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18, 
-    hashDevaluationFactor: HASH_DEVALUATION_FACTOR, 
+    miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18,
+    hashDevaluationFactor: HASH_DEVALUATION_FACTOR,
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
-    treasuryRatio: TREASURY_RATIO, 
+    treasuryRatio: TREASURY_RATIO,
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: monetaryToken,
@@ -129,7 +131,8 @@ describe("SearchSECORewarding", function () {
       await ISearchSECORewardingFacet.getMiningRewardPoolPayoutRatio();
     expect(ratio).to.be.approximately(MINING_REWARD_POOL_PAYOUT_RATIO_18, 1);
 
-    const miningRewardPoolPayoutRatioTwice = MINING_REWARD_POOL_PAYOUT_RATIO_18.mul(2);
+    const miningRewardPoolPayoutRatioTwice =
+      MINING_REWARD_POOL_PAYOUT_RATIO_18.mul(2);
     await ISearchSECORewardingFacet.setMiningRewardPoolPayoutRatio(
       miningRewardPoolPayoutRatioTwice
     );
@@ -219,7 +222,9 @@ describe("SearchSECORewarding", function () {
       .div(1_000_000);
     const decimals18 = BigNumber.from(10).pow(18);
     const coinFrac = Math.round(
-      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) / 1_000_000 / HASH_DEVALUATION_FACTOR
+      (NUM_HASHES_MINED * (1_000_000 - REP_FRAC)) /
+        1_000_000 /
+        HASH_DEVALUATION_FACTOR
     );
     const decimals18PowHashes = decimals18.pow(coinFrac);
     const reversePayoutRatio = decimals18
@@ -238,5 +243,30 @@ describe("SearchSECORewarding", function () {
     expect(newBalanceMiningRewardPool).to.be.equal(
       miningRewardPoolBeforeReward.sub(expectedReward)
     );
+
+    /* --------------------- REWARDING (pt.2) ------------------------ */
+    // Test if it properly handles rewarding when current amount of hashes > 0
+
+    const NEW_HASHES_MINED = 50000;
+
+    // Create signature for proof
+    const dataHexString2 = await createSignature2(
+      owner.address,
+      NUM_HASHES_MINED + NEW_HASHES_MINED,
+      NUM_HASHES_MINED,
+      owner
+    );
+    await ISearchSECORewardingFacet.rewardMinerForHashes(
+      owner.address,
+      NUM_HASHES_MINED + NEW_HASHES_MINED,
+      NUM_HASHES_MINED,
+      REP_FRAC,
+      dataHexString2
+    );
+
+    // Get all relevant (updated) balances
+    const newBalanceMe2 = await ERC20MonetaryToken.balanceOf(owner.address);
+
+    expect(newBalanceMe2).to.be.greaterThan(newBalanceMe);
   });
 });
