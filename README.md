@@ -82,6 +82,11 @@ Linear, exponential and contrant growth multipliers are supported. This allows c
 The permission management defines which wallets are allowed to do certain actions. 
 ### AragonOSx
 Currently, this is the only permission provider using the grant functionality of the DAO. However, the implementation allows for more providers to be added easily in the future and also allows members to use their own custom permission provider if wanted.
+## SearchSECO
+### SearchSECO Monetization
+This allows users to pay for queries to the SearchSECO database. Part of the payment goes to rewarding mining reward pool and the other part goes to the treasury of the DAO. The facet emits an event whenever a user has paid for a query, which the SearchSECO server picks up. The server then returns the data to the user.
+### SearchSECO Rewarding
+This allows miners to get rewarded for providing data to the SearchSECO database. A proof is provided by the SearchSECO server which is then verified by the facet. If the proof is valid, the miner is rewarded with a configurable amount to split between reputation tokens and SECOIN. The reputation tokens are minted by the facet and SECOIN is transferred from the mining reward pool (treasury). The amount of SECOIN rewarded to the miner is dependent on the amount of SECOIN in the mining reward pool. A number of configurable variables calculate the percentage of the mining reward pool that is rewarded using the balance of the mining reward pool. 
 ## Other
 ### Verification
 Diamond Governance is the plugin to implement [Secure SECO Verification](https://github.com/SecureSECODAO/SecureSECOVerification), allowing wallets to become members of the DAO by verifying with their 1-year-old GitHub account or proof of humanity.
