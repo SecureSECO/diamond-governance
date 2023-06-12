@@ -7,13 +7,13 @@
 pragma solidity ^0.8.0;
 
 import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
-import {IFacet} from "../../../IFacet.sol";
+import {IFacet} from "../IFacet.sol";
 import {IVerificationRewardPoolFacet} from "./IVerificationRewardPoolFacet.sol";
-import {LibVerificationRewardStorage} from "../../../../libraries/storage/LibVerificationRewardStorage.sol";
-import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
+import {LibVerificationRewardPoolStorage} from "../../libraries/storage/LibVerificationRewardPoolStorage.sol";
+import {IChangeableTokenContract} from "../token/ERC20/monetary-token/IChangeableTokenContract.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
-import {AuthConsumer} from "../../../utils/AuthConsumer.sol";
+import {IDAOReferenceFacet} from "../aragon/IDAOReferenceFacet.sol";
+import {AuthConsumer} from "../../utils/AuthConsumer.sol";
 
 contract VerificationRewardPoolFacet is IVerificationRewardPoolFacet, AuthConsumer, IFacet {
     bytes32 public constant UPDATE_VERIFICATION_REWARD_POOL_PERMISSION_ID =
@@ -33,12 +33,12 @@ contract VerificationRewardPoolFacet is IVerificationRewardPoolFacet, AuthConsum
 
     /// @inheritdoc IVerificationRewardPoolFacet
     function getVerificationRewardPool() external view override returns (uint256) {
-        return LibVerificationRewardStorage.getStorage().verificationRewardPool;
+        return LibVerificationRewardPoolStorage.getStorage().verificationRewardPool;
     }
 
     /// @inheritdoc IVerificationRewardPoolFacet
     function increaseVerificationRewardPool(uint _amount) external override {
-        LibVerificationRewardStorage.getStorage().verificationRewardPool += _amount;
+        LibVerificationRewardPoolStorage.getStorage().verificationRewardPool += _amount;
         IERC20(IChangeableTokenContract(address(this)).getTokenContractAddress()).transferFrom(
             msg.sender,
             address(IDAOReferenceFacet(address(this)).dao()),
@@ -48,16 +48,16 @@ contract VerificationRewardPoolFacet is IVerificationRewardPoolFacet, AuthConsum
 
     /// @inheritdoc IVerificationRewardPoolFacet
     function decreaseVerificationRewardPool(uint _amount) external override auth(UPDATE_VERIFICATION_REWARD_POOL_PERMISSION_ID) {
-        LibVerificationRewardStorage.getStorage().verificationRewardPool -= _amount;
+        LibVerificationRewardPoolStorage.getStorage().verificationRewardPool -= _amount;
     }
 
     /// @inheritdoc IVerificationRewardPoolFacet
-    function rewardCoinsToVerifyer(address _miner, uint _amount) external override auth(UPDATE_MINING_REWARD_POOL_PERMISSION_ID) {
+    function rewardCoinsToVerifyer(address _miner, uint _amount) external override auth(UPDATE_VERIFICATION_REWARD_POOL_PERMISSION_ID) {
         IERC20(IChangeableTokenContract(address(this)).getTokenContractAddress()).transferFrom(
             address(IDAOReferenceFacet(address(this)).dao()),
             _miner,
             _amount
         );
-        LibVerificationRewardStorage.getStorage().verificationRewardPool -= _amount;
+        LibVerificationRewardPoolStorage.getStorage().verificationRewardPool -= _amount;
     }
 }

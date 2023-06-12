@@ -74,7 +74,7 @@ class DiamondGovernancePure {
     }
 
     public async IERC20OneTimeVerificationRewardFacet() : Promise<IERC20OneTimeVerificationRewardFacet> {
-        return await this._get<IERC20OneTimeVerificationRewardFacet>(DiamondGovernanceInterfaces.IERC20OneTimeVerificationRewardFacet, "0x0ec06dca");
+        return await this._get<IERC20OneTimeVerificationRewardFacet>(DiamondGovernanceInterfaces.IERC20OneTimeVerificationRewardFacet, "0xf3f331ab");
     }
 
     public async IERC20PartialBurnVotingProposalRefundFacet() : Promise<IERC20PartialBurnVotingProposalRefundFacet> {
