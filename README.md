@@ -129,6 +129,9 @@ npm publish
 ```
 Publishing to npm will be done automatically on merging with main in the future.
 
+## npx hardhat run ./scripts/GenerateDiamondCutProposal.ts --network mumbai
+Use this command to generate a proposal with a specific diamond cut, please provide the file with the desired cut and proposal metadata before running this command. Also make sure you private key is filled in the .env with a verified DAO member able to create proposals.
+
 ### Facet development
 To learn more about facet development you can look into the [`FACET_DEV.md`](/FACET_DEV.md) file.
 
