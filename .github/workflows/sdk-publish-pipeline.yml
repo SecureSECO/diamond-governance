@@ -10,7 +10,7 @@ defaults:
 
 env:
   NODE_VERSION: 18.x
-  unit-tests: ${{ github.event.inputs.js || true }}
+  npm-publish: ${{ github.event.inputs.js || true }}
 
 jobs:
   install-dependencies:
@@ -32,7 +32,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-
     
-  unit-tests:
+  npm-publish:
     runs-on: ubuntu-latest
     needs: install-dependencies
     steps:
@@ -53,8 +53,9 @@ jobs:
         run: npm run generate-sdk
       - name: Enter sdk directory
         run: cd sdk
-      - name: Increment npm package version
-        run: npm version minor
+      # Incrementing version should be done in a GitHub commit, otherwise the the package.json in GitHub will not be up to date
+      # - name: Increment npm package version
+      #   run: npm version minor --no-git-tag-version
       - name: Compile package
         run: tsc --declaration
       - name: Publish
