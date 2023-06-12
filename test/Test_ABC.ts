@@ -316,7 +316,7 @@ describe("ABC", () => {
       const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
       const balanceBefore = await externalToken.balanceOf(owner.address);
       let expectedTokens = await MarketMaker.calculateBurn(bondedTokenBalance);
-      expectedTokens = expectedTokens.sub(await MarketMaker.calculateFee(expectedTokens));
+      expectedTokens = expectedTokens.sub(await MarketMaker.calculateExitFee(expectedTokens));
       await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
 
       expect(await externalToken.balanceOf(owner.address)).to.be.equal(balanceBefore.add(expectedTokens));
@@ -332,7 +332,7 @@ describe("ABC", () => {
       const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
       const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
       let expectedTokens = await MarketMaker.calculateBurn(bondedTokenBalance);
-      expectedTokens = expectedTokens.sub(await MarketMaker.calculateFee(expectedTokens));
+      expectedTokens = expectedTokens.sub(await MarketMaker.calculateExitFee(expectedTokens));
       await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
 
       expect(await bondedToken.balanceOf(owner.address)).to.be.equal(0);
@@ -352,7 +352,7 @@ describe("ABC", () => {
       const amount = ether.mul(1);
 
       let expectedTokens = await MarketMaker.calculateBurn(amount);
-      expectedTokens = expectedTokens.sub(await MarketMaker.calculateFee(expectedTokens));
+      expectedTokens = expectedTokens.sub(await MarketMaker.calculateExitFee(expectedTokens));
 
       expect(MarketMaker.burn(amount, expectedTokens.add(1))).to.be.revertedWithCustomError(MarketMaker, "WouldRecieveLessThanMinRecieve");
     });
