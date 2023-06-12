@@ -81,7 +81,8 @@ async function main() {
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {
     providers: ["github", "proofofhumanity"], //string[]
-    rewards: [ether.mul(30), ether.mul(100)], //uint256[]
+    repRewards: [ether.mul(30), ether.mul(100)], //uint256[]
+    coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
@@ -120,6 +121,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECOMonetizationFacet, [SearchSECOMonetizationFacetSettings]),
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MiningRewardPoolFacet),
+    await DiamondCut.All(diamondGovernance.VerificationRewardPoolFacet),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
     await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [RewardMultiplierSettings]),
