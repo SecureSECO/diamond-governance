@@ -114,7 +114,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
         // validate there is Liquidity to hatch with
         if (amount == 0) revert Errors.InitialReserveCannotBeZero();
 
-        uint256 theta = calculateFee(amount); // Calculate the funding amount
+        uint256 theta = calculateEntryFee(amount); // Calculate the funding amount
         _externalToken.transfer(dao(), theta);
 
         // mint the hatched tokens to the hatcher
@@ -146,7 +146,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
         _externalToken.transferFrom(msg.sender, address(this), _amount);
 
         // Calculate the funding portion and the reserve portion
-        uint256 fundingAmount = calculateFee(_amount); // Calculate the funding amount
+        uint256 fundingAmount = calculateEntryFee(_amount); // Calculate the funding amount
 
         // transfer the funding amount to the funding pool
         // could the DAO reenter? 🧐
@@ -181,7 +181,7 @@ contract MarketMaker is PluginStandalone, Modifiers {
         _bondedToken.burn(msg.sender, _amount);
 
         // Calculate the exit fee
-        uint256 exitFeeAmount = calculateFee(refundAmount);
+        uint256 exitFeeAmount = calculateExitFee(refundAmount);
 
         // Calculate the refund amount minus the exit fee
         uint256 refundAmountLessFee = refundAmount - exitFeeAmount;
@@ -293,7 +293,11 @@ contract MarketMaker is PluginStandalone, Modifiers {
         return _curve.formula.getContinuousBurnRefund(_amount, totalSupply(), reserveBalance(), reserveRatio());
     }
 
-    function calculateFee(uint256 _burnAmount) public view returns (uint256) {
+    function calculateEntryFee(uint256 _mintAmount) public view returns (uint256) {
+        return (_mintAmount * _curve.theta) / DENOMINATOR_PPM;
+    }
+
+    function calculateExitFee(uint256 _burnAmount) public view returns (uint256) {
         return (_burnAmount * _curve.friction) / DENOMINATOR_PPM;
     }
 
