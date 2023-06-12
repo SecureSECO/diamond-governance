@@ -9,7 +9,8 @@
     "deploy": "npm run generate-abis && npx hardhat run scripts/Deploy.ts --network mumbai",
     "generate-sdk": "npm run generate-abis && npx hardhat run scripts/GenerateSDK.ts",
     "generate-abis": "npm run compile && npx hardhat run scripts/GenerateAbis.ts",
-    "generate-facet": "npx hardhat run scripts/GenerateFacet.ts"
+    "generate-facet": "npx hardhat run scripts/GenerateFacet.ts",
+    "publish-sdk": "npm run generate-sdk && tsc --project ./sdk/tsconfig.json --declaration && npm publish ./sdk"
   },
   "repository": {
     "type": "git",
