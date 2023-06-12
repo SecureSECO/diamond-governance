@@ -72,13 +72,10 @@ contract SearchSECORewardingFacet is
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function rewardMinerForHashes(
-        address _toReward,
-        uint _hashCount,
-        uint _nonce,
-        uint _repFrac,
-        bytes calldata _proof
-    ) external virtual override {
+    function calculateMiningRewardPayout(
+        uint32 _repFrac,
+        uint _newHashes
+    ) public view override returns (uint repReward18, uint coinReward18) {
         // This is necessary to read from storage
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
@@ -86,41 +83,14 @@ contract SearchSECORewardingFacet is
             address(this)
         );
 
-        // Validate the given proof
-        require(
-            verify(
-                s.signer,
-                keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)),
-                _proof
-            ),
-            "Proof is not valid"
-        );
-
-        // Make sure that the nonce is equal to the CURRENT hashCount
-        require(
-            s.hashCount[_toReward] == _nonce,
-            "Hash count does not match with nonce"
-        );
-
-        require(
-            _hashCount > _nonce,
-            "New hash count must be higher than current hash count"
-        );
-
-        // Update (overwrite) the hash count for the given address
-        s.hashCount[_toReward] = _hashCount;
-
         require(
             _repFrac >= 0 && _repFrac <= 1_000_000,
             "REP fraction must be between 0 and 1_000_000"
         );
 
-        // The difference between the nonce and the TOTAL hash count is the amount of NEW hashes mined
-        uint actualHashCount = _hashCount - _nonce;
-
         // Calculate the reward
         // 1. Split number of hashes up according to the given "repFrac"
-        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(actualHashCount);
+        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(_newHashes);
         // This is the number of hashes for the REP reward, the rest is for the coin reward
         bytes16 numHashDivided = ABDKMathQuad.mul(
             hashCountQuad,
@@ -174,19 +144,76 @@ contract SearchSECORewardingFacet is
             ABDKMathQuad.fromUInt(miningRewardPoolFacet.getMiningRewardPool())
         );
 
+        return (
+            LibABDKHelper.to18DecimalsQuad(repReward),
+            ABDKMathQuad.toUInt(coinReward)
+        );
+    }
+
+    /// @inheritdoc ISearchSECORewardingFacet
+    function rewardMinerForHashes(
+        address _toReward,
+        uint _hashCount,
+        uint _nonce,
+        uint32 _repFrac,
+        bytes calldata _proof
+    ) external virtual override {
+        // This is necessary to read from storage
+        LibSearchSECORewardingStorage.Storage
+            storage s = LibSearchSECORewardingStorage.getStorage();
+
+        // Validate the given proof
+        require(
+            verify(
+                s.signer,
+                keccak256(abi.encodePacked(_toReward, _hashCount, _nonce)),
+                _proof
+            ),
+            "Proof is not valid"
+        );
+
+        // Make sure that the nonce is equal to the CURRENT hashCount
+        require(
+            s.hashCount[_toReward] == _nonce,
+            "Hash count does not match with nonce"
+        );
+
+        require(
+            _hashCount > _nonce,
+            "New hash count must be higher than current hash count"
+        );
+
+        // Update (overwrite) the hash count for the given address
+        s.hashCount[_toReward] = _hashCount;
+
+        require(
+            _repFrac >= 0 && _repFrac <= 1_000_000,
+            "REP fraction must be between 0 and 1_000_000"
+        );
+
+        // The difference between the nonce and the TOTAL hash count is the amount of NEW hashes mined
+        uint actualHashCount = _hashCount - _nonce;
+
+        // Calculate the rewards
+        (uint repReward18, uint coinReward18) = calculateMiningRewardPayout(
+            _repFrac,
+            actualHashCount
+        );
+
         // Reward the user in REP
         // Assume ERC20 token has 18 decimals
         IMintableGovernanceStructure(address(this)).mintVotingPower(
             _toReward,
             0,
-            LibABDKHelper.to18DecimalsQuad(repReward)
+            repReward18
         );
 
         // Reward the user in coins
         // Assume ERC20 token has 18 decimals
-        miningRewardPoolFacet.rewardCoinsToMiner(
+        IMiningRewardPoolFacet(address(this)).rewardCoinsToMiner(
             _toReward,
-            ABDKMathQuad.toUInt(coinReward)
+            // ABDKMathQuad.toUInt(coinReward)
+            coinReward18
         );
     }
 
