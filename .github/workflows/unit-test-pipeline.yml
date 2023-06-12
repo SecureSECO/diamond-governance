@@ -10,7 +10,8 @@ on:
         required: false
 
   pull_request:
-    branches: [ "main", "dev" ]
+    # Pull requests to main should only be done from dev
+    branches: [ "dev" ]
 
 defaults:
   run:
