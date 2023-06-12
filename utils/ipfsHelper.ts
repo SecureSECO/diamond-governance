@@ -6,44 +6,53 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { IPFS_PINATA_TOKEN } from "../secrets";
 import axios from "axios";
+import FormData from "form-data";
+
+let ipfsAdd : ((json : string) => Promise<string>) | undefined = undefined;
+let ipfsGet : ((hash : string) => Promise<any>) | undefined = undefined;
+
+export function customIpfsAdd(customAdd: (json : string) => Promise<string>) {
+  ipfsAdd = customAdd;
+}
+
+export function customIpfsGet(customGet: (hash : string) => Promise<any>) {
+  ipfsGet = customGet;
+}
 
 /** Upload a file to the cluster and pin it */
 export async function addToIpfs(json: string): Promise<string> {
-    // const config = {
-    //   method: "POST",
-    //   url: "https://ipfs-0.aragon.network/api/v0/add",
-    //   headers: {
-    //     "Content-Type": "text/plain", // Incorrect
-    //     "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
-    //   },
-    //   params: {
-    //     "path": json
-    //   },
-    // };
-    
-    // const res = await axios(config);
-    // console.log(res.data);
-    
+    if (ipfsAdd != undefined) {
+      return ipfsAdd(json);
+    }
+
+    let data = new FormData();
+    data.append("path", json);
+
     const config = {
       method: "POST",
-      url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-      headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": "Bearer " + IPFS_PINATA_TOKEN()
+      url: "https://ipfs-0.aragon.network/api/v0/add",
+      headers: {
+        "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
       },
-      data: json
+      data: data
     };
     
     const res = await axios(config);
-    return res.data.IpfsHash;
+    return res.data.Hash;
 }
 
-export async function getFromIpfs(hash: string): Promise<string> {
+export async function getFromIpfs(hash: string): Promise<any> {
+  if (ipfsGet != undefined) {
+    return ipfsGet(hash);
+  }
+  
   const config = {
-    method: "GET",
-    url: "https://ipfs.io/ipfs/" + hash,
+    method: "POST",
+    url: "https://ipfs-0.aragon.network/api/v0/cat?arg=" + hash,
+    headers: {
+      "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
+    },
   };
   
   const res = await axios(config);

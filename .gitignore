@@ -109,3 +109,7 @@ artifacts/
 cache/
 typechain-types/
 .DS_Store
+generated/abis.json
+generated/client.ts
+generated/functionSelectors.json
+generated/variableSelectors.json

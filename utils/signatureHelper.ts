@@ -8,7 +8,7 @@
  
 // Framework
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 
 /**
  *
@@ -26,3 +26,13 @@ export const createSignature = async (timestamp: number, toVerify: string, userH
 
   return owner.signMessage(ethers.utils.arrayify(hashPackedMessage));
 };
+
+export const createSignature2 = async (toReward: string, hashCount: number, nonce: number, owner:SignerWithAddress) => {
+  const packedMessage = ethers.utils.solidityPack(
+    ["address", "uint256", "uint256"], [toReward, hashCount, nonce]
+  );
+
+  const hashPackedMessage = ethers.utils.keccak256(packedMessage);
+
+  return owner.signMessage(ethers.utils.arrayify(hashPackedMessage));
+}

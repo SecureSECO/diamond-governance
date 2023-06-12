@@ -4,7 +4,7 @@
   * © Copyright Utrecht University (Department of Information and Computing Sciences)
   */
 
-pragma solidity 0.8.17;
+pragma solidity ^0.8.0;
 
 import { PermissionLib } from "@aragon/osx/core/permission/PermissionLib.sol";
 import { PluginSetup } from "@aragon/osx/framework/plugin/setup/PluginSetup.sol";
@@ -18,15 +18,8 @@ contract DiamondGovernanceSetup is PluginSetup {
     bytes memory _data
   ) external returns (address plugin, PreparedSetupData memory preparedSetupData) {
     // Decode `_data` to extract the params needed for deploying and initializing `DiamondGovernance` plugin
-    (
-      IDiamondCut.FacetCut[] memory _diamondCut,
-      address _init,
-      bytes memory _calldata
-    ) = abi.decode(
-            _data,
-            (IDiamondCut.FacetCut[], address, bytes)
-        );
-    plugin = address(new DiamondGovernanceAragon(DAO(payable(_dao)), _diamondCut, _init, _calldata));
+    (IDiamondCut.FacetCut[] memory _diamondCut) = abi.decode(_data, (IDiamondCut.FacetCut[]));
+    plugin = address(new DiamondGovernanceAragon(DAO(payable(_dao)), _diamondCut));
 
     // Prepare permissions
     PermissionLib.MultiTargetPermission[]

@@ -17,10 +17,9 @@ import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./additional-contracts/IDiamondCut.sol";
 
 contract DiamondGovernance {
-
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) payable {    
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut) payable {    
         LibDiamond.setContractOwner(address(this));  
-        LibDiamond.diamondCut(_diamondCut, _init, _calldata);
+        LibDiamond.diamondCut(_diamondCut);
     }
 
     // Find facet for function that is called and execute the

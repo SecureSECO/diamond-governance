@@ -1,8 +1,8 @@
-import { ethers } from "hardhat";
-import { GithubVerification } from "../../typechain-types";
+import { SignVerification } from "../../typechain-types";
 import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
-import { BigNumber } from "ethers";
+import { ContractTransaction, BigNumber } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
+import { GetTypedContractAt } from "../../utils/contractHelper";
 
 /**
  * VerificationSugar is a class that provides methods for interacting with the verification contract.
@@ -13,12 +13,12 @@ import { Signer } from "@ethersproject/abstract-signer";
 export class VerificationSugar {
   /**
    * Cache for the verification contract and threshold history
-   * 
+   *
    * @remarks
    * This cache is used to reduce the number of calls to the blockchain, the cache is filled on the first call to a method that requires it
    */
   private cache: {
-    verificationContract?: GithubVerification;
+    verificationContract?: SignVerification;
     thresholdHistory?: VerificationThreshold[];
   };
   private sugar: DiamondGovernanceSugar;
@@ -34,15 +34,10 @@ export class VerificationSugar {
    * Gets the verification contract object
    * @returns The verification contract object
    */
-  public async GetVerificationContract(): Promise<GithubVerification> {
+  public async GetVerificationContract(): Promise<SignVerification> {
     if (this.cache.verificationContract == null) {
-      const verificationContractAddress =
-        await this.GetVerificationContractAddress();
-      this.cache.verificationContract = (await ethers.getContractAt(
-        "GithubVerification",
-        verificationContractAddress,
-        this.signer
-      )) as GithubVerification;
+      const verificationContractAddress = await this.sugar.GetVerificationContractAddress();
+      this.cache.verificationContract = await GetTypedContractAt<SignVerification>("SignVerification", verificationContractAddress, this.signer);
     }
     return this.cache.verificationContract;
   }
@@ -84,7 +79,7 @@ export class VerificationSugar {
     const currentTimestamp = Math.round(Date.now() / 1000);
 
     const lastVerifiedAt = stamp
-      ? stamp[2][stamp[2].length -1]
+      ? stamp[2][stamp[2].length - 1]
       : BigNumber.from(0);
 
     // Retrieve the threshold history, and the threshold for the current timestamp
@@ -100,10 +95,11 @@ export class VerificationSugar {
       stamp[2] != null &&
       stamp[2].length > 0 &&
       thresholdHistory != null &&
-      thresholdHistory.length > 0 &&
-      currentTimestamp >= lastVerifiedAt.toNumber();
+      thresholdHistory.length > 0; 
 
-    const expirationDate = lastVerifiedAt.add(threshold.mul(24 * 60 * 60)).toNumber();
+    const expirationDate = lastVerifiedAt
+      .add(threshold.mul(24 * 60 * 60))
+      .toNumber();
 
     const verified =
       preCondition && stamp != null && currentTimestamp < expirationDate;
@@ -131,6 +127,7 @@ export class VerificationSugar {
    * @param timestamp The timestamp in seconds
    * @param providerId The provider ID (github, proofofhumanity, etc.)
    * @param proofSignature The signature that you receive from the verification back-end
+   * @return Transaction of the object
    */
   public async Verify(
     toVerify: string,
@@ -138,9 +135,9 @@ export class VerificationSugar {
     timestamp: number,
     providerId: string,
     proofSignature: string
-  ): Promise<void> {
+  ): Promise<ContractTransaction> {
     const verificationContract = await this.GetVerificationContract();
-    await verificationContract.verifyAddress(
+    return await verificationContract.verifyAddress(
       toVerify,
       userHash,
       timestamp,
@@ -153,17 +150,14 @@ export class VerificationSugar {
    * Unverifies the current user
    * @param providerId The provider ID (github, proofofhumanity, etc.)
    */
-  public async Unverify(providerId: string): Promise<void> {
+  public async Unverify(providerId: string): Promise<ContractTransaction> {
     const verificationContract = await this.GetVerificationContract();
-    await verificationContract.unverify(providerId);
+    return await verificationContract.unverify(providerId);
   }
 
-  /**
-   * Gets the verification contract address
-   * @returns The verification contract address
-   */
-  private async GetVerificationContractAddress(): Promise<string> {
-    return this.sugar.GetVerificationContractAddress();
+  public async GetReverifyThreshold(): Promise<BigNumber> {
+    const verificationContract = await this.GetVerificationContract();
+    return await verificationContract.reverifyThreshold();
   }
 
   /**
@@ -182,4 +176,5 @@ export class VerificationSugar {
 
     return threshold ? threshold[1] : BigNumber.from(0);
   }
+
 }

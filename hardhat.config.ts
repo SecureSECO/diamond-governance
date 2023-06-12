@@ -15,7 +15,7 @@ import '@nomiclabs/hardhat-ethers'
 
 //.env secrets
 import { config as dotEnvConfig } from "dotenv";
-import { ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, MUMBAI_API_KEY, MUMBAI_PRIVATE_KEY } from './secrets';
+import { ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, MUMBAI_PRIVATE_KEY } from './secrets';
 dotEnvConfig();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -30,10 +30,12 @@ module.exports = {
         count: 20,
         passphrase: "",
       },
+      allowBlocksWithSameTimestamp: true,
     },
     mumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${MUMBAI_API_KEY()}`,
-      accounts: [MUMBAI_PRIVATE_KEY()]
+      url: "https://polygon-mumbai.g.alchemy.com/v2/GFsknWbazmwCAkh0yVuOs_PrhfXo_DsT",
+      accounts: [MUMBAI_PRIVATE_KEY()],
+      allowUnlimitedContractSize: true
     }
   },
   etherscan: {

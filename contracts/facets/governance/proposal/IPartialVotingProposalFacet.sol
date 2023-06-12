@@ -33,7 +33,7 @@ interface IPartialVotingProposalFacet {
     }
 
     /// @notice A container for proposal-related information.
-    /// @param executed Whether the proposal is executed or not.
+    /// @param executed The block the proposal executed at, 0 for not executed.
     /// @param parameters The proposal parameters at the time of the proposal creation.
     /// @param tally The vote tally of the proposal.
     /// @param voters The votes casted by the voters.
@@ -41,8 +41,10 @@ interface IPartialVotingProposalFacet {
     /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert. If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts. A failure map value of 0 requires every action to not revert.
     /// @param proposalType keccak256 of the proposal type, can be used by extensions to apply certain rules to proposal created in a certain way.
     /// @param metadata The IPFS hash of the metadata of the proposal.
+    /// @param creator The address of the creator the proposal.
+    /// @param voterList All the addresses that voted on this proposal.
     struct ProposalData {
-        bool executed;
+        uint64 executed;
         ProposalParameters parameters;
         Tally tally;
         mapping(address => IPartialVotingFacet.PartialVote[]) voters;
@@ -50,6 +52,9 @@ interface IPartialVotingProposalFacet {
         uint256 allowFailureMap;
         bytes32 proposalType;
         bytes metadata;
+        address creator;
+        address[] voterList;
+        address executor;
     }
 
     /// @notice A container for the proposal parameters at the time of proposal creation.
@@ -81,18 +86,70 @@ interface IPartialVotingProposalFacet {
         uint256 yes;
         uint256 no;
     }
-    
+
+    /// @notice Thrown if a date is out of bounds.
+    /// @param limit The limit value.
+    /// @param actual The actual value.
+    error DateOutOfBounds(uint64 limit, uint64 actual);
+
+    /// @notice Thrown if the minimal duration value is out of bounds (less than one hour or greater than 1 year).
+    /// @param limit The limit value.
+    /// @param actual The actual value.
+    error MinDurationOutOfBounds(uint64 limit, uint64 actual);
+
+    /// @notice Thrown when a sender is not allowed to create a proposal.
+    /// @param sender The sender address.
+    error ProposalCreationForbidden(address sender);
+
+    /// @notice Thrown if the proposal execution is forbidden.
+    /// @param proposalId The ID of the proposal.
+    error ProposalExecutionForbidden(uint256 proposalId);
+
+    /// @notice Emitted when the voting settings are updated.
+    /// @param votingSettings The new voting settings.
+    event VotingSettingsUpdated(VotingSettings votingSettings);
+
+    /// @notice Returns the voting mode parameter stored in the voting settings.
+    /// @return The voting mode parameter.
+    function getVotingMode() external view returns (IPartialVotingFacet.VotingMode);
+
+    /// @notice Change the voting mode parameter stored in the voting settings.
+    function setVotingMode(IPartialVotingFacet.VotingMode _votingMode) external;
+
     /// @notice Returns the support threshold parameter stored in the voting settings.
     /// @return The support threshold parameter.
-    function supportThreshold() external view returns (uint32);
+    function getSupportThreshold() external view returns (uint32);
+
+    /// @notice Change the support threshold parameter stored in the voting settings.
+    function setSupportThreshold(uint32 _supportThreshold) external;
 
     /// @notice Returns the minimum participation parameter stored in the voting settings.
     /// @return The minimum participation parameter.
-    function minParticipation() external view returns (uint32);
+    function getMinParticipation() external view returns (uint32);
+
+    /// @notice Change the minimum participation parameter stored in the voting settings.
+    function setMinParticipation(uint32 _minParticipation) external;
 
     /// @notice Returns the max single wallet power parameter stored in the voting settings.
     /// @return The max single wallet power parameter.
-    function maxSingleWalletPower() external view returns (uint32);
+    function getMaxSingleWalletPower() external view returns (uint32);
+
+    /// @notice Change the max single wallet power parameter stored in the voting settings.
+    function setMaxSingleWalletPower(uint32 _maxSingleWalletPower) external;
+
+    /// @notice Returns the minimum duration parameter stored in the voting settings.
+    /// @return The minimum duration parameter.
+    function getMinDuration() external view returns (uint64);
+
+    /// @notice Change the minimum duration parameter stored in the voting settings.
+    function setMinDuration(uint64 _minDuration) external;
+
+    /// @notice Returns the minimum voting power required to create a proposal stored in the voting settings.
+    /// @return The minimum voting power required to create a proposal.
+    function getMinProposerVotingPower() external view returns (uint256);
+
+    /// @notice Change the minimum voting power required to create a proposal stored in the voting settings.
+    function setMinProposerVotingPower(uint256 _minProposerVotingPower) external;
 
     /// @notice Checks if the support value defined as $$\texttt{support} = \frac{N_\text{yes}}{N_\text{yes}+N_\text{no}}$$ for a proposal vote is greater than the support threshold.
     /// @param _proposalId The ID of the proposal.
@@ -134,12 +191,15 @@ interface IPartialVotingProposalFacet {
         uint256 _proposalId
     ) external view returns (
             bool open,
-            bool executed,
+            uint64 executed,
             ProposalParameters memory parameters,
             Tally memory tally,
             IDAO.Action[] memory actions,
             uint256 allowFailureMap,
-            bytes memory metadata
+            bytes memory metadata,
+            address creator,
+            address[] memory voterList,
+            address executor
         );
 
     /// @notice Create a new proposal.
@@ -158,6 +218,4 @@ interface IPartialVotingProposalFacet {
         uint64 _endDate,
         bool _allowEarlyExecution
     ) external returns (uint256 proposalId);
-
-    function IsProposalOpen(uint256 _proposalId) external view returns (bool);
 }

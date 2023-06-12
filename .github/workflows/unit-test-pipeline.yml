@@ -9,8 +9,6 @@ on:
         default: true
         required: false
 
-  push:
-    branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main", "dev" ]
 

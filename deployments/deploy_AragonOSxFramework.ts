@@ -7,33 +7,17 @@
   */
 
 // Framework
-import { ethers, upgrades  } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
 // Utils
 import { toEnsNode } from "../utils/ensHelper";
 
 // Types
-import { DAO, DAOFactory, DAORegistry, ENS, ENSRegistry, ENSSubdomainRegistrar, PluginRepoFactory, PluginRepoRegistry, PluginSetupProcessor, PublicResolver } from "../typechain-types";
+import { DAO, DAORegistry, ENSRegistry, ENSSubdomainRegistrar, PluginRepoRegistry } from "../typechain-types";
+import { ENSFrameworkContracts, AragonOSxFrameworkContracts } from "./deploymentTypes";
 
 // Other
 import { deployENS, deployResolver } from "./deploy_ENS";
-
-interface AragonOSxFrameworkContracts {
-    ManagingDAO : DAO;
-    DAO_ENSSubdomainRegistrar: ENSSubdomainRegistrar;
-    Plugin_ENSSubdomainRegistrar: ENSSubdomainRegistrar;
-    DAORegistry: DAORegistry;
-    PluginRepoRegistry: PluginRepoRegistry; 
-    PluginRepoFactory : PluginRepoFactory;
-    PluginSetupProcessor: PluginSetupProcessor;
-    DAOFactory: DAOFactory;
-}
-
-interface ENSFrameworkContracts {
-    ens: ENS;
-    daoResolver: PublicResolver;
-    pluginResolver: PublicResolver;
-}
 
 async function setupENS() : Promise<ENSFrameworkContracts> {
     const ens = await deployENS();
@@ -54,7 +38,6 @@ async function setupENS() : Promise<ENSFrameworkContracts> {
  */
 async function grant(dao : DAO, where : any, who : any, permissionId : string) {
     await dao.grant(where.address, who.address, ethers.utils.keccak256(ethers.utils.toUtf8Bytes(permissionId)));
-    console.log(`Granted ${permissionId} to ${who.address} at ${where.address}`);
 }
 
 /**
@@ -62,7 +45,7 @@ async function grant(dao : DAO, where : any, who : any, permissionId : string) {
  * @param ens Deployed ENSRegistry
  * @returns Deployed AragonOSxFramework contracts
  */
-async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrameworkContracts> {
+export async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrameworkContracts> {
     const [owner] = await ethers.getSigners();
 
     // ManagingDAO: "0x005098056a837c2c4F99C7eCeE976F8D90bdFFF8", https://github.com/aragon/osx/blob/develop/packages/contracts/src/core/dao/DAO.sol
@@ -72,7 +55,6 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
         ["0x", owner.address, ethers.constants.AddressZero, '0x'],
         { unsafeAllow: ['constructor'] }
     ) as DAO;
-    console.log(`ManagingDAO deployed at ${ManagingDAO.address}`);
 
     // DAO_ENSSubdomainRegistrar: "0xCe0B4124dea6105bfB85fB4461c4D39f360E9ef3", https://github.com/aragon/osx/blob/develop/packages/contracts/src/framework/utils/ens/ENSSubdomainRegistrar.sol
     const DAO_ENSSubdomainRegistrarContract = await ethers.getContractFactory("ENSSubdomainRegistrar");
@@ -81,7 +63,6 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
         [ManagingDAO.address, ens.address, toEnsNode("dao")],
         { unsafeAllow: ['constructor'] }
     );
-    console.log(`DAO_ENSSubdomainRegistrar deployed at ${DAO_ENSSubdomainRegistrar.address}`);
     await ens.setApprovalForAll(
         DAO_ENSSubdomainRegistrar.address,
         true
@@ -94,7 +75,6 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
         [ManagingDAO.address, ens.address, toEnsNode("plugin")],
         { unsafeAllow: ['constructor'] }
     );
-    console.log(`Plugin_ENSSubdomainRegistrar deployed at ${Plugin_ENSSubdomainRegistrar.address}`);
     await ens.setApprovalForAll(
         Plugin_ENSSubdomainRegistrar.address,
         true
@@ -107,7 +87,6 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
         [ManagingDAO.address, DAO_ENSSubdomainRegistrar.address],
         { unsafeAllow: ['constructor'] }
     );
-    console.log(`DAORegistry deployed at ${DAORegistry.address}`);
     
     // PluginRepoRegistry: "0xddCc39a2a0047Eb47EdF94180452cbaB14d426EF", https://github.com/aragon/osx/blob/develop/packages/contracts/src/framework/plugin/repo/PluginRepoRegistry.sol
     const PluginRepoRegistryContract = await ethers.getContractFactory("PluginRepoRegistry");
@@ -116,22 +95,18 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
         [ManagingDAO.address, Plugin_ENSSubdomainRegistrar.address],
         { unsafeAllow: ['constructor'] }
     );
-    console.log(`PluginRepoRegistry deployed at ${PluginRepoRegistry.address}`);
 
     // PluginRepoFactory: "0x96E54098317631641703404C06A5afAD89da7373", https://github.com/aragon/osx/blob/develop/packages/contracts/src/framework/plugin/repo/PluginRepoFactory.sol
     const PluginRepoFactoryContract = await ethers.getContractFactory("PluginRepoFactory");
     const PluginRepoFactory = await PluginRepoFactoryContract.deploy(PluginRepoRegistry.address);
-    console.log(`PluginRepoFactory deployed at ${PluginRepoFactory.address}`);
 
     // PluginSetupProcessor: "0xE978942c691e43f65c1B7c7F8f1dc8cDF061B13f", https://github.com/aragon/osx/blob/develop/packages/contracts/src/framework/plugin/setup/PluginSetupProcessor.sol
     const PluginSetupProcessorContract = await ethers.getContractFactory("PluginSetupProcessor");
     const PluginSetupProcessor = await PluginSetupProcessorContract.deploy(PluginRepoRegistry.address);
-    console.log(`PluginSetupProcessor deployed at ${PluginSetupProcessor.address}`);
 
     // DAOFactory: "0xA03C2182af8eC460D498108C92E8638a580b94d4", https://github.com/aragon/osx/blob/develop/packages/contracts/src/framework/dao/DAOFactory.sol
     const DAOFactoryContract = await ethers.getContractFactory("DAOFactory");
     const DAOFactory = await DAOFactoryContract.deploy(DAORegistry.address, PluginSetupProcessor.address);
-    console.log(`DAOFactory deployed at ${DAOFactory.address}`);
 
     // Permissions DAO
     const DAO_PERMISSIONS = [
@@ -174,11 +149,9 @@ async function deployAragonFramework(ens : ENSRegistry) : Promise<AragonOSxFrame
  * Deploys the AragonOS framework with the ENS framework
  * @returns The deployed contracts for the AragonOS framework and the ENS framework
  */
-async function deployAragonFrameworkWithEns() {
+export async function deployAragonFrameworkWithEns() {
     const ensFramework = await setupENS();
     const aragonOSxFramework = await deployAragonFramework(ensFramework.ens);
 
     return { ensFramework, aragonOSxFramework };
 }
-
-export { deployAragonFramework, deployAragonFrameworkWithEns, AragonOSxFrameworkContracts, ENSFrameworkContracts }

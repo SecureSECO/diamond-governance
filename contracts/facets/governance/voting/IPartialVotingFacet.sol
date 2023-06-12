@@ -34,7 +34,7 @@ interface IPartialVotingFacet {
     /// @param voter The voter casting the vote.
     /// @param voteData The casted vote option and the voting power behind this vote.
     event VoteCast(
-        uint256  proposalId,
+        uint256 proposalId,
         address indexed voter,
         PartialVote voteData
     );
@@ -44,6 +44,16 @@ interface IPartialVotingFacet {
         SinglePartialVote,
         MultiplePartialVote
     }
+
+    /// @notice Thrown if an account is not allowed to cast a vote. This can be because the vote
+    /// - has not started,
+    /// - has ended,
+    /// - was executed, or
+    /// - the account doesn't have the chosen voting power or more.
+    /// @param proposalId The ID of the proposal.
+    /// @param account The address of the _account.
+    /// @param voteData The chosen vote option and chosen voting power.
+    error VoteCastForbidden(uint256 proposalId, address account, PartialVote voteData);
 
     /// @notice Checks if an account can participate on a proposal vote. This can be because the vote
     /// - has not started,

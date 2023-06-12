@@ -12,9 +12,10 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import { ERC20PermitFacet, ECDSA, ERC20Facet } from "./ERC20PermitFacet.sol";
-import { IERC5805 } from "../../../../additional-contracts/IERC5805.sol";
+import { IERC5805, IERC6372, IVotes } from "../../../../additional-contracts/IERC5805.sol";
 
 import { LibERC20VotesStorage } from "../../../../libraries/storage/LibERC20VotesStorage.sol";
+import { IFacet } from "../../../../facets/IFacet.sol";
 
 /**
  * @dev Extension of ERC20 to support Compound-like voting and delegation. This version is more generic than Compound's,
@@ -40,7 +41,29 @@ contract ERC20VotesFacet is ERC20PermitFacet, IERC5805 {
     bytes32 private constant _DELEGATION_TYPEHASH =
         keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
 
-    constructor(string memory name_, string memory symbol_) ERC20PermitFacet(name_, symbol_) {}
+    struct ERC20VotesFacetInitParams {
+        ERC20PermitFacetInitParams _ERC20PermitFacetInitParams;
+    }
+
+    /// @inheritdoc IFacet
+    function init(bytes memory _initParams) public virtual override {
+        ERC20VotesFacetInitParams memory _params = abi.decode(_initParams, (ERC20VotesFacetInitParams));
+        __ERC20VotesFacet_init(_params);
+    }
+
+    function __ERC20VotesFacet_init(ERC20VotesFacetInitParams memory _params) public virtual {
+        __ERC20PermitFacet_init(_params._ERC20PermitFacetInitParams);
+
+        registerInterface(type(IERC6372).interfaceId);
+        registerInterface(type(IVotes).interfaceId);
+    }
+
+    /// @inheritdoc IFacet
+    function deinit() public virtual override {
+        unregisterInterface(type(IERC6372).interfaceId);
+        unregisterInterface(type(IVotes).interfaceId);
+        super.deinit();
+    }
     
     /**
      * @dev Clock used for flagging checkpoints. Can be overridden to implement timestamp based checkpoints (and voting).

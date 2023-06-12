@@ -6,12 +6,12 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { ProposalData, ProposalStatus, Action, ProposalMetadata, VoteOption } from "./data";
+import { ProposalData, ProposalStatus, Action, ProposalMetadata, VoteOption, AddressVotes } from "./data";
 import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
-import { asyncMap } from "../utils";
-import { IPartialVotingFacet, IPartialVotingProposalFacet } from "../client";
-import type { ContractTransaction } from "ethers";
+import { asyncMap, FromBlockchainDate, FromBlocknumber } from "../utils";
+import { DiamondGovernancePure, IPartialVotingFacet, IPartialVotingProposalFacet } from "../../../generated/client";
+import type { ContractTransaction, BigNumber } from "ethers";
 
 /**
  * Proposal is a class that represents a proposal on the blockchain.
@@ -23,6 +23,13 @@ export class Proposal {
     public metadata: ProposalMetadata;
     public status: ProposalStatus;
     public actions: Action[];
+
+    public startDate: Date;
+    public endDate: Date;
+    public creationDate: Date;
+    public executionDate: Date | undefined;
+
+    private voterCache : { [address : string]: IPartialVotingFacet.PartialVoteStructOutput[] };
 
     private proposalContract: IPartialVotingProposalFacet;
     private voteContract: IPartialVotingFacet;
@@ -38,22 +45,36 @@ export class Proposal {
         };
         this.status = ProposalStatus.Pending;
         this.actions = [];
+        this.startDate = new Date();
+        this.endDate = new Date();
+        this.creationDate = new Date();
+        this.voterCache = { };
         this.proposalContract = _proposalContract;
         this.voteContract = _voteContract;
     }
 
-    private fromHexString(hexString : string) : Uint8Array { return Uint8Array.from(hexString.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? new Uint8Array()); }
+    private fromHexString(hexString : string) : Uint8Array { 
+      return Uint8Array.from(Buffer.from(hexString, 'hex'));
+    }
     /**
      * New proposal object from the blockchain
      * @param _id The id of the proposal
      * @param _data The data of the proposal
      * @returns {Promise<Proposal>} The proposal with the given id
      */
-    public static async New(_id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) : Promise<Proposal> {
+    public static async New(_pure : DiamondGovernancePure, _id : number, _data : ProposalData, _proposalContract : IPartialVotingProposalFacet, _voteContract : IPartialVotingFacet) : Promise<Proposal> {
         const prop = new Proposal(_id, _data, _proposalContract, _voteContract);
         prop.metadata = await DecodeMetadata(prop.fromHexString(prop.data.metadata.substring(2))); //remove 0x and convert to utf-8 array
         prop.status = prop.getStatus();
-        prop.actions = await asyncMap(prop.data.actions, ParseAction);
+        prop.actions = await asyncMap(prop.data.actions, async (a) => await ParseAction(_pure, _pure.pluginAddress, a, _pure.signer));
+
+        prop.startDate = FromBlockchainDate(prop.data.parameters.startDate.toNumber());
+        prop.endDate = FromBlockchainDate(prop.data.parameters.endDate.toNumber());
+        prop.creationDate = await FromBlocknumber(prop.data.parameters.snapshotBlock.toNumber(), _pure.signer);
+        if (prop.data.executed.gt(0)) {
+          prop.executionDate = await FromBlocknumber(prop.data.executed.toNumber(), _pure.signer);
+        }
+
         return prop;
     }
 
@@ -61,7 +82,7 @@ export class Proposal {
      * @returns {ProposalStatus} The status of the proposal
      */
     private getStatus() : ProposalStatus {
-      if (this.data.executed) return ProposalStatus.Executed;
+      if (this.data.executed.gt(0)) return ProposalStatus.Executed;
       if (this.data.open) return ProposalStatus.Active;
       if (this.data.parameters.startDate.toNumber() < Date.now()) return ProposalStatus.Pending;
 
@@ -77,7 +98,7 @@ export class Proposal {
      * @param _voteOption Which option to vote for (Yes, No, Abstain)
      * @param _voteAmount Number of tokens to vote with
      */
-      public async CanVote(_voteOption : VoteOption, _voteAmount : number) : Promise<boolean> {
+      public async CanVote(_voteOption : VoteOption, _voteAmount : BigNumber) : Promise<boolean> {
         const address = await this.voteContract.signer.getAddress();
         return await this.voteContract.canVote(this.id, address, { option : _voteOption, amount : _voteAmount });
       }
@@ -87,7 +108,7 @@ export class Proposal {
        * @param _voteOption Which option to vote for (Yes, No, Abstain)
        * @param _voteAmount Number of tokens to vote with
        */
-      public async Vote(_voteOption : VoteOption, _voteAmount : number) : Promise<ContractTransaction>  {
+      public async Vote(_voteOption : VoteOption, _voteAmount : BigNumber) : Promise<ContractTransaction>  {
           return await this.voteContract.vote(this.id, { option : _voteOption, amount : _voteAmount });
       }
 
@@ -106,6 +127,24 @@ export class Proposal {
       }
 
       /**
+       * Get vote of address
+       */
+      public async GetVote(address : string) : Promise<IPartialVotingFacet.PartialVoteStructOutput[]> {
+        if (!this.voterCache.hasOwnProperty(address)) {
+          this.voterCache[address] = await this.proposalContract.getVoteOption(this.id, address);
+        }
+        return this.voterCache[address];
+      }
+
+      /**
+       * Get votes on proposal, count undefined gives all
+       */
+      public async GetVotes(fromIndex : number = 0, count : number | undefined = undefined) : Promise<AddressVotes[]> {
+        const addresses = this.data.voterList.slice(fromIndex, count == undefined ? undefined : fromIndex + count);
+        return await asyncMap(addresses, async (address) => { return { address: address, votes: await this.GetVote(address) }; });
+      }
+
+      /**
        * Refreshed the data
        */
       public async Refresh() {
@@ -113,5 +152,6 @@ export class Proposal {
         // metadata doesn't change
         this.status = this.getStatus();
         // actions doesn't change
+        this.voterCache = { };
       }
 }

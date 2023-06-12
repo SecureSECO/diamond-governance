@@ -29,9 +29,10 @@ contract ExampleDiamond {
         cut[0] = IDiamondCut.FacetCut({
             facetAddress: _diamondCutFacet, 
             action: IDiamondCut.FacetCutAction.Add, 
-            functionSelectors: functionSelectors
+            functionSelectors: functionSelectors,
+            initCalldata: new bytes(0)
         });
-        LibDiamond.diamondCut(cut, address(0), "");        
+        LibDiamond.diamondCut(cut);        
     }
 
     // Find facet for function that is called and execute the
