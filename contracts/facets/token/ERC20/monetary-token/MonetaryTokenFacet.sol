@@ -10,15 +10,15 @@ import {ERC20VotesFacet, ERC20PermitFacet, ERC20Facet} from "../core/ERC20VotesF
 import {IMintableGovernanceStructure, IGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {LibMonetaryTokenStorage} from "../../../../libraries/storage/LibMonetaryTokenStorage.sol";
-import {IChangeableTokenContract} from "./IChangeableTokenContract.sol";
+import {IMonetaryTokenFacet} from "./IMonetaryTokenFacet.sol";
 import {IFacet} from "../../../IFacet.sol";
 
 /**
  * @title MonetaryTokenFacet
  * @author Utrecht University
- * @notice Implementation of IChangeableTokenContract.
+ * @notice Implementation of IMonetaryTokenFacet.
  */
-contract MonetaryTokenFacet is IChangeableTokenContract, AuthConsumer, IFacet {
+contract MonetaryTokenFacet is IMonetaryTokenFacet, AuthConsumer, IFacet {
     // Permission used by the setERC20ContractAddress function
     bytes32 public constant SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID =
         keccak256("SET_MONETARY_TOKEN_CONTRACT_PERMISSION");
@@ -39,21 +39,21 @@ contract MonetaryTokenFacet is IChangeableTokenContract, AuthConsumer, IFacet {
     function __MonetaryTokenFacet_init(MonetaryTokenFacetInitParams memory _params) public virtual {
         LibMonetaryTokenStorage.getStorage().monetaryTokenContractAddress = _params.monetaryTokenContractAddress;
 
-        registerInterface(type(IChangeableTokenContract).interfaceId);
+        registerInterface(type(IMonetaryTokenFacet).interfaceId);
     }
 
     /// @inheritdoc IFacet
     function deinit() public virtual override {
-        unregisterInterface(type(IChangeableTokenContract).interfaceId);
+        unregisterInterface(type(IMonetaryTokenFacet).interfaceId);
         super.deinit();
     }
 
-    /// @inheritdoc IChangeableTokenContract
+    /// @inheritdoc IMonetaryTokenFacet
     function getTokenContractAddress() external view virtual override returns (address) {
         return LibMonetaryTokenStorage.getStorage().monetaryTokenContractAddress;
     }
 
-    /// @inheritdoc IChangeableTokenContract
+    /// @inheritdoc IMonetaryTokenFacet
     function setTokenContractAddress(address _tokenContractAddress) external virtual override auth(SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID) {
         LibMonetaryTokenStorage.getStorage().monetaryTokenContractAddress = _tokenContractAddress;
     }

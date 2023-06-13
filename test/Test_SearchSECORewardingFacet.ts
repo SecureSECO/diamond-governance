@@ -109,7 +109,7 @@ const getERC20MonetaryTokenContract = async (
 ) => {
   const [owner] = await ethers.getSigners();
   const tokenAddress = await (
-    await client.pure.IChangeableTokenContract()
+    await client.pure.IMonetaryTokenFacet()
   ).getTokenContractAddress();
   const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>(
     "ERC20MonetaryToken",

@@ -9,9 +9,9 @@
 import { Contract } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IChangeableTokenContract, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVotes } from "../typechain-types";
+import { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IMonetaryTokenFacet, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVerificationRewardPoolFacet, IVotes } from "../typechain-types";
 
-enum DiamondGovernanceInterfaces { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IChangeableTokenContract, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVotes }
+enum DiamondGovernanceInterfaces { IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IMonetaryTokenFacet, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVerificationRewardPoolFacet, IVotes }
 
 class DiamondGovernancePure {
     public readonly pluginAddress : string;
@@ -46,10 +46,6 @@ class DiamondGovernancePure {
         return await this._get<IBurnableGovernanceStructure>(DiamondGovernanceInterfaces.IBurnableGovernanceStructure, "0x85d9cf86");
     }
 
-    public async IChangeableTokenContract() : Promise<IChangeableTokenContract> {
-        return await this._get<IChangeableTokenContract>(DiamondGovernanceInterfaces.IChangeableTokenContract, "0x90d91dd0");
-    }
-
     public async IDAOReferenceFacet() : Promise<IDAOReferenceFacet> {
         return await this._get<IDAOReferenceFacet>(DiamondGovernanceInterfaces.IDAOReferenceFacet, "0x4162169f");
     }
@@ -79,7 +75,7 @@ class DiamondGovernancePure {
     }
 
     public async IERC20OneTimeVerificationRewardFacet() : Promise<IERC20OneTimeVerificationRewardFacet> {
-        return await this._get<IERC20OneTimeVerificationRewardFacet>(DiamondGovernanceInterfaces.IERC20OneTimeVerificationRewardFacet, "0x0ec06dca");
+        return await this._get<IERC20OneTimeVerificationRewardFacet>(DiamondGovernanceInterfaces.IERC20OneTimeVerificationRewardFacet, "0xf3f331ab");
     }
 
     public async IERC20PartialBurnVotingProposalRefundFacet() : Promise<IERC20PartialBurnVotingProposalRefundFacet> {
@@ -138,6 +134,10 @@ class DiamondGovernancePure {
         return await this._get<IMintableGovernanceStructure>(DiamondGovernanceInterfaces.IMintableGovernanceStructure, "0x03520be9");
     }
 
+    public async IMonetaryTokenFacet() : Promise<IMonetaryTokenFacet> {
+        return await this._get<IMonetaryTokenFacet>(DiamondGovernanceInterfaces.IMonetaryTokenFacet, "0x90d91dd0");
+    }
+
     public async IPartialVotingFacet() : Promise<IPartialVotingFacet> {
         return await this._get<IPartialVotingFacet>(DiamondGovernanceInterfaces.IPartialVotingFacet, "0xe7ce0a62");
     }
@@ -163,7 +163,7 @@ class DiamondGovernancePure {
     }
 
     public async ISearchSECORewardingFacet() : Promise<ISearchSECORewardingFacet> {
-        return await this._get<ISearchSECORewardingFacet>(DiamondGovernanceInterfaces.ISearchSECORewardingFacet, "0x29cf267d");
+        return await this._get<ISearchSECORewardingFacet>(DiamondGovernanceInterfaces.ISearchSECORewardingFacet, "0x10602c78");
     }
 
     public async ITieredMembershipStructure() : Promise<ITieredMembershipStructure> {
@@ -172,6 +172,10 @@ class DiamondGovernancePure {
 
     public async IVerificationFacet() : Promise<IVerificationFacet> {
         return await this._get<IVerificationFacet>(DiamondGovernanceInterfaces.IVerificationFacet, "0x5e089b18");
+    }
+
+    public async IVerificationRewardPoolFacet() : Promise<IVerificationRewardPoolFacet> {
+        return await this._get<IVerificationRewardPoolFacet>(DiamondGovernanceInterfaces.IVerificationRewardPoolFacet, "0x6168cbd9");
     }
 
     public async IVotes() : Promise<IVotes> {
@@ -220,4 +224,4 @@ class DiamondGovernancePure {
     }
 }
 
-export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IChangeableTokenContract, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVotes }
+export { DiamondGovernanceInterfaces, DiamondGovernancePure, IERC165, IABCConfigureFacet, IAuthProvider, IBurnVotingProposalFacet, IBurnableGovernanceStructure, IDAOReferenceFacet, IDiamondCut, IDiamondLoupe, IERC173, IERC20Metadata, IERC20MultiMinterFacet, IERC20OneTimeRewardFacet, IERC20OneTimeVerificationRewardFacet, IERC20PartialBurnVotingProposalRefundFacet, IERC20PartialBurnVotingRefundFacet, IERC20Permit, IERC20TieredTimeClaimableFacet, IERC20TimeClaimableFacet, IERC20, IERC6372, IGithubPullRequestFacet, IGovernanceStructure, IMembershipExtended, IMembershipWhitelisting, IMembership, IMiningRewardPoolFacet, IMintableGovernanceStructure, IMonetaryTokenFacet, IPartialVotingFacet, IPartialVotingProposalFacet, IPlugin, IProposal, IRewardMultiplierFacet, ISearchSECOMonetizationFacet, ISearchSECORewardingFacet, ITieredMembershipStructure, IVerificationFacet, IVerificationRewardPoolFacet, IVotes }

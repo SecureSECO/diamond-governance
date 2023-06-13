@@ -47,10 +47,10 @@ describe("MonetaryTokenContract", () => {
   it("should update contract address on set", async () => {
     const client = await loadFixture(getClient);
     
-    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
-    await IChangeableTokenContract.setTokenContractAddress(ethers.constants.AddressZero);
+    const IMonetaryTokenFacet = await client.pure.IMonetaryTokenFacet();
+    await IMonetaryTokenFacet.setTokenContractAddress(ethers.constants.AddressZero);
 
-    expect(await IChangeableTokenContract.getTokenContractAddress()).to.equal(ethers.constants.AddressZero);
+    expect(await IMonetaryTokenFacet.getTokenContractAddress()).to.equal(ethers.constants.AddressZero);
   });
 
   it("should be able to mint monetary token once", async () => {
@@ -58,8 +58,8 @@ describe("MonetaryTokenContract", () => {
     const [owner] = await ethers.getSigners();
     const mintAmount = 10;
 
-    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
-    const monetaryTokenContractAddress = await IChangeableTokenContract.getTokenContractAddress();
+    const IMonetaryTokenFacet = await client.pure.IMonetaryTokenFacet();
+    const monetaryTokenContractAddress = await IMonetaryTokenFacet.getTokenContractAddress();
     const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
 
     const balanceBefore = await ERC20MonetaryToken.balanceOf(owner.address);
@@ -72,8 +72,8 @@ describe("MonetaryTokenContract", () => {
     const client = await loadFixture(getClient);
     const [owner] = await ethers.getSigners();
 
-    const IChangeableTokenContract = await client.pure.IChangeableTokenContract();
-    const monetaryTokenContractAddress = await IChangeableTokenContract.getTokenContractAddress();
+    const IMonetaryTokenFacet = await client.pure.IMonetaryTokenFacet();
+    const monetaryTokenContractAddress = await IMonetaryTokenFacet.getTokenContractAddress();
     const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>("ERC20MonetaryToken", monetaryTokenContractAddress, owner);
 
     await ERC20MonetaryToken.init(owner.address, 10);

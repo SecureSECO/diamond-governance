@@ -7,18 +7,10 @@
 
 pragma solidity ^0.8.0;
 
-
-/**
- * @title IChangeableTokenContract
- * @author Utrecht University
- * @notice This interface allows getting and setting the monetary token contract address.
- */
-interface IChangeableTokenContract {
+/// @title IMonetaryTokenFacet
+/// @author Utrecht University - 2023
+/// @notice The interface for getting and setting the monetary token contract address.
+interface IMonetaryTokenFacet {
     /// @notice This returns the contract address of the token contract used
     /// @return address The contract address of the token contract
     function getTokenContractAddress() external view returns (address);
-
-    /// @notice Sets the contract address of the token contract used
-    /// @param _tokenContractAddress The contract address of the token contract
-    function setTokenContractAddress(address _tokenContractAddress) external;
-}
