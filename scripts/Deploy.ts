@@ -11,7 +11,7 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days, hours, now } from "../utils/timeUnits";
-import { ether, gwei, wei } from "../utils/etherUnits";
+import { ether } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { to18Decimal } from "../utils/decimals18Helper";
@@ -31,14 +31,14 @@ async function main() {
 
   const ABCDeployerSettings : ABCDeployerSettings = {
     curveParameters: {
-      theta: 0.05 * 10**6, // 5%
-      friction: 0.01 * 10**6, // 1%
+      theta: 0.03 * 10**6, // 3%
+      friction: 0.02 * 10**6, // 2%
       reserveRatio: 0.2 * 10**6, // 20%
     },
     hatchParameters: {
-      initialPrice: wei.mul(1),
-      minimumRaise: wei.mul(1),
-      maximumRaise: wei.mul(1),
+      initialPrice: ether.mul(1),
+      minimumRaise: ether.mul(1),
+      maximumRaise: ether.mul(1),
       hatchDeadline: now() + 24 * hours,
     },
     vestingSchedule: {
@@ -112,14 +112,14 @@ async function main() {
     coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
-    hashCost: gwei.mul(1),
+    hashCost: to18Decimal("0.01"), // 1 SECOIN per 100 hashes
     treasuryRatio: 0.2 * 10**6, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: to18Decimal(0.01.toString()), // 1%
+    miningRewardPoolPayoutRatio: to18Decimal("0.01"), // 1%
     hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
-    hashReward: ether.mul(1),
+    hashReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
