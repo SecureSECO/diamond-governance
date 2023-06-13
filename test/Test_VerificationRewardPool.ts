@@ -18,13 +18,13 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { ether } from "../utils/etherUnits";
-import { DiamondGovernanceClient } from "../sdk";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { ERC20MonetaryToken, ExecuteAnythingFacet, SignVerification } from "../typechain-types";
 import { now } from "../utils/timeUnits";
 import { createSignature } from "../utils/signatureHelper";
 
 // Types
+import { ERC20MonetaryToken, ExecuteAnythingFacet, SignVerification } from "../typechain-types";
+import { DiamondGovernanceClient } from "../sdk";
 
 // Other
 
@@ -78,6 +78,30 @@ const getERC20MonetaryTokenContract = async (
   return ERC20MonetaryToken;
 };
 
+// Approves the diamond to handle the treasury
+// FIXME: any???
+const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryToken: ERC20MonetaryToken, owner: any) => {
+  // (us) Approve plugin to spend (our) tokens: this is needed for the plugin to transfer tokens from our account
+  await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(1e6));
+  // (DAO) Approve plugin to spend tokens: this is needed for the plugin to transfer tokens from the DAO
+  await (
+    await GetTypedContractAt<ExecuteAnythingFacet>(
+      "ExecuteAnythingFacet",
+      client.pure.pluginAddress,
+      owner
+    )
+  ).executeAnything([
+    {
+      to: ERC20MonetaryToken.address,
+      value: 0,
+      data: ERC20MonetaryToken.interface.encodeFunctionData("approve", [
+        client.pure.pluginAddress,
+        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      ]),
+    },
+  ]);
+}
+
 describe.only("VerificationRewardPool", async function () {
   it("increase reward pool", async function () {
     const client = await loadFixture(getClient);
@@ -85,26 +109,7 @@ describe.only("VerificationRewardPool", async function () {
     const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
     const [owner] = await ethers.getSigners();
 
-    // (us) Approve plugin to spend (our) tokens: this is needed for the plugin to transfer tokens from our account
-    await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(1e6));
-    // (DAO) Approve plugin to spend tokens: this is needed for the plugin to transfer tokens from the DAO
-    await (
-      await GetTypedContractAt<ExecuteAnythingFacet>(
-        "ExecuteAnythingFacet",
-        client.pure.pluginAddress,
-        owner
-      )
-    ).executeAnything([
-      {
-        to: ERC20MonetaryToken.address,
-        value: 0,
-        data: ERC20MonetaryToken.interface.encodeFunctionData("approve", [
-          client.pure.pluginAddress,
-          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-        ]),
-      },
-    ]);
-
+    await approveEverything(client, ERC20MonetaryToken, owner);
 
     await IVerificationRewardPoolFacet.increaseVerificationRewardPool(ether.mul(1e6));
     const verificationRewardPool = await IVerificationRewardPoolFacet.getVerificationRewardPool();
@@ -116,25 +121,7 @@ describe.only("VerificationRewardPool", async function () {
     const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
     const [owner] = await ethers.getSigners();
 
-    // (us) Approve plugin to spend (our) tokens: this is needed for the plugin to transfer tokens from our account
-    await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(1e6));
-    // (DAO) Approve plugin to spend tokens: this is needed for the plugin to transfer tokens from the DAO
-    await (
-      await GetTypedContractAt<ExecuteAnythingFacet>(
-        "ExecuteAnythingFacet",
-        client.pure.pluginAddress,
-        owner
-      )
-    ).executeAnything([
-      {
-        to: ERC20MonetaryToken.address,
-        value: 0,
-        data: ERC20MonetaryToken.interface.encodeFunctionData("approve", [
-          client.pure.pluginAddress,
-          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-        ]),
-      },
-    ]);
+    await approveEverything(client, ERC20MonetaryToken, owner);
 
     await IVerificationRewardPoolFacet.increaseVerificationRewardPool(ether.mul(1e6));
 
@@ -153,20 +140,24 @@ describe.only("VerificationRewardPool", async function () {
     await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
 
     const IERC20OneTimeVerificationRewardFacet = await client.pure.IERC20OneTimeVerificationRewardFacet();
-    // IERC20OneTimeVerificationRewardFacet.
-    // await IERC20OneTimeVerificationRewardFacet.claimVerificationRewardAll();
     console.log(await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll());
 
     await IERC20OneTimeVerificationRewardFacet.claimVerificationRewardAll();
 
+    // These three requests can be parallellized
     // Check that 30 big rep has been deposited to our account
     const repInterface = await client.pure.IERC20();
     expect(await repInterface.balanceOf(owner.address)).to.be.equal(ether.mul(30));
 
+    // Check that our account now has 1 big coin more
+    expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(ether.mul(1));
+
     // Check that the verification pool now has 1 big coin less
     expect(await IVerificationRewardPoolFacet.getVerificationRewardPool()).to.be.equal(ether.mul(1e6).sub(ether.mul(1)));
 
-    // Check that our account now has 1 big coin more
-    expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(ether.mul(1));
+    // Check that the treasury has 1 big coin less
+    const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
+    const daoAddress = await IDAOReferenceFacet.dao();
+    expect(ERC20MonetaryToken.balanceOf(daoAddress));
   });
 });
