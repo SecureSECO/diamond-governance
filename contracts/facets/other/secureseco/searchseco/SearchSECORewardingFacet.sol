@@ -96,26 +96,38 @@ contract SearchSECORewardingFacet is
             "Proof is not valid"
         );
 
-        // Make sure that the hashCount is equal
+        // Make sure that the nonce is equal to the CURRENT hashCount
         require(
             s.hashCount[_toReward] == _nonce,
             "Hash count does not match with nonce"
         );
 
-        s.hashCount[_toReward] += _hashCount;
+        require(
+            _hashCount > _nonce,
+            "New hash count must be higher than current hash count"
+        );
+
+        // Update (overwrite) the hash count for the given address
+        s.hashCount[_toReward] = _hashCount;
 
         require(
             _repFrac >= 0 && _repFrac <= 1_000_000,
             "REP fraction must be between 0 and 1_000_000"
         );
 
+        // The difference between the nonce and the TOTAL hash count is the amount of NEW hashes mined
+        uint actualHashCount = _hashCount - _nonce;
+
         // Calculate the reward
         // 1. Split number of hashes up according to the given "repFrac"
-        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(_hashCount);
+        bytes16 hashCountQuad = ABDKMathQuad.fromUInt(actualHashCount);
         // This is the number of hashes for the REP reward, the rest is for the coin reward
         bytes16 numHashDivided = ABDKMathQuad.mul(
             hashCountQuad,
-            ABDKMathQuad.div(ABDKMathQuad.fromUInt(_repFrac), ABDKMathQuad.fromUInt(1_000_000))
+            ABDKMathQuad.div(
+                ABDKMathQuad.fromUInt(_repFrac),
+                ABDKMathQuad.fromUInt(1_000_000)
+            )
         ); // div by 1_000_000 to get fraction
 
         // 2. Calculate the reputation reward by multiplying the fraction
@@ -125,7 +137,12 @@ contract SearchSECORewardingFacet is
             ABDKMathQuad.fromUInt(s.hashReward)
         );
         // Multiply for inflation
-        repReward = ABDKMathQuad.mul(IRewardMultiplierFacet(address(this)).getMultiplierQuad("inflation"), repReward);
+        repReward = ABDKMathQuad.mul(
+            IRewardMultiplierFacet(address(this)).getMultiplierQuad(
+                "inflation"
+            ),
+            repReward
+        );
 
         // 3. Calculate the coin reward = 1 - (1 - miningRewardPoolPayoutRatio) ^ coinFrac
         // (don't mind the variable name, this is to minimize the amount of variables used)
@@ -141,7 +158,7 @@ contract SearchSECORewardingFacet is
                     ABDKMathQuad.mul(
                         // The hash count reserved for the coin reward (coinFrac)
                         // This is divided by a constant factor: hashDevaluationFactor
-                        ABDKMathQuad.mul(
+                        ABDKMathQuad.div(
                             ABDKMathQuad.sub(hashCountQuad, numHashDivided),
                             s.hashDevaluationFactor
                         ),
@@ -223,7 +240,9 @@ contract SearchSECORewardingFacet is
         // Cast from quad float to dec18
         return
             LibABDKHelper.to18DecimalsQuad(
-                LibSearchSECORewardingStorage.getStorage().miningRewardPoolPayoutRatio
+                LibSearchSECORewardingStorage
+                    .getStorage()
+                    .miningRewardPoolPayoutRatio
             );
     }
 
@@ -235,12 +254,7 @@ contract SearchSECORewardingFacet is
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getHashDevaluationFactor()
-        external
-        view
-        override
-        returns (uint)
-    {
+    function getHashDevaluationFactor() external view override returns (uint) {
         // Cast from quad float to dec18
         return
             LibABDKHelper.to18DecimalsQuad(
@@ -259,7 +273,10 @@ contract SearchSECORewardingFacet is
         uint _miningRewardPoolPayoutRatio
     ) internal {
         // No need to waste gas checking >= 0, since it's uint
-        require(_miningRewardPoolPayoutRatio <= 1e18, "Error: invalid mining reward pool payout ratio");
+        require(
+            _miningRewardPoolPayoutRatio <= 1e18,
+            "Error: invalid mining reward pool payout ratio"
+        );
         // Cast from dec18 to quad float
         LibSearchSECORewardingStorage
             .getStorage()
@@ -268,13 +285,12 @@ contract SearchSECORewardingFacet is
         );
     }
 
-    function _setHashDevaluationFactor(
-        uint _hashDevaluationFactor
-    ) internal {
-        // Cast from dec18 to quad float
+    function _setHashDevaluationFactor(uint _hashDevaluationFactor) internal {
+        // Cast from uint to quad float, don't multiply or divide by anything.
+        // This number is used as is to divide the number of hashes by.
         LibSearchSECORewardingStorage
             .getStorage()
-            .hashDevaluationFactor = LibABDKHelper.from18DecimalsQuad(
+            .hashDevaluationFactor = ABDKMathQuad.fromUInt(
             _hashDevaluationFactor
         );
     }

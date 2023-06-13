@@ -8,7 +8,6 @@
 
 import fs from "fs";
 import { generateInterfaceIds } from "./sdk/GenerateInterfaceIds";
-import { GetContractAt } from "../utils/contractHelper";
 import { ethers } from "hardhat";
 import { getSelectors } from "../utils/diamondHelper";
 import { FunctionSelectorsJson, VariableSelectorsJson } from "../utils/jsonTypes";
@@ -29,7 +28,6 @@ async function generateInterfaceMethod(interfaceName : string, interfaceId : str
 
 async function main() {
     console.log("Started generating of SDK");
-    const [owner] = await ethers.getSigners();
     const interfaceIds = await generateInterfaceIds();
     const interfaceKeys = Object.keys(interfaceIds);
 
@@ -40,7 +38,7 @@ async function main() {
         const name = interfaceKeys[i];
         interfaceMethodArray.push(await generateInterfaceMethod(name, interfaceIds[name]));
 
-        const contract = await GetContractAt(name, ethers.constants.AddressZero, owner);
+        const contract = await ethers.getContractAt(name, ethers.constants.AddressZero);
         //reverseFunctionSelectorLookup
         const selectors = getSelectors(contract).selectors;
         for (let j = 0; j < selectors.length; j++) {

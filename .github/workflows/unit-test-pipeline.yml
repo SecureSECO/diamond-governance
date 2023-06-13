@@ -9,8 +9,12 @@ on:
         default: true
         required: false
 
+  push:
+    # Do verify main is stable
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "dev" ]
+    # Pull requests to main should only be done from dev
+    branches: [ "dev" ]
 
 defaults:
   run:
@@ -18,7 +22,7 @@ defaults:
 
 env:
   NODE_VERSION: 18.x
-  unit-tests: ${{ github.event.inputs.js || true }}
+  unit-tests: ${{ github.event.inputs.test || true }}
 
 jobs:
   install-dependencies:

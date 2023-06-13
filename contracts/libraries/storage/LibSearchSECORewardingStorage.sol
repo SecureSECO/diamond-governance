@@ -20,7 +20,7 @@ library LibSearchSECORewardingStorage {
         /// @notice Defines the percentage of the pool that is paid out to the miner.
         bytes16 miningRewardPoolPayoutRatio; // quad float
 
-        /// @notice Defines the constant factor by which the hash reward is devaluated. 
+        /// @notice Defines the constant factor by which the hash reward is devaluated (divided). 
         bytes16 hashDevaluationFactor; // quad float
     }
 

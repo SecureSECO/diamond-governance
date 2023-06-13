@@ -61,7 +61,7 @@ const currentBlockNumber = async (): Promise<number> => {
 
 /* CONSTANTS */
 const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 decimal version
-const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT);
+const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT.toString());
 const MAX_BLOCKS_PASSED = 1000;
 
 const SLOPE_N = 1001;
@@ -71,7 +71,7 @@ const BASE_N = 1005;
 const BASE_D = 1000;
 
 const BASE_REWARD = 1234.56; // Never used except to calculate the 18 decimal version
-const BASE_REWARD_18 = to18Decimal(BASE_REWARD);
+const BASE_REWARD_18 = to18Decimal(BASE_REWARD.toString());
 
 describe("RewardMultiplier", function () {
   it("should give 0 multiplier for non-existing variable", async function () {
