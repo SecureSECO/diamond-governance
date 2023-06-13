@@ -11,7 +11,7 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days, hours, now } from "../utils/timeUnits";
-import { ether } from "../utils/etherUnits";
+import { ether, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { to18Decimal } from "../utils/decimals18Helper";
@@ -36,7 +36,7 @@ async function main() {
       reserveRatio: 0.2 * 10**6, // 20%
     },
     hatchParameters: {
-      initialPrice: ether.mul(1),
+      initialPrice: wei.mul(1),
       minimumRaise: ether.mul(1),
       maximumRaise: ether.mul(1),
       hatchDeadline: now() + 24 * hours,
