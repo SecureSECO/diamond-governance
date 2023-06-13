@@ -23,7 +23,7 @@ import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { GetTypedContractAt } from "../utils/contractHelper";
 import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
-import { createSignature2 } from "../utils/signatureHelper";
+import { createSignatureRewarding } from "../utils/signatureHelper";
 import { DiamondGovernanceClient } from "../sdk/index";
 import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
 import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
@@ -54,6 +54,7 @@ async function getClient() {
     signer: owner.address,
     miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18,
     hashDevaluationFactor: HASH_DEVALUATION_FACTOR,
+    hashReward: 1,
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: 1,
@@ -196,7 +197,7 @@ describe("SearchSECORewarding", function () {
     ]);
 
     // Create signature for proof
-    const dataHexString = await createSignature2(
+    const dataHexString = await createSignatureRewarding(
       owner.address,
       NUM_HASHES_MINED,
       0,
@@ -250,7 +251,7 @@ describe("SearchSECORewarding", function () {
     const NEW_HASHES_MINED = 50000;
 
     // Create signature for proof
-    const dataHexString2 = await createSignature2(
+    const dataHexString2 = await createSignatureRewarding(
       owner.address,
       NUM_HASHES_MINED + NEW_HASHES_MINED,
       NUM_HASHES_MINED,

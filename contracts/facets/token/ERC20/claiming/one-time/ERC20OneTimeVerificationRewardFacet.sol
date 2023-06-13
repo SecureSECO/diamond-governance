@@ -21,20 +21,16 @@ import {SignVerification} from "../../../../../other/verification/SignVerificati
 import {VerificationFacet} from "../../../../membership/VerificationFacet.sol";
 import {IVerificationRewardPoolFacet} from "../../../../membership/IVerificationRewardPoolFacet.sol";
 
-<<<<<<< HEAD
 /**
  * @title ERC20OneTimeVerificationRewardFacet
  * @author Utrecht University
  * @notice Implementation of IERC20OneTimeVerificationRewardFacet
  */
-contract ERC20OneTimeVerificationRewardFacet is IERC20OneTimeVerificationRewardFacet, IERC20ClaimableFacet, AuthConsumer {
-=======
 contract ERC20OneTimeVerificationRewardFacet is
     IERC20OneTimeVerificationRewardFacet,
     AuthConsumer,
     IFacet
 {
->>>>>>> dev
     /// @notice The permission to update claim reward
     bytes32
         public constant UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION_ID =
