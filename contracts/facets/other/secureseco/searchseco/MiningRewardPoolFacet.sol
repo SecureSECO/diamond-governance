@@ -16,7 +16,6 @@ import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 
 contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
-    // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_MINING_REWARD_POOL_PERMISSION_ID =
         keccak256("UPDATE_MINING_REWARD_POOL_PERMISSION");
 

@@ -45,8 +45,8 @@ async function getClient() {
 describe("SignVerification", () => {
   it("should verify an account", async () => {
     const client = await loadFixture(getClient);
-    const IGithubPullRequestFacet = await client.pure.IVerificationFacet();
-    const verificationContractAddress = await IGithubPullRequestFacet.getVerificationContractAddress();
+    const IVerificationFacet = await client.pure.IVerificationFacet();
+    const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
 
     const [owner] = await ethers.getSigners();
     const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
