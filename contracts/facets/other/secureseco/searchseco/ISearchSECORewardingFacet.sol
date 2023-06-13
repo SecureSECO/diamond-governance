@@ -10,6 +10,13 @@ pragma solidity ^0.8.0;
 /// @author Utrecht University - 2023
 /// @notice The interface of the rewarding (miners) plugin.
 interface ISearchSECORewardingFacet {
+    /// @notice Calculate and return the mining reward payout.
+    /// @param _repFrac The fraction of the mining reward that is paid out in REP (ppm).
+    /// @param _newHashes The number of new hashes that the user has submitted.
+    /// @return repReward18 The mining reward payout in 18 decimals (for both rep and coins).
+    /// @return coinReward18 The mining reward payout in 18 decimals (for both rep and coins).
+    function calculateMiningRewardPayout(uint32 _repFrac, uint _newHashes) external view returns (uint repReward18, uint coinReward18);
+
     /// @notice Rewards the user for submitting new hashes
     /// @param _toReward The address of the user to reward
     /// @param _hashCount The (new) total number of hashes the user has submitted
@@ -19,7 +26,7 @@ interface ISearchSECORewardingFacet {
         address _toReward,
         uint _hashCount,
         uint _nonce,
-        uint _repFrac,
+        uint32 _repFrac,
         bytes calldata _proof
     ) external;
 
