@@ -10,7 +10,7 @@
 import { ethers } from "hardhat";
 
 // Tests
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
 // Utils
@@ -19,12 +19,14 @@ import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { ether } from "../utils/etherUnits";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { now } from "../utils/timeUnits";
+import { days, now } from "../utils/timeUnits";
 import { createSignature } from "../utils/signatureHelper";
 
 // Types
 import { ERC20MonetaryToken, ExecuteAnythingFacet, SignVerification } from "../typechain-types";
 import { DiamondGovernanceClient } from "../sdk";
+import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
+import { Signer } from "@ethersproject/abstract-signer";
 
 // Other
 
@@ -34,6 +36,8 @@ const INITIAL_MINT_AMOUNT = 1e6;
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
+  const deployer = new FixedSupplyDeployer();
+  const monetaryToken = await deployer.beforeDAODeploy();
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   
   const ERC20OneTimeVerificationRewardFacetSettings = {
@@ -42,7 +46,7 @@ async function getClient() {
     coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
   };
   const MonetaryTokenFacetSettings = {
-    monetaryTokenContractAddress: diamondGovernance.ERC20MonetaryToken.address,
+    monetaryTokenContractAddress: monetaryToken,
   };
   // Providers and rewards are not used in this test
   const verificationSettings = {
@@ -92,8 +96,7 @@ const getERC20MonetaryTokenContract = async (
 };
 
 // Approves the diamond to handle the treasury
-// FIXME: any???
-const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryToken: ERC20MonetaryToken, owner: any) => {
+const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryToken: ERC20MonetaryToken, owner: Signer) => {
   // (us) Approve plugin to spend (our) tokens: this is needed for the plugin to transfer tokens from our account
   await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(1e6));
   // (DAO) Approve plugin to spend tokens: this is needed for the plugin to transfer tokens from the DAO
@@ -152,6 +155,7 @@ describe("VerificationRewardPool", async function () {
 
     // Throws if verification fails
     await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
+    await time.increase(1 * days); // To avoid time inconsistencies between blockchain and local machine
 
     const IERC20OneTimeVerificationRewardFacet = await client.pure.IERC20OneTimeVerificationRewardFacet();
 
@@ -173,7 +177,6 @@ describe("VerificationRewardPool", async function () {
     const daoAddress = await IDAOReferenceFacet.dao();
     expect(ERC20MonetaryToken.balanceOf(daoAddress));
 
-    // TODO: check again that no tokens are claimable anymore?
     const toClaim = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll();
     expect(toClaim[0]).to.be.equal(0);
     expect(toClaim[1]).to.be.equal(0);
