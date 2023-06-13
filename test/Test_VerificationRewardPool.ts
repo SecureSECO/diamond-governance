@@ -50,6 +50,16 @@ async function getClient() {
     providers: ["github"],
     rewards: [1],
   }
+  const GovernanceERC20FacetSettings = {
+    _ERC20VotesFacetInitParams: {
+      _ERC20PermitFacetInitParams: {
+        _ERC20FacetInitParams: {
+          name: "Token",
+          symbol: "TOK",
+        },
+      },
+    },
+  };
   const cut: DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.VerificationRewardPoolFacet),
     await DiamondCut.All(diamondGovernance.ERC20OneTimeVerificationRewardFacet, [ERC20OneTimeVerificationRewardFacetSettings]),
@@ -57,6 +67,9 @@ async function getClient() {
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ExecuteAnythingFacet),
     await DiamondCut.All(diamondGovernance.VerificationFacet, [verificationSettings]),
+    await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [
+      GovernanceERC20FacetSettings,
+    ]),
   ];
   return createTestingDao(cut);
 }
@@ -115,6 +128,7 @@ describe.only("VerificationRewardPool", async function () {
     const verificationRewardPool = await IVerificationRewardPoolFacet.getVerificationRewardPool();
     expect(verificationRewardPool).to.equal(ether.mul(1e6));
   });
+
   it("reward verifyers", async function () {
     const client = await loadFixture(getClient);
     const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
@@ -140,7 +154,6 @@ describe.only("VerificationRewardPool", async function () {
     await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
 
     const IERC20OneTimeVerificationRewardFacet = await client.pure.IERC20OneTimeVerificationRewardFacet();
-    console.log(await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll());
 
     await IERC20OneTimeVerificationRewardFacet.claimVerificationRewardAll();
 
@@ -159,5 +172,10 @@ describe.only("VerificationRewardPool", async function () {
     const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
     const daoAddress = await IDAOReferenceFacet.dao();
     expect(ERC20MonetaryToken.balanceOf(daoAddress));
+
+    // TODO: check again that no tokens are claimable anymore?
+    const toClaim = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll();
+    expect(toClaim[0]).to.be.equal(0);
+    expect(toClaim[1]).to.be.equal(0);
   });
 });
