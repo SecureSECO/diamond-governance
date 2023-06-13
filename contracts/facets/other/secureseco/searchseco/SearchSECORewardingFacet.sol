@@ -148,7 +148,7 @@ contract SearchSECORewardingFacet is
         );
 
         return (
-            LibABDKHelper.to18DecimalsQuad(repReward),
+            ABDKMathQuad.toUInt(repReward),
             ABDKMathQuad.toUInt(coinReward)
         );
     }

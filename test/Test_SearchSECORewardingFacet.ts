@@ -44,6 +44,9 @@ const NUM_HASHES_MINED = 100;
 const NUM_HASHES_QUERY = 100;
 const HASH_DEVALUATION_FACTOR = 8;
 
+const HASH_COST = 1;
+const HASH_REWARD = 1;
+
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
@@ -54,10 +57,10 @@ async function getClient() {
     signer: owner.address,
     miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18,
     hashDevaluationFactor: HASH_DEVALUATION_FACTOR,
-    hashReward: 1,
+    hashReward: HASH_REWARD,
   };
   const SearchSECOMonetizationFacetSettings = {
-    hashCost: 1,
+    hashCost: HASH_COST,
     treasuryRatio: TREASURY_RATIO,
   };
   const MonetaryTokenFacetSettings = {
@@ -213,6 +216,7 @@ describe("SearchSECORewarding", function () {
 
     // Get all relevant (updated) balances
     const newBalanceMe = await ERC20MonetaryToken.balanceOf(owner.address);
+    const newBalanceRepMe = await (await client.pure.IERC20()).balanceOf(owner.address);
     const newBalanceTreasury = await ERC20MonetaryToken.balanceOf(daoAddress);
     const newBalanceMiningRewardPool =
       await IMiningRewardPoolFacet.getMiningRewardPool();
@@ -236,10 +240,12 @@ describe("SearchSECORewarding", function () {
       .mul(miningRewardPoolBeforeReward)
       .div(decimals18PowHashes);
     const expectedReward = payout;
+    const expectedRepReward = Math.round(HASH_REWARD * NUM_HASHES_MINED * REP_FRAC / 1_000_000);
 
     expect(newBalanceMe).to.be.equal(
       ether.mul(INITIAL_MINT_AMOUNT).sub(costWei).add(expectedReward)
     );
+    expect(newBalanceRepMe).to.be.approximately(expectedRepReward, 1);
     expect(newBalanceTreasury).to.be.equal(costWei.sub(expectedReward));
     expect(newBalanceMiningRewardPool).to.be.equal(
       miningRewardPoolBeforeReward.sub(expectedReward)
