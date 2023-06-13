@@ -14,15 +14,16 @@ import { IERC165, /* interfaces */ } from "../typechain-types";
 enum DiamondGovernanceInterfaces { IERC165, /* interfaces */ }
 
 class DiamondGovernancePure {
-    public pluginAddress : string;
-    public signer : Signer;
+    public readonly pluginAddress : string;
+    public readonly signer : Signer;
+    public skipInterfaceCheck : boolean;
     private cache: { [id: string] : Contract }
 
     public constructor(_pluginAddress : string, _signer : Signer) {
         this.pluginAddress = _pluginAddress;
         this.signer = _signer;
+        this.skipInterfaceCheck = false;
         this.cache = { };
-        Object.freeze(this);
     }
 
     public async IERC165() : Promise<IERC165> {
@@ -53,7 +54,7 @@ class DiamondGovernancePure {
             return this.cache[_interface] as Type;
         }
         
-        if (_interface !== DiamondGovernanceInterfaces.IERC165) {
+        if (_interface !== DiamondGovernanceInterfaces.IERC165 && !this.skipInterfaceCheck) {
             if (_interfaceId === null || _interfaceId === undefined) {
                 throw new Error("InterfaceId not provided");
             }
