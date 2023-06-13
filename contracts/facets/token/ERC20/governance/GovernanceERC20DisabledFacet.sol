@@ -8,5 +8,11 @@ pragma solidity ^0.8.0;
 
 import { ERC20VotesDisabledFacet } from "../core/disabled/ERC20VotesDisabledFacet.sol";
 
+/**
+ * @title GovernanceERC20DisabledFacet
+ * @author Utrecht University
+ * @notice This facet converts ERC20VotesDisabledFacet to a disable variant of GovernanceERC20.
+ * @dev Currently does not need any changes compared to ERC20VotesDisabledFacet.
+ */
 contract GovernanceERC20DisabledFacet is ERC20VotesDisabledFacet {
 }

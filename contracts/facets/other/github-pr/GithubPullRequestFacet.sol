@@ -10,6 +10,12 @@ import {IGithubPullRequestFacet} from "./IGitHubPullRequestFacet.sol";
 import {AuthConsumer} from "../../../utils/AuthConsumer.sol";
 import {IFacet} from "../../IFacet.sol";
 
+
+/**
+ * @title GithubPullRequestFacet
+ * @author Utrecht University
+ * @notice Implementation of IGithubPullRequestFacet.
+ */
 contract GithubPullRequestFacet is
     IGithubPullRequestFacet,
     AuthConsumer,

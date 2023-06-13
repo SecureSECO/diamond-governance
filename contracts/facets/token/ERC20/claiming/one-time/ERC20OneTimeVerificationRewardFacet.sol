@@ -21,6 +21,11 @@ import {SignVerification} from "../../../../../other/verification/SignVerificati
 import {VerificationFacet} from "../../../../membership/VerificationFacet.sol";
 import {IVerificationRewardPoolFacet} from "../../../../membership/IVerificationRewardPoolFacet.sol";
 
+/**
+ * @title ERC20OneTimeVerificationRewardFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20OneTimeVerificationRewardFacet
+ */
 contract ERC20OneTimeVerificationRewardFacet is
     IERC20OneTimeVerificationRewardFacet,
     AuthConsumer,

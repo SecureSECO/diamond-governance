@@ -16,6 +16,11 @@ import { IPartialVotingProposalFacet } from "../../../../governance/proposal/IPa
 import { LibBurnVotingProposalStorage } from "../../../../../libraries/storage/LibBurnVotingProposalStorage.sol";
 import { IFacet } from "../../../../IFacet.sol";
 
+/**
+ * @title ERC20PartialBurnVotingRefundFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20PartialBurnVotingRefundFacet.
+ */
 contract ERC20PartialBurnVotingRefundFacet is IERC20PartialBurnVotingRefundFacet, IFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

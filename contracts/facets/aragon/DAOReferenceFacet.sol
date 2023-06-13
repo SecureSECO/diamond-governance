@@ -12,6 +12,11 @@ import { IFacet } from "../IFacet.sol";
 
 import { LibDAOReferenceStorage } from "../../libraries/storage/LibDAOReferenceStorage.sol";
 
+/**
+ * @title DAOReferenceFacet
+ * @author Utrecht University
+ * @notice Implementation of IDAOReferenceFacet.
+ */
 contract DAOReferenceFacet is IDAOReferenceFacet, IFacet {
     /// @inheritdoc IDAOReferenceFacet
     function dao() external view returns (IDAO) {

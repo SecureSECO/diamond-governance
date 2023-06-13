@@ -17,6 +17,8 @@ import { getSelectors, FacetCutAction } from "../utils/diamondHelper";
 
 // Other
 
+/// This deployer deploys an example diamond, which can be used to verify the Diamond functions are working correctly.
+
 async function deployDiamond () {
   const [ owner ] = await ethers.getSigners();
 

@@ -9,6 +9,8 @@
 import { IDAO, IPartialVotingFacet, IPartialVotingProposalFacet } from "../../../typechain-types";
 import { BigNumber } from 'ethers';
 
+/// File that defines all the types of the SDK, so these can be exported in the package.
+
 export { IDAO };
 export enum VoteOption { Abstain, Yes, No }
 export enum ProposalStatus { Pending = 1, Active = 2, Succeeded = 4, Executed = 8, Defeated = 16 }

@@ -4,7 +4,6 @@
   * © Copyright Utrecht University (Department of Information and Computing Sciences)
   */
 
-
 pragma solidity ^0.8.0;
 
 /// @title IMonetaryTokenFacet
@@ -14,7 +13,7 @@ interface IMonetaryTokenFacet {
     /// @notice This returns the contract address of the token contract used
     /// @return address The contract address of the token contract
     function getTokenContractAddress() external view returns (address);
-
+    
     /// @notice Sets the contract address of the token contract used
     /// @param _tokenContractAddress The contract address of the token contract
     function setTokenContractAddress(address _tokenContractAddress) external;

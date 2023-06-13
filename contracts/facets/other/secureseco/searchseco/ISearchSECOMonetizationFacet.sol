@@ -6,9 +6,12 @@
 
 pragma solidity ^0.8.0;
 
-/// @title ISearchSECORewardingFacet
-/// @author Utrecht University - 2023
-/// @notice The interface of the rewarding (miners) plugin.
+/**
+ * @title ISearchSECOMonetizationFacet
+ * @author Utrecht University
+ * @notice This interface allows the monetization of SearchSECO.
+ * You can query about query cost and pay for a query in the form of hashes.
+ */
 interface ISearchSECOMonetizationFacet {
     /// @notice This function is used to pay for hashes. The user builds a credit of hashes.
     /// @param _amount Number of hashes the user wants to pay for

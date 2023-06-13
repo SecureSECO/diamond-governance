@@ -11,10 +11,11 @@ import { IDAO } from "@aragon/osx/core/dao/IDAO.sol";
 
 import { IPartialVotingFacet } from "../voting/IPartialVotingFacet.sol";
 
-/// @title IPartialVoting
-/// @author Utrecht University - 2023
-/// @notice The interface of partial voting (voting) plugin.
-/// @dev This contract implements the `IPartialVotingProposalFacet` interface.
+/**
+ * @title IPartialVotingProposalFacet
+ * @author Utrecht University
+ * @notice This facet allows proposals to be created and managed on which can be partially voted.
+ */
 interface IPartialVotingProposalFacet {
     /// @notice A container for the majority voting settings that will be applied as parameters on proposal creation.
     /// @param votingMode If users are allowed to vote partially and if so, if they are allowed to vote multiple times.

@@ -8,6 +8,11 @@ pragma solidity ^0.8.0;
 
 import { IMembershipExtended, IMembership } from "./IMembershipExtended.sol";
 
+/**
+ * @title ITieredMembershipStructure
+ * @author Utrecht University
+ * @notice This interface extends IMembershipExtended, distinguishing members into tiers.
+ */
 abstract contract ITieredMembershipStructure is IMembershipExtended {
     /// @inheritdoc IMembershipExtended
     function isMember(address _account) external view virtual override returns (bool) {

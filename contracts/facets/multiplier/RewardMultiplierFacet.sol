@@ -14,6 +14,11 @@ import {ABDKMathQuad} from "../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 import {LibCalculateGrowth} from "./LibCalculateGrowth.sol";
 
+/**
+ * @title RewardMultiplierFacet
+ * @author Utrecht University
+ * @notice Implementation of IRewardMultiplierFacet.
+ */
 contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     // Permission used by the setMultiplierType* functions
     bytes32 public constant UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID =

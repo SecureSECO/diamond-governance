@@ -11,11 +11,14 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days, hours, now } from "../utils/timeUnits";
-import { ether, wei } from "../utils/etherUnits";
+import { ether, gwei, wei } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { to18Decimal } from "../utils/decimals18Helper";
 import { BigNumber } from "ethers";
+
+/// This scripts deploys the Diamond Governance (what has not been deployed yet) and creates a DAO with it.
+/// Configure the settings of the DAO here.
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -109,13 +112,14 @@ async function main() {
     coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
-    hashCost: 1,
+    hashCost: gwei.mul(1),
     treasuryRatio: 0.2 * 10**6, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
     miningRewardPoolPayoutRatio: to18Decimal(0.01.toString()), // 1%
     hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
+    hashReward: ether.mul(1),
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
@@ -124,7 +128,7 @@ async function main() {
     name: "inflation",
     startBlock: await owner.provider?.getBlockNumber(),
     initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
-    slopeN: 1,
+    slopeN: 0,
     slopeD: 1,
   };
   const ABCConfigureFacetSettings = {

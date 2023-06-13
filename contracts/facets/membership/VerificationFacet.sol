@@ -14,9 +14,11 @@ import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { IVerificationFacet, SignVerification } from "./IVerificationFacet.sol";
 import { IFacet } from "../IFacet.sol";
 
-/// @title Verification facet for the Diamond Governance Plugin
-/// @author J.S.C.L. & T.Y.M.W. @ UU
-/// @notice Additionally to the verification functionality, this includes the whitelisting functionality for the DAO membership
+/**
+ * @title VerificationFacet
+ * @author Utrecht University
+ * @notice Implementation of ITieredMembershipStructure, IMembershipWhitelisting and IVerificationFacet.
+ */
 contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelisting, IVerificationFacet, AuthConsumer, IFacet {
     // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION_ID = keccak256("UPDATE_TIER_MAPPING_PERMISSION");

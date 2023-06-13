@@ -9,6 +9,11 @@ pragma solidity ^0.8.0;
 import { IPlugin } from "@aragon/osx/core/plugin/IPlugin.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title PluginFacet
+ * @author Utrecht University
+ * @notice Implementation of IPlugin, which is mandatory for Aragon plugins.
+ */
 contract PluginFacet is IPlugin, IFacet {
     /// @inheritdoc IPlugin
     function pluginType() external pure override returns (PluginType) {

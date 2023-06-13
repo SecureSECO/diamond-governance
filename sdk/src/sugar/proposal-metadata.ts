@@ -9,6 +9,8 @@
 import { ProposalMetadata } from "./data";
 import { addToIpfs, getFromIpfs } from "../../../utils/ipfsHelper";
 
+/// File that handles encoding and decoding of proposal metadata.
+
 export async function EncodeMetadata(metadata : ProposalMetadata) : Promise<Uint8Array> {
     const cid = await addToIpfs(JSON.stringify(metadata));
     return new TextEncoder().encode("ipfs://" + cid);

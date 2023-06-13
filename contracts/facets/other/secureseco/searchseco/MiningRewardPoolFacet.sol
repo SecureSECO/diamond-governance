@@ -15,6 +15,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 
+/**
+ * @title MiningRewardPoolFacet
+ * @author Utrecht University
+ * @notice Implementation of IMiningRewardPoolFacet.
+ */
 contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
     bytes32 public constant UPDATE_MINING_REWARD_POOL_PERMISSION_ID =
         keccak256("UPDATE_MINING_REWARD_POOL_PERMISSION");

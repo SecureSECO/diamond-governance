@@ -9,6 +9,11 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { PluginStandalone } from "../standalone/PluginStandalone.sol";
 import { IBondedToken } from "../interfaces/IBondedToken.sol";
 
+/**
+ * @title DAOReferenceFacet
+ * @author Utrecht University
+ * @notice Implementation of IBondedToken.
+ */
 contract ERC20BondedToken is ERC20, PluginStandalone, IBondedToken {
     /// @notice The permission identifier to mint new tokens
     bytes32 public constant MINT_PERMISSION_ID = keccak256("MINT_PERMISSION");

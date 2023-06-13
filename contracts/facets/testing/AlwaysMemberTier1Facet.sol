@@ -10,6 +10,11 @@ import { ITieredMembershipStructure, IMembershipExtended, IMembership } from "..
 import { IMembershipWhitelisting } from "../../facets/governance/structure/membership/IMembershipWhitelisting.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title AlwaysMemberTier1Facet
+ * @author Utrecht University
+ * @notice This facet will return tier 1 for any query about user tier.
+ */
 library AlwaysMemberTier1FacetStorage {
     bytes32 constant STORAGE_POSITION =
         keccak256("AlwaysMemberTier1Facet");

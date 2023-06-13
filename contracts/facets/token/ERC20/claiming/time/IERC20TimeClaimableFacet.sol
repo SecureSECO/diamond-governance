@@ -9,6 +9,12 @@
  
 pragma solidity ^0.8.0;
 
+/**
+ * @title IDAOReferenceFacet
+ * @author Utrecht University
+ * @notice This interface allows people to claim tokens that stack up time wise.
+ * There is also a maximum period after which no more tokens will stack up if not claimed.
+ */
 interface IERC20TimeClaimableFacet {
     function tokensClaimableTime() external view returns (uint256 amount);
 

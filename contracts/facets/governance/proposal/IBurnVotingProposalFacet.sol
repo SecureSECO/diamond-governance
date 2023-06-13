@@ -8,6 +8,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IBurnVotingProposalFacet
+ * @author Utrecht University
+ * @notice This facet allows proposal creation to cost tokens.
+ */
 interface IBurnVotingProposalFacet {
     function getProposalCreationCost() external view returns (uint256);
 

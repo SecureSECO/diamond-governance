@@ -8,6 +8,8 @@
 
 import { ethers, network } from "hardhat"; 
 
+/// This script extracts the information from InterfaceIds.sol and converts it to a javascript object.
+
 export async function generateInterfaceIds() {
   if (network.name != "hardhat"){
     throw new Error("Deploying InterfaceIds on real blockchain!");

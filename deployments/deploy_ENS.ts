@@ -17,7 +17,8 @@ import { ENSRegistry } from "../typechain-types";
 
 // Other
 
-// Insipration:  https://docs.ens.domains/deploying-ens-on-a-private-chain
+/// This deployer deploys ENS, so it can be deployed to any network (including hardhats network for testing).
+/// Insipration:  https://docs.ens.domains/deploying-ens-on-a-private-chain
 
 /**
  * Deployes the ENSRegistry

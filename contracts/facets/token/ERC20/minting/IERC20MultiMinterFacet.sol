@@ -6,6 +6,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IERC20MultiMinterFacet
+ * @author Utrecht University
+ * @notice This interface allows a single proposal action to perform multiple mint actions, saving gas fees.
+ */
 interface IERC20MultiMinterFacet {
     function multimint(address[] calldata _addresses, uint256[] calldata _amounts) external;
 }

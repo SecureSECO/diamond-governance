@@ -8,6 +8,12 @@ pragma solidity ^0.8.0;
 
 import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 
+/**
+ * @title IRewardMultiplierFacet
+ * @author Utrecht University
+ * @notice This interface defines the tracking of variables with a certain grow.
+ * It also has helper functions to apply the variable to a certain value.
+ */
 abstract contract IRewardMultiplierFacet {
     enum MultiplierType {
         NONE,

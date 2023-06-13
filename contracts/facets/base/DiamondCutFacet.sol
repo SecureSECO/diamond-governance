@@ -6,19 +6,16 @@
 
 pragma solidity ^0.8.0;
 
-/******************************************************************************\
-* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
-* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
-/******************************************************************************/
-
 import { IDiamondCut } from "../../additional-contracts/IDiamondCut.sol";
 import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { IFacet } from "../IFacet.sol";
 
-// Remember to add the loupe functions from DiamondLoupeFacet to the diamond.
-// The loupe functions are required by the EIP2535 Diamonds standard
-
+/**
+ * @title DiamondCutFacet
+ * @author Utrecht University
+ * @notice This facet allows the Diamond to be cut after deploymend, it is based on https://github.com/mudgen/diamond-2-hardhat/blob/main/contracts/facets/DiamondCutFacet.sol 
+ */
 contract DiamondCutFacet is IDiamondCut, AuthConsumer, IFacet {
     // Permission to cut the diamond
     bytes32 public constant DIAMOND_CUT_PERMISSION_ID = keccak256("DIAMOND_CUT_PERMISSION");

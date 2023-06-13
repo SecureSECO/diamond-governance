@@ -12,6 +12,11 @@ pragma solidity ^0.8.0;
 import { IAuthProvider } from "../../utils/auth-providers/IAuthProvider.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title AlwaysAcceptAuthFacet
+ * @author Utrecht University
+ * @notice This facet accepts all auth requests.
+ */
 contract AlwaysAcceptAuthFacet is IAuthProvider, IFacet {
     /// @inheritdoc IAuthProvider
     function auth(bytes32 _permissionId, address _account) external view virtual override {

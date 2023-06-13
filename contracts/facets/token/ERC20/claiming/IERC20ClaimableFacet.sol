@@ -9,6 +9,13 @@ pragma solidity ^0.8.0;
 import { IMintableGovernanceStructure } from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 import { IFacet } from "../../../IFacet.sol";
 
+/**
+ * @title IERC20ClaimableFacet
+ * @author Utrecht University
+ * @notice This interface is a base for claimable facets, where there is a certain amount of tokens claimable and an action to change that amount somehow after claim.
+ * @dev This will not work with all claimable facets, but is nice base to not duplicate the claim code everywhere
+ * There are also no exposed functions, as this would give function collision when adding all claimable facets to a single diamond.
+ */
 abstract contract IERC20ClaimableFacet is IFacet {
     function _tokensClaimable(address _claimer) internal view virtual returns (uint256 amount);
 

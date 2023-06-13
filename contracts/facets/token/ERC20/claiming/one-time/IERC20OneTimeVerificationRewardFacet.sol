@@ -9,6 +9,11 @@
  
 pragma solidity ^0.8.0;
 
+/**
+ * @title IERC20OneTimeRewardFacet
+ * @author Utrecht University
+ * @notice This interface allows you to claim an one time reward for every verification stamp an address has recieved.
+ */
 interface IERC20OneTimeVerificationRewardFacet {
     struct OneTimeVerificationReward {
         uint256 repReward;

@@ -20,6 +20,9 @@ import { createDiamondGovernanceRepo } from "../utils/diamondGovernanceHelper";
 import deployedDiamondGovernanceJson from "../generated/deployed_DiamondGovernance.json";
 import diamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
 
+/// This deployer deploys (and verifies) the Diamond Governance contracts and facets, it will only deploy the not already deployed contracts on the network.
+/// In case contracts get changed (in deployment bytes), they will get redeployed.
+
 const deployJsonFile = "./generated/deployed_DiamondGovernance.json";
 const repoJsonFile = "./generated/diamondGovernanceRepo.json";
 

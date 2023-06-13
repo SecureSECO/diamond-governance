@@ -8,6 +8,12 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from  "../libraries/LibDiamond.sol";
 
+/**
+ * @title IFacet
+ * @author Utrecht University
+ * @notice This interface is the base of all facets.
+ * @dev Alwasys inherit this interface of all facets you create and use it to (un)register interfaces.
+ */
 abstract contract IFacet {
     // Should be called by inheritors too, thats why public
     function init(bytes memory _initParams) public virtual {}

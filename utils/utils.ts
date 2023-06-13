@@ -16,6 +16,8 @@ import { id } from "@ethersproject/hash";
 
 // Other
 
+/// Various utility functions that where generic and not big enough to deserve their own utils class.
+
 export function toBytes(str : string) : string {
     return ethers.utils.hexlify(ethers.utils.toUtf8Bytes(str));
 }

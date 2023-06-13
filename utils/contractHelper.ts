@@ -11,6 +11,9 @@ import { Signer } from "@ethersproject/abstract-signer";
 import abisJson from "../generated/abis.json";
 import functionSelectors from "../generated/functionSelectors.json";
 
+/// Our custom solution to get a typed contract from the contract name and address.
+/// This also names to contract so they can be used with our diamond governance helper.
+
 export class NamedContract extends Contract {
   public contractName: string;
 

@@ -17,6 +17,8 @@ import deployed_AragonOSxFrameworkJson from "../deployments/deployed-contracts/d
 import deployed_DiamondGovernanceJson from "../generated/deployed_DiamondGovernance.json";
 import DiamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
 
+/// Helper for retrieving deployed contracts on the network.
+
 let deployedENS: ENSFrameworkContracts | undefined;
 let deployedAragon: AragonOSxFrameworkContracts | undefined;
 let deployedDiamondGovernance: any | undefined;

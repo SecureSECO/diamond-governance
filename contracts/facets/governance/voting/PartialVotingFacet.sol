@@ -15,10 +15,11 @@ import { IFacet } from "../../IFacet.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
 
-/// @title PartialVotingFacet
-/// @author Utrecht University - 2023
-/// @notice The partial implementation of partial voting plugins.
-/// @dev This contract implements the `IPartialVotingFacet` interface.
+/**
+ * @title PartialVotingFacet
+ * @author Utrecht University
+ * @notice Implementation of IPartialVotingFacet.
+ */
 contract PartialVotingFacet is IPartialVotingFacet, AuthConsumer, IFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

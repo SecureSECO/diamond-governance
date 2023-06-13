@@ -24,7 +24,7 @@ import { createSignature } from "../utils/signatureHelper";
 
 // Types
 import { ERC20MonetaryToken, ExecuteAnythingFacet, SignVerification } from "../typechain-types";
-import { DiamondGovernanceClient } from "../sdk";
+import { DiamondGovernanceClient } from "../sdk/index";
 import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
 import { Signer } from "@ethersproject/abstract-signer";
 

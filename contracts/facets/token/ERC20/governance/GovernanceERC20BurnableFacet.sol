@@ -10,6 +10,11 @@ import { GovernanceERC20Facet } from "./GovernanceERC20Facet.sol";
 import { IBurnableGovernanceStructure } from "../../../governance/structure/voting-power/IBurnableGovernanceStructure.sol";
 import { IFacet } from "../../../../facets/IFacet.sol";
 
+/**
+ * @title GovernanceERC20BurnableFacet
+ * @author Utrecht University
+ * @notice Implementation of IBurnableGovernanceStructure.
+ */
 contract GovernanceERC20BurnableFacet is GovernanceERC20Facet, IBurnableGovernanceStructure {
     /// @notice The permission identifier to burn tokens (from any wallet)
     bytes32 public constant BURN_PERMISSION_ID = keccak256("BURN_PERMISSION");
