@@ -10,7 +10,7 @@ import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
 import {ISearchSECOMonetizationFacet} from "./ISearchSECOMonetizationFacet.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
+import {IMonetaryTokenFacet} from "../../../token/ERC20/monetary-token/IMonetaryTokenFacet.sol";
 import {IFacet} from "../../../IFacet.sol";
 import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
@@ -59,7 +59,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
         IMiningRewardPoolFacet miningRewardFacet = IMiningRewardPoolFacet(address(this));
-        IChangeableTokenContract monetaryTokenFacet = IChangeableTokenContract(address(this));
+        IMonetaryTokenFacet monetaryTokenFacet = IMonetaryTokenFacet(address(this));
         IERC20 tokenContract = IERC20(monetaryTokenFacet.getTokenContractAddress());
 
 

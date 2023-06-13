@@ -52,7 +52,7 @@ import { IERC20PartialBurnVotingProposalRefundFacet } from "../facets/token/ERC2
 import { IERC20TimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TimeClaimableFacet.sol";
 import { IERC20TieredTimeClaimableFacet } from "../facets/token/ERC20/claiming/time/IERC20TieredTimeClaimableFacet.sol";
 
-import { IChangeableTokenContract } from "../facets/token/ERC20/monetary-token/IChangeableTokenContract.sol";
+import { IMonetaryTokenFacet } from "../facets/token/ERC20/monetary-token/IMonetaryTokenFacet.sol";
 
 import { IRewardMultiplierFacet } from "../facets/multiplier/IRewardMultiplierFacet.sol";
 
@@ -107,7 +107,7 @@ library InterfaceIds {
     bytes4 constant public IERC20TimeClaimableFacet_ID = type(IERC20TimeClaimableFacet).interfaceId;
     bytes4 constant public IERC20TieredTimeClaimableFacet_ID = type(IERC20TieredTimeClaimableFacet).interfaceId;
 
-    bytes4 constant public IChangeableTokenContract_ID = type(IChangeableTokenContract).interfaceId;
+    bytes4 constant public IMonetaryTokenFacet_ID = type(IMonetaryTokenFacet).interfaceId;
 
     bytes4 constant public IRewardMultiplierFacet_ID = type(IRewardMultiplierFacet).interfaceId;
 
