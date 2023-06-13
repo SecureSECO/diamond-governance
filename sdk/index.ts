@@ -4,6 +4,8 @@ import { DiamondGovernancePure } from "../generated/client";
 import { DiamondGovernanceSugar } from "./src/sugar";
 import { VerificationSugar } from "./src/verification";
 
+/// The class exposed by the package import, through which all interactions are performed.
+
 export class DiamondGovernanceClient {
     public pure: DiamondGovernancePure;
     public sugar: DiamondGovernanceSugar;

@@ -22,6 +22,7 @@ import { HatchParametersStruct } from "../typechain-types/contracts/facets/token
 
 // Other
 
+/// This deployer uses a strategy pattern to deploy a monetary token, so it can easily be changed.
 
 export enum MonetaryTokenType { FixedSupply, ABC }
 

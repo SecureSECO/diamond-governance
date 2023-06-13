@@ -8,6 +8,11 @@ pragma solidity ^0.8.0;
 
 import {ABDKMathQuad} from "../../libraries/abdk-math/ABDKMathQuad.sol";
 
+/**
+ * @title LibCalculateGrowth
+ * @author Utrecht University
+ * @notice Library for growth calculation.
+ */
 library LibCalculateGrowth {
     /// @notice Calculate linear growth
     /// @param _initialAmount b

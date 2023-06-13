@@ -6,9 +6,11 @@
 
 pragma solidity ^0.8.0;
 
-/// @title ISearchSECORewardingFacet
-/// @author Utrecht University - 2023
-/// @notice The interface of the rewarding (miners) plugin.
+/**
+ * @title ISearchSECORewardingFacet
+ * @author Utrecht University
+ * @notice This interface allows to reward SearchSECO miners for the hashes they mined.
+ */
 interface ISearchSECORewardingFacet {
     /// @notice Rewards the user for submitting new hashes
     /// @param _toReward The address of the user to reward

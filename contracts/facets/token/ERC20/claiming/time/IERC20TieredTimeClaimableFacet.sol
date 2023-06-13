@@ -9,6 +9,11 @@
  
 pragma solidity ^0.8.0;
 
+/**
+ * @title IDAOReferenceFacet
+ * @author Utrecht University
+ * @notice This interface allows different time claim reward per member tier.
+ */
 interface IERC20TieredTimeClaimableFacet {
     function getClaimReward(uint256 _tier) external view returns (uint256);
 

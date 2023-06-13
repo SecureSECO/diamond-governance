@@ -5,19 +5,17 @@
   */
 
 pragma solidity ^0.8.0;
-/******************************************************************************\
-* Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
-* EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
-/******************************************************************************/
 
 import { LibDiamond } from  "../../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../../additional-contracts/IDiamondLoupe.sol";
 import { IERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { IFacet } from "../IFacet.sol";
 
-// The functions in DiamondLoupeFacet MUST be added to a diamond.
-// The EIP-2535 Diamond standard requires these functions
-
+/**
+ * @title DiamondLoupeFacet
+ * @author Utrecht University
+ * @notice This facet allows the Diamond to be inspected, it is based on https://github.com/mudgen/diamond-2-hardhat/blob/main/contracts/facets/DiamondLoupeFacet.sol
+ */
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165, IFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

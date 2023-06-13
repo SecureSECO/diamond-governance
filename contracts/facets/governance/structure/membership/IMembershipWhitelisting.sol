@@ -7,9 +7,11 @@
 
 pragma solidity ^0.8.0;
 
-/// @title IMembershipWhitelisting
-/// @author Utrecht University - 2023
-/// @notice For the whitelisting functionality of the verification plugin.
+/**
+ * @title IMembershipWhitelisting
+ * @author Utrecht University
+ * @notice This interface allows a wallet to be whitelisted, bypassing the usual verification requirements.
+ */
 interface IMembershipWhitelisting {
     /// @notice Whitelist an address.
     /// @param _address The address to whitelist.

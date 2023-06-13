@@ -10,6 +10,13 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { IERC173 } from "../../additional-contracts/IERC173.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title OwnershipFacet
+ * @author Utrecht University
+ * @notice This facet allows the Diamond to be owned by an address, it is based on https://github.com/mudgen/diamond-2-hardhat/blob/main/contracts/facets/OwnershipFacet.sol
+ * This facet is not recommended to be used, as its functionality is more limited than our own auth framework.
+ * It does not provide any functionality itself, but can be used by other facets for authing functions.
+ */
 contract OwnershipFacet is IERC173, IFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

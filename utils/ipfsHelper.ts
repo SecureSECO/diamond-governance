@@ -9,6 +9,8 @@
 import axios from "axios";
 import FormData from "form-data";
 
+/// Helper to interact with IPFS.
+
 let ipfsAdd : ((json : string) => Promise<string>) | undefined = undefined;
 let ipfsGet : ((hash : string) => Promise<any>) | undefined = undefined;
 

@@ -9,6 +9,8 @@
 import fs from "fs";
 import path from "path";
 
+/// Script to generate a facet template with storage and interface, everything correctly named according to our naming scheme.
+
 const templateFacetFile = "./example-facet/barebones/TemplateFacet.sol.example";
 const templateInterfaceFile =
   "./example-facet/barebones/ITemplateFacet.sol.example";

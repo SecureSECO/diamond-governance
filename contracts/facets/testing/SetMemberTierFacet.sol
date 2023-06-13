@@ -10,6 +10,11 @@ import { ITieredMembershipStructure, IMembershipExtended, IMembership } from "..
 import { IMembershipWhitelisting } from "../../facets/governance/structure/membership/IMembershipWhitelisting.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title SetMemberTierFacet
+ * @author Utrecht University
+ * @notice This facet allows you to set a tier for each address.
+ */
 library SetMemberTierFacetStorage {
     bytes32 constant STORAGE_POSITION =
         keccak256("SetMemberTierFacet");

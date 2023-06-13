@@ -19,9 +19,11 @@ import {LibABDKHelper} from "../../../../libraries/abdk-math/LibABDKHelper.sol";
 import {IMintableGovernanceStructure} from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
 import {IRewardMultiplierFacet} from "../../../multiplier/IRewardMultiplierFacet.sol";
 
-/// @title A contract reward SearchSECO Spider users for submitting new hashes
-/// @author J.S.C.L & T.Y.M.W.
-/// @notice This contract is used to reward users for submitting new hashes
+/**
+ * @title SearchSECORewardingFacet
+ * @author Utrecht University
+ * @notice Implementation of ISearchSECORewardingFacet.
+ */
 contract SearchSECORewardingFacet is
     AuthConsumer,
     GenericSignatureHelper,
@@ -40,6 +42,7 @@ contract SearchSECORewardingFacet is
         address signer;
         uint miningRewardPoolPayoutRatio;
         uint hashDevaluationFactor;
+        uint hashReward;
     }
 
     /// @inheritdoc IFacet
@@ -58,7 +61,7 @@ contract SearchSECORewardingFacet is
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
         s.signer = _params.signer;
-        s.hashReward = 1;
+        s.hashReward = _params.hashReward;
         _setMiningRewardPoolPayoutRatio(_params.miningRewardPoolPayoutRatio);
         _setHashDevaluationFactor(_params.hashDevaluationFactor);
 

@@ -17,9 +17,11 @@ import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 import "../../../../utils/Ratio.sol";
 
-/// @title SearchSECO monetization facet for the Diamond Governance Plugin
-/// @author J.S.C.L. & T.Y.M.W. @ UU
-/// @notice This integrates the SearchSECO project into the DAO by monetizing queries and rewarding spiders
+/**
+ * @title SearchSECOMonetizationFacet
+ * @author Utrecht University
+ * @notice Implementation of ISearchSECOMonetizationFacet.
+ */
 contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFacet, IFacet {
     event PaymentProcessed(address sender, uint amount, string uniqueId);
 

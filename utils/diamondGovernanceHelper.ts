@@ -19,6 +19,8 @@ import { addToIpfs } from "../utils/ipfsHelper";
 import buildMetadataJson from "../contracts/build-metadata.json";
 import releaseMetadataJson from "../contracts/release-metadata.json";
 
+/// Helper for Diamond Governance operations, such as cutting and creating DAOs with the plugin.
+
 export enum DiamondCutAction { Add, Replace, Remove, AddWithInit, RemoveWithDeinit }
 
 export class DiamondCut {

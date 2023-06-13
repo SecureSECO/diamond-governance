@@ -13,6 +13,11 @@ import {LibMonetaryTokenStorage} from "../../../../libraries/storage/LibMonetary
 import {IChangeableTokenContract} from "./IChangeableTokenContract.sol";
 import {IFacet} from "../../../IFacet.sol";
 
+/**
+ * @title MonetaryTokenFacet
+ * @author Utrecht University
+ * @notice Implementation of IChangeableTokenContract.
+ */
 contract MonetaryTokenFacet is IChangeableTokenContract, AuthConsumer, IFacet {
     // Permission used by the setERC20ContractAddress function
     bytes32 public constant SET_MONETARY_TOKEN_CONTRACT_PERMISSION_ID =

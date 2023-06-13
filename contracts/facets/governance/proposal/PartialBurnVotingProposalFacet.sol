@@ -15,6 +15,11 @@ import { LibBurnVotingProposalStorage } from "../../../libraries/storage/LibBurn
 import { LibDiamond } from "../../../libraries/LibDiamond.sol";
 import { IFacet } from "../../IFacet.sol";
 
+/**
+ * @title PartialBurnVotingProposalFacet
+ * @author Utrecht University
+ * @notice Implementation of IBurnVotingProposalFacet.
+ */
 contract PartialBurnVotingProposalFacet is PartialVotingProposalFacet, IBurnVotingProposalFacet {
     struct PartialBurnVotingProposalFacetInitParams {
         uint256 proposalCreationCost;

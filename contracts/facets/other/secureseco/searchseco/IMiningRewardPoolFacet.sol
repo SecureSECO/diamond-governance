@@ -6,9 +6,11 @@
 
 pragma solidity ^0.8.0;
 
-/// @title IMiningRewardPoolFacet
-/// @author Utrecht University - 2023
-/// @notice The interface fo the mining reward pool.
+/**
+ * @title IMiningRewardPoolFacet
+ * @author Utrecht University
+ * @notice This interface allows changes and queries about the current mining reward pool partition of the treasury funds.
+ */
 interface IMiningRewardPoolFacet {
     function getMiningRewardPool() external view returns (uint256);
 

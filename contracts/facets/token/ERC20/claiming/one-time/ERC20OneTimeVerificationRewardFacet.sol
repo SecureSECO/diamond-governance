@@ -20,6 +20,11 @@ import { LibERC20OneTimeVerificationRewardStorage } from "../../../../../librari
 import { SignVerification } from "../../../../../other/verification/SignVerification.sol";
 import { VerificationFacet } from "../../../../membership/VerificationFacet.sol";
 
+/**
+ * @title ERC20OneTimeVerificationRewardFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20OneTimeVerificationRewardFacet
+ */
 contract ERC20OneTimeVerificationRewardFacet is IERC20OneTimeVerificationRewardFacet, IERC20ClaimableFacet, AuthConsumer {
     /// @notice The permission to update claim reward
     bytes32 public constant UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION_ID = keccak256("UPDATE_ONE_TIME_VERIFICATION_REWARD_SETTINGS_PERMISSION");

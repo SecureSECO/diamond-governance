@@ -20,6 +20,11 @@ import { IRewardMultiplierFacet } from "../../../../multiplier/IRewardMultiplier
 import { LibERC20TimeClaimableStorage } from "../../../../../libraries/storage/LibERC20TimeClaimableStorage.sol";
 import { IFacet } from "../../../../../facets/IFacet.sol";
 
+/**
+ * @title ERC20TimeClaimableFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20TimeClaimableFacet.
+ */
 contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFacet, AuthConsumer {
     /// @notice The permission to update claim reward and period
     bytes32 public constant UPDATE_CLAIM_SETTINGS_PERMISSION_ID = keccak256("UPDATE_CLAIM_SETTINGS_PERMISSION");

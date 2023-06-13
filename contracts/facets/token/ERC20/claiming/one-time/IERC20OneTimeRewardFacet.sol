@@ -9,6 +9,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IERC20OneTimeRewardFacet
+ * @author Utrecht University
+ * @notice This interface allows for a one time reward that any wallet can claim.
+ */
 interface IERC20OneTimeRewardFacet {
     function tokensClaimableOneTime() external view returns (uint256 amount);
 

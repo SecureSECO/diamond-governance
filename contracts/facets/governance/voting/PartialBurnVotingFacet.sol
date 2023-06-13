@@ -13,6 +13,11 @@ import "../shared/IPartialBurnVotingShared.sol";
 import { LibDiamond } from "../../../libraries/LibDiamond.sol";
 import { LibBurnVotingProposalStorage } from "../../../libraries/storage/LibBurnVotingProposalStorage.sol";
 
+/**
+ * @title PartialBurnVotingFacet
+ * @author Utrecht University
+ * @notice PartialVoting which also burns the voting power used.
+ */
 contract PartialBurnVotingFacet is PartialVotingFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

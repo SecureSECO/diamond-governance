@@ -14,6 +14,8 @@ import { ethers } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import { IDAOReferenceFacet, IERC165 } from "../../../typechain-types";
 
+/// File that handles encoding and decoding of actions.
+
 // Source: https://github.com/aragon/sdk/blob/60edc9e36ba58909391085153f6a5c2a2f4c5e9c/modules/common/src/encoding.ts#L24
 export function bytesToHex(buff: Uint8Array, skip0x?: boolean): string {
   const bytes: string[] = [];

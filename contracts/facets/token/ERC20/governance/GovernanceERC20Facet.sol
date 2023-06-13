@@ -11,6 +11,11 @@ import { IMintableGovernanceStructure, IGovernanceStructure } from "../../../gov
 import { AuthConsumer } from "../../../../utils/AuthConsumer.sol";
 import { IFacet } from "../../../../facets/IFacet.sol";
 
+/**
+ * @title GovernanceERC20Facet
+ * @author Utrecht University
+ * @notice This facets converts ERC20VotesFacet to an IMintableGovernanceStructure.
+ */
 contract GovernanceERC20Facet is ERC20VotesFacet, AuthConsumer, IMintableGovernanceStructure {
     /// @notice The permission identifier to mint new tokens
     bytes32 public constant MINT_PERMISSION_ID = keccak256("MINT_PERMISSION");

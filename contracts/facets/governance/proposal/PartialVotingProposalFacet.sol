@@ -19,10 +19,11 @@ import { IFacet } from "../../IFacet.sol";
 
 import { LibPartialVotingProposalStorage } from "../../../libraries/storage/LibPartialVotingProposalStorage.sol";
 
-/// @title PartialVotingProposalFacet
-/// @author Utrecht University - 2023
-/// @notice The partial implementation of partial voting proposal plugins.
-/// @dev This contract implements the `IPartialVotingProposalFacet` interface.
+/**
+ * @title PartialVotingProposalFacet
+ * @author Utrecht University
+ * @notice Implementation of IPartialVotingProposalFacet.
+ */
 contract PartialVotingProposalFacet is IPartialVotingProposalFacet, IProposalFacet, AuthConsumer
 {
     using SafeCast for uint256;

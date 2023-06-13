@@ -14,6 +14,9 @@ import { setDeployedENS, setDeployedAragon, setDeployedDiamondGovernance, setDia
 import { DiamondGovernanceClient } from "../../sdk/index";
 import { customIpfsAdd, customIpfsGet } from "../../utils/ipfsHelper";
 
+/// Prepares the hardhat network with ENS, AragonOSx and Diamond Governance deployment.
+/// Also contains an IPFS mock (so sugar methods from the SDK used during testing will not interact with the real IPFS network).
+
 const ipfs : any[] = [];
 
 export async function deployTestNetwork() {

@@ -1,0 +1,1 @@
+These ERC20 classes will revert when any of their methods is called. They act as a way to choose what functionality of ERC20 you would like to disable, while still implementing the interface. This can be used for example to create non-transferable or non-delegatable tokens.

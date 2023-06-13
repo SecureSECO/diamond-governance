@@ -12,6 +12,11 @@ pragma solidity ^0.8.0;
 import { AuthConsumer } from "../../utils/AuthConsumer.sol";
 import { IFacet } from "../IFacet.sol";
 
+/**
+ * @title AuthConsumerTestFacet
+ * @author Utrecht University
+ * @notice This facet is for testing auth providers.
+ */
 library AuthConsumerTestFacetStorage {
     bytes32 constant STORAGE_POSITION =
         keccak256("AuthConsumerTestFacet");

@@ -12,6 +12,11 @@ import { DAO } from "@aragon/osx/core/dao/DAO.sol";
 
 import { DiamondGovernanceAragon, IDiamondCut } from "./DiamondGovernanceAragon.sol";
 
+/**
+ * @title DiamondGovernanceSetup
+ * @author Utrecht University
+ * @notice This contract prepares a DAO for DiamondGovernance plugin installation.
+ */
 contract DiamondGovernanceSetup is PluginSetup {
   function prepareInstallation(
     address _dao,

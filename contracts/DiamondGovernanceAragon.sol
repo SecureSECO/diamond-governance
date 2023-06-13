@@ -12,6 +12,12 @@ import { IDAO } from "./facets/aragon/DAOReferenceFacet.sol";
 
 import { LibDAOReferenceStorage } from "./libraries/storage/LibDAOReferenceStorage.sol";
 
+/**
+ * @title DiamondGovernanceAragon
+ * @author Utrecht University
+ * @notice Version of DiamondGovernance for Aragon, setting the DAO reference to the recieved dao.
+ * @dev This is done this way, as the dao address is not know yet when creating the diamond cut.
+ */
 contract DiamondGovernanceAragon is DiamondGovernance {
     constructor(IDAO _dao, IDiamondCut.FacetCut[] memory _diamondCut) payable DiamondGovernance(_diamondCut) {    
       LibDAOReferenceStorage.getStorage().dao = _dao;

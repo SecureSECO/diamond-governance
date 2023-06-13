@@ -11,6 +11,11 @@ import { IERC20MultiMinterFacet } from "./IERC20MultiMinterFacet.sol";
 import { AuthConsumer } from "../../../../utils/AuthConsumer.sol";
 import { IFacet } from "../../../IFacet.sol";
 
+/**
+ * @title ERC20MultiMinterFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20MultiMinterFacet.
+ */
 contract ERC20MultiMinterFacet is IERC20MultiMinterFacet, AuthConsumer, IFacet {
     // Permission to multimint
     bytes32 public constant MULTIMINT_PERMISSION_ID = keccak256("MULTIMINT_PERMISSION");
