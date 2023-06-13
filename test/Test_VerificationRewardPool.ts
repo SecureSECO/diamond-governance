@@ -115,7 +115,7 @@ const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryT
   ]);
 }
 
-describe.only("VerificationRewardPool", async function () {
+describe("VerificationRewardPool", async function () {
   it("increase reward pool", async function () {
     const client = await loadFixture(getClient);
     const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
