@@ -9,6 +9,8 @@ pragma solidity >=0.8.17;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { PluginStandalone } from "../standalone/PluginStandalone.sol";
+import { ABDKMathQuad } from "../../../../../../libraries/abdk-math/ABDKMathQuad.sol";
+import { LibABDKHelper } from "../../../../../../libraries/abdk-math/LibABDKHelper.sol";
 
 import { MarketMaker } from "./MarketMaker.sol";
 import { Vesting } from "./Vesting.sol";
@@ -56,9 +58,11 @@ contract SimpleHatch is PluginStandalone, Modifiers {
     }
 
     function claimVesting() external validateClaimVesting(_state, _contributions[msg.sender]) {
-        Vesting vesting = new Vesting(dao(), msg.sender, _state.params.bondedToken, _schedule, _contributions[msg.sender] * _state.params.initialPrice);
+        uint256 reward = getReward(_contributions[msg.sender]);
 
-        _state.params.bondedToken.transfer(address(vesting), _contributions[msg.sender] * _state.params.initialPrice);
+        Vesting vesting = new Vesting(dao(), msg.sender, _state.params.bondedToken, _schedule, reward);
+
+        _state.params.bondedToken.transfer(address(vesting), reward);
         
         _contributions[msg.sender] = 0;
 
@@ -75,7 +79,7 @@ contract SimpleHatch is PluginStandalone, Modifiers {
             _schedule.start = block.timestamp;
         }
         _state.params.externalToken.transfer(address(_state.params.pool), _state.raised);
-        _state.params.pool.hatch(_state.raised * _state.params.initialPrice, address(this));
+        _state.params.pool.hatch(getReward(_state.raised), address(this));
         _state.status = HatchStatus.HATCHED;
     }
 
@@ -85,5 +89,9 @@ contract SimpleHatch is PluginStandalone, Modifiers {
 
     function getState() external view returns (HatchState memory) {
         return _state;
+    }
+
+    function getReward(uint256 _contribution) internal virtual returns (uint256) {
+        return ABDKMathQuad.toUInt(ABDKMathQuad.mul(ABDKMathQuad.fromUInt(_contribution), LibABDKHelper.from18DecimalsQuad(_state.params.initialPrice)));
     }
 }

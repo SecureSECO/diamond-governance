@@ -28,9 +28,10 @@ import { ERC20, MarketMaker, SimpleHatch, Vesting } from "../typechain-types";
 // Other
 import { ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { DiamondGovernanceClient } from "../sdk/index";
+import { to18Decimal } from "../utils/decimals18Helper";
 
 const hatchParameters = {
-  initialPrice: ether.mul(1),
+  initialPrice: to18Decimal("10000"),
   minimumRaise: ether.mul(10),
   maximumRaise: ether.mul(20),
   hatchDeadlineTime: now() + 10 * minutes,
@@ -46,13 +47,13 @@ async function getClient() {
   // Use fixed supply monetary token as external token
   const ERC20MonetaryTokenContract = await ethers.getContractFactory("ERC20MonetaryToken");
   const ERC20MonetaryToken = await ERC20MonetaryTokenContract.deploy("Token", "TOK");
-  await ERC20MonetaryToken.init(owner.address, ether.mul(1_000_000));
+  await ERC20MonetaryToken.init(owner.address, ethers.constants.MaxUint256);
 
   const ABCDeployerSettings : ABCDeployerSettings = {
     curveParameters: {
-      theta: 0.05 * 10**6,
-      friction: 0.01 * 10**6,
-      reserveRatio: 0.2 * 10**6,
+      theta: 0.03 * 10**6,
+      friction: 0.02 * 10**6,
+      reserveRatio: 0.5 * 10**6,
     },
     hatchParameters: {
       initialPrice: hatchParameters.initialPrice,
@@ -262,7 +263,7 @@ describe("ABC", () => {
       const externalToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
       await externalToken.approve(MarketMaker.address, ethers.constants.MaxUint256);
       
-      expect(MarketMaker.mint(ether.mul(1), wei.mul(0))).to.be.revertedWithCustomError(MarketMaker, "HatchingNotStarted");
+      expect(MarketMaker.mint(ether.mul(1), ether.mul(0))).to.be.revertedWithCustomError(MarketMaker, "HatchingNotStarted");
     });
 
     it("should give the correct amount of bonded tokens on mint", async () => {
@@ -273,7 +274,7 @@ describe("ABC", () => {
       const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
       const balanceBefore = await bondedToken.balanceOf(owner.address);
       const expectedTokens = await MarketMaker.calculateMint(amount);
-      await MarketMaker.mint(amount, wei.mul(0));
+      await MarketMaker.mint(amount, ether.mul(0));
 
       expect(await bondedToken.balanceOf(owner.address)).to.be.equal(balanceBefore.add(expectedTokens));
     });
@@ -285,7 +286,7 @@ describe("ABC", () => {
 
       const externalToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
       const balanceBefore = await externalToken.balanceOf(owner.address);
-      await MarketMaker.mint(amount, wei.mul(0));
+      await MarketMaker.mint(amount, ether.mul(0));
 
       expect(await externalToken.balanceOf(owner.address)).to.be.equal(balanceBefore.sub(amount));
     });
@@ -300,7 +301,7 @@ describe("ABC", () => {
       const DAOAddress = await IDAOReferenceFacet.dao();
       const externalToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
       const balanceBefore = await externalToken.balanceOf(DAOAddress);
-      await MarketMaker.mint(amount, wei.mul(0));
+      await MarketMaker.mint(amount, ether.mul(0));
 
       expect(await externalToken.balanceOf(DAOAddress)).to.be.gt(balanceBefore);
     });
@@ -310,14 +311,14 @@ describe("ABC", () => {
       const [owner] = await ethers.getSigners();
       const mintAmount = ether.mul(1);
 
-      await MarketMaker.mint(mintAmount, wei.mul(0));
+      await MarketMaker.mint(mintAmount, ether.mul(0));
       const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
       const externalToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
       const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
       const balanceBefore = await externalToken.balanceOf(owner.address);
       let expectedTokens = await MarketMaker.calculateBurn(bondedTokenBalance);
       expectedTokens = expectedTokens.sub(await MarketMaker.calculateExitFee(expectedTokens));
-      await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
+      await MarketMaker.burn(bondedTokenBalance, ether.mul(0));
 
       expect(await externalToken.balanceOf(owner.address)).to.be.equal(balanceBefore.add(expectedTokens));
       expect(expectedTokens).to.be.lt(mintAmount);
@@ -328,12 +329,12 @@ describe("ABC", () => {
       const [owner] = await ethers.getSigners();
       const mintAmount = ether.mul(1);
 
-      await MarketMaker.mint(mintAmount, wei.mul(0));
+      await MarketMaker.mint(mintAmount, ether.mul(0));
       const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
       const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
       let expectedTokens = await MarketMaker.calculateBurn(bondedTokenBalance);
       expectedTokens = expectedTokens.sub(await MarketMaker.calculateExitFee(expectedTokens));
-      await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
+      await MarketMaker.burn(bondedTokenBalance, ether.mul(0));
 
       expect(await bondedToken.balanceOf(owner.address)).to.be.equal(0);
     });
@@ -364,12 +365,31 @@ describe("ABC", () => {
 
       const externalERC20 = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.externalToken(), owner);
       const balanceBefore = await externalERC20.balanceOf(owner.address);
-      await MarketMaker.mint(mintAmount, wei.mul(0));
+      await MarketMaker.mint(mintAmount, ether.mul(0));
       const bondedToken = await GetTypedContractAt<ERC20>("ERC20", await MarketMaker.bondedToken(), owner);
       const bondedTokenBalance = await bondedToken.balanceOf(owner.address);
-      await MarketMaker.burn(bondedTokenBalance, wei.mul(0));
+      await MarketMaker.burn(bondedTokenBalance, ether.mul(0));
 
       expect(await externalERC20.balanceOf(owner.address)).to.be.lt(balanceBefore);
     });
+  });
+
+  it.skip("Benchmark", async () => {
+    // Print out the values that 1 DAI mint or 1 SECOIN burn would give you after a certain amount has been minted
+    const MarketMaker = await loadFixture(GetMarketMaker);
+    
+    const obj : { [i : number]: { mint: string; burn: string; } } = { };
+    let invested = ether.mul(0);
+    for (let i = 0; i < 9; i++) {
+      const upTo = ether.mul(wei.mul(10).pow(i));
+      const mintAmount = upTo.sub(invested);
+      invested = upTo;
+      await MarketMaker.mint(mintAmount, ether.mul(0));
+      const mintReward =  await MarketMaker.calculateMint(ether.mul(1));
+      let burnReward = await MarketMaker.calculateBurn(ether.mul(1));
+      burnReward = burnReward.sub(await MarketMaker.calculateExitFee(burnReward));
+      obj[10**i] = { mint: ethers.utils.formatEther(mintReward), burn:  ethers.utils.formatEther(burnReward) };
+    }
+    console.log(JSON.stringify(obj));
   });
 });
