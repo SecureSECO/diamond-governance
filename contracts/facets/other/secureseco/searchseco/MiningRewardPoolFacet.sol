@@ -42,13 +42,18 @@ contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
     }
 
     /// @inheritdoc IMiningRewardPoolFacet
-    function increaseMiningRewardPool(uint _amount) external override {
+    function donateToMiningRewardPool(uint _amount) external override {
         LibMiningRewardStorage.getStorage().miningRewardPool += _amount;
         IERC20(IMonetaryTokenFacet(address(this)).getTokenContractAddress()).transferFrom(
             msg.sender,
             address(IDAOReferenceFacet(address(this)).dao()),
             _amount
         );
+    }
+
+    /// @inheritdoc IMiningRewardPoolFacet
+    function increaseMiningRewardPool(uint _amount) external override auth(UPDATE_MINING_REWARD_POOL_PERMISSION_ID) {
+        LibMiningRewardStorage.getStorage().miningRewardPool += _amount;
     }
 
     /// @inheritdoc IMiningRewardPoolFacet

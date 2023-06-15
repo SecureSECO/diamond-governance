@@ -37,13 +37,18 @@ contract VerificationRewardPoolFacet is IVerificationRewardPoolFacet, AuthConsum
     }
 
     /// @inheritdoc IVerificationRewardPoolFacet
-    function increaseVerificationRewardPool(uint _amount) external override {
+    function donateToVerificationRewardPool(uint _amount) external override {
         LibVerificationRewardPoolStorage.getStorage().verificationRewardPool += _amount;
         IERC20(IMonetaryTokenFacet(address(this)).getTokenContractAddress()).transferFrom(
             msg.sender,
             address(IDAOReferenceFacet(address(this)).dao()),
             _amount
         );
+    }
+
+    /// @inheritdoc IVerificationRewardPoolFacet
+    function increaseVerificationRewardPool(uint _amount) external override auth(UPDATE_VERIFICATION_REWARD_POOL_PERMISSION_ID) {
+        LibVerificationRewardPoolStorage.getStorage().verificationRewardPool += _amount;
     }
 
     /// @inheritdoc IVerificationRewardPoolFacet

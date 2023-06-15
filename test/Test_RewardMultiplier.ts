@@ -12,7 +12,7 @@ import { ethers } from "hardhat";
 // Tests
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
@@ -23,6 +23,7 @@ import {
   to18Decimal,
   DECIMALS_18,
 } from "../utils/decimals18Helper";
+import { days, now } from "../utils/timeUnits";
 
 // Types
 
@@ -34,7 +35,7 @@ async function getClient() {
   const diamondGovernance = await getDeployedDiamondGovernance(owner);
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: now(),
     initialAmount: 1,
     slope: to18Decimal("0"),
   };
@@ -46,22 +47,10 @@ async function getClient() {
   return createTestingDao(cut);
 }
 
-const currentBlockNumber = async (): Promise<number> => {
-  const [owner] = await ethers.getSigners();
-  let blockNumber = await owner.provider?.getBlockNumber();
-  // expect(blockNumber).to.be.not.undefined;
-  if (blockNumber === undefined) {
-    throw new Error("Block number is undefined");
-  }
-  /* Update block number (should be 1 higher than before) */
-  blockNumber++; // To take into account the block shift that happens for every transaction
-  return blockNumber;
-};
-
 /* CONSTANTS */
 const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 decimal version
 const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT.toString());
-const MAX_BLOCKS_PASSED = 1000;
+const DAYS_PASSED = 134;
 
 const SLOPE = 1.001;
 const SLOPE_18 = to18Decimal(SLOPE.toString());
@@ -88,8 +77,7 @@ describe("RewardMultiplier", function () {
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
     /* ------ Set constant multiplier ------ */
-    const blockNumber = await currentBlockNumber();
-    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
+    const pastBlock = now() - DAYS_PASSED * days;
 
     await IRewardMultiplierFacet.setMultiplierTypeConstant(
       "nonsense",
@@ -107,26 +95,23 @@ describe("RewardMultiplier", function () {
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
     /* ------ Set linear multiplier ------ */
-    const blockNumber = await currentBlockNumber();
-    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
-
     await IRewardMultiplierFacet.setMultiplierTypeLinear(
       "nonsense",
-      pastBlock,
+      now(),
       INITIAL_AMOUNT_18,
       SLOPE_18,
     );
+    await time.increaseTo(now() + DAYS_PASSED * days);
     const multiplierAfterLinear = await IRewardMultiplierFacet.getMultiplier(
       "nonsense"
     );
 
-    const blocksPassed = blockNumber - pastBlock;
-    const total = calculateLinearGrowth(blocksPassed);
+    const total = calculateLinearGrowth(DAYS_PASSED);
 
     expect(multiplierAfterLinear).to.be.approximately(total, 1); // For rounding errors
 
     // Check that the multiplier is not approximately the same if the block number is different
-    const wrongTotal = calculateLinearGrowth(blocksPassed + 1);
+    const wrongTotal = calculateLinearGrowth(DAYS_PASSED + 1);
     expect(multiplierAfterLinear).to.not.be.approximately(wrongTotal, 1); // For rounding errors
   });
 
@@ -135,26 +120,23 @@ describe("RewardMultiplier", function () {
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
     /* ------ Set exponential multiplier ------ */
-    const blockNumber = await currentBlockNumber();
-    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
-
     await IRewardMultiplierFacet.setMultiplierTypeExponential(
       "nonsense",
-      pastBlock,
+      now(),
       INITIAL_AMOUNT_18,
       BASE_18,
     );
+    await time.increaseTo(now() + DAYS_PASSED * days);
     const multiplierAfterExponential =
       await IRewardMultiplierFacet.getMultiplier("nonsense");
 
     // Calculate modifier + growth in js with BigNumber for precision
-    const exponent = blockNumber - pastBlock;
-    const multiplier = calculateExponentialGrowth(exponent);
+    const multiplier = calculateExponentialGrowth(DAYS_PASSED);
 
     expect(multiplierAfterExponential).to.be.approximately(multiplier, 1); // For rounding errors
 
     // Check that the multiplier is not approximately the same if the exponent is different
-    const wrongMultiplier = calculateExponentialGrowth(exponent + 1);
+    const wrongMultiplier = calculateExponentialGrowth(DAYS_PASSED + 1);
 
     expect(multiplierAfterExponential).to.be.not.approximately(
       wrongMultiplier,
@@ -167,27 +149,24 @@ describe("RewardMultiplier", function () {
     const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
 
     /* ------ Set exponential multiplier ------ */
-    const blockNumber = await currentBlockNumber();
-    const pastBlock = Math.max(0, blockNumber - MAX_BLOCKS_PASSED);
-
     await IRewardMultiplierFacet.setMultiplierTypeExponential(
       "nonsense",
-      pastBlock,
+      now(),
       INITIAL_AMOUNT_18,
       BASE_18
     );
+    await time.increaseTo(now() + DAYS_PASSED * days);
     const multipliedReward = await IRewardMultiplierFacet.applyMultiplier(
       "nonsense",
       BASE_REWARD_18
     );
 
     /* Calculate modifier + growth in js with BigNumber for precision */
-    const exponent = blockNumber - pastBlock;
-    const bigGrowth = calculateExponentialAppliedMultiplier(exponent);
+    const bigGrowth = calculateExponentialAppliedMultiplier(DAYS_PASSED);
     expect(multipliedReward).to.be.approximately(bigGrowth, 1); // For rounding errors
 
     /* Check that the multiplier is not approximately the same if the exponent is different */
-    const wrongMultiplier = calculateExponentialAppliedMultiplier(exponent + 1);
+    const wrongMultiplier = calculateExponentialAppliedMultiplier(DAYS_PASSED + 1);
     expect(multipliedReward).to.be.not.approximately(wrongMultiplier, 1); // For rounding errors
   });
 });

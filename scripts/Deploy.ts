@@ -126,7 +126,7 @@ async function main() {
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: now(),
     initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
     slope: 0,
   };
