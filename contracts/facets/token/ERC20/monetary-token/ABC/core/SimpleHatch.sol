@@ -92,6 +92,7 @@ contract SimpleHatch is PluginStandalone, Modifiers {
     }
 
     function getReward(uint256 _contribution) internal virtual returns (uint256) {
+        // _contribution * (initialPrice / 1e18)
         return ABDKMathQuad.toUInt(ABDKMathQuad.mul(ABDKMathQuad.fromUInt(_contribution), LibABDKHelper.from18DecimalsQuad(_state.params.initialPrice)));
     }
 }
