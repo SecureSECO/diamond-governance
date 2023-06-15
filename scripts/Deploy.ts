@@ -128,8 +128,7 @@ async function main() {
     name: "inflation",
     startBlock: await owner.provider?.getBlockNumber(),
     initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
-    slopeN: 0,
-    slopeD: 1,
+    slope: 0,
   };
   const ABCConfigureFacetSettings = {
     marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,

@@ -46,8 +46,7 @@ async function getClient() {
     name: "inflation",
     startBlock: await owner.provider?.getBlockNumber(),
     initialAmount: DECIMALS_18,
-    slopeN: 0,
-    slopeD: 1,
+    slope: 0,
   };
   const cut : DiamondCut[] = [
       await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),

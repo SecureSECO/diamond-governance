@@ -31,11 +31,11 @@ abstract contract IRewardMultiplierFacet {
     }
 
     struct LinearParams {
-        bytes16 slope;
+        bytes16 slope; // 18 dec
     }
 
     struct ExponentialParams {
-        bytes16 base;
+        bytes16 base; // 18 dec
     }
 
     /// @notice This function applies a multiplier to a number while keeping the most precision
@@ -83,15 +83,13 @@ abstract contract IRewardMultiplierFacet {
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _slopeN,
-        uint _slopeD
+        uint _slope // 18 dec
     ) external virtual;
 
     function setMultiplierTypeExponential(
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _baseN,
-        uint _baseD
+        uint _base // 18 dec
     ) external virtual;
 }

@@ -36,8 +36,7 @@ async function getClient() {
     name: "inflation",
     startBlock: await owner.provider?.getBlockNumber(),
     initialAmount: 1,
-    slopeN: 1,
-    slopeD: 1,
+    slope: to18Decimal("0"),
   };
   const cut: DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [
@@ -64,11 +63,11 @@ const INITIAL_AMOUNT = 378303588.384; // Never used except to calculate the 18 d
 const INITIAL_AMOUNT_18 = to18Decimal(INITIAL_AMOUNT.toString());
 const MAX_BLOCKS_PASSED = 1000;
 
-const SLOPE_N = 1001;
-const SLOPE_D = 1000;
+const SLOPE = 1.001;
+const SLOPE_18 = to18Decimal(SLOPE.toString());
 
-const BASE_N = 1005;
-const BASE_D = 1000;
+const BASE = 1.005;
+const BASE_18 = to18Decimal(BASE.toString());
 
 const BASE_REWARD = 1234.56; // Never used except to calculate the 18 decimal version
 const BASE_REWARD_18 = to18Decimal(BASE_REWARD.toString());
@@ -115,8 +114,7 @@ describe("RewardMultiplier", function () {
       "nonsense",
       pastBlock,
       INITIAL_AMOUNT_18,
-      SLOPE_N,
-      SLOPE_D
+      SLOPE_18,
     );
     const multiplierAfterLinear = await IRewardMultiplierFacet.getMultiplier(
       "nonsense"
@@ -144,8 +142,7 @@ describe("RewardMultiplier", function () {
       "nonsense",
       pastBlock,
       INITIAL_AMOUNT_18,
-      BASE_N,
-      BASE_D
+      BASE_18,
     );
     const multiplierAfterExponential =
       await IRewardMultiplierFacet.getMultiplier("nonsense");
@@ -177,8 +174,7 @@ describe("RewardMultiplier", function () {
       "nonsense",
       pastBlock,
       INITIAL_AMOUNT_18,
-      BASE_N,
-      BASE_D
+      BASE_18
     );
     const multipliedReward = await IRewardMultiplierFacet.applyMultiplier(
       "nonsense",
@@ -197,7 +193,7 @@ describe("RewardMultiplier", function () {
 });
 
 const calculateLinearGrowth = (blocksPassed: number): BigNumber => {
-  const { amount, exponent: numShifted } = tenFoldUntilLimit(SLOPE_N / SLOPE_D);
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(SLOPE);
   const growth = BigNumber.from(amount)
     .mul(blocksPassed)
     .mul(10 ** (18 - numShifted));
@@ -205,14 +201,14 @@ const calculateLinearGrowth = (blocksPassed: number): BigNumber => {
 };
 
 const calculateExponentialGrowth = (exponent: number): BigNumber => {
-  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE_N / BASE_D);
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE);
   const base = BigNumber.from(amount); // Needs Math.round due to rounding errors with division
   const growth = base.pow(exponent).mul(INITIAL_AMOUNT_18);
   return growth.div(BigNumber.from(10 ** numShifted).pow(exponent));
 };
 
 const calculateExponentialAppliedMultiplier = (exponent: number): BigNumber => {
-  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE_N / BASE_D);
+  const { amount, exponent: numShifted } = tenFoldUntilLimit(BASE);
   const base = BigNumber.from(amount); // Needs Math.round due to rounding errors with division
   const growth = base
     .pow(exponent)
