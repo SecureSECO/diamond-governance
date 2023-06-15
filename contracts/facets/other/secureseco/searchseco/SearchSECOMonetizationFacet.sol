@@ -31,7 +31,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
 
     struct SearchSECOMonetizationFacetInitParams {
         uint256 hashCost;
-        uint32 treasuryRatio;
+        uint32 queryTreasuryRatio; // ppm
     }
 
     /// @inheritdoc IFacet
@@ -45,7 +45,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         SearchSECOMonetizationFacetInitParams memory _params
     ) public virtual {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _params.hashCost;
-        LibSearchSECOMonetizationStorage.getStorage().treasuryRatio = _params.treasuryRatio;
+        LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio = _params.queryTreasuryRatio;
         
         registerInterface(type(ISearchSECOMonetizationFacet).interfaceId);
     }
@@ -73,7 +73,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         );
 
         // Calculate the amount of tokens that go to the treasury and the mining reward pool
-        uint ratio = s.treasuryRatio;
+        uint ratio = s.queryTreasuryRatio;
 
         uint totalPayout = s.hashCost * _amount;
         uint toMiningRewardPool = _applyRatioCeiled(totalPayout, ratio);
@@ -99,5 +99,15 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     /// @inheritdoc ISearchSECOMonetizationFacet
     function setHashCost(uint _hashCost) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _hashCost;
+    }
+
+    /// @inheritdoc ISearchSECOMonetizationFacet
+    function getQueryTreasuryRatio() external view virtual override returns (uint32) {
+        return LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio;
+    }
+
+    /// @inheritdoc ISearchSECOMonetizationFacet
+    function setQueryTreasuryRatio(uint32 _queryTreasuryRatio) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
+        LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio = _queryTreasuryRatio;
     }
 }

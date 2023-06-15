@@ -24,4 +24,12 @@ interface ISearchSECOMonetizationFacet {
     /// @notice Updates the cost of a hash (in the context of SearchSECO)
     /// @param _hashCost The new cost of a hash
     function setHashCost(uint _hashCost) external;
+
+    /// @notice Retrieve the current treasury ratio. This is the percentage of the hashcost that goes to the treasury.
+    /// @return uint32 The current treasury ratio
+    function getQueryTreasuryRatio() external view returns (uint32);
+
+    /// @notice Updates the treasury ratio
+    /// @param _queryTreasuryRatio The new treasury ratio
+    function setQueryTreasuryRatio(uint32 _queryTreasuryRatio) external;
 }
