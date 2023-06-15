@@ -28,8 +28,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string name;
         uint startBlock;
         uint initialAmount;
-        uint slopeN;
-        uint slopeD;
+        uint slope; // 18dec
     }
 
     /// @inheritdoc IFacet
@@ -43,8 +42,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             _initParams.name,
             _initParams.startBlock,
             _initParams.initialAmount,
-            _initParams.slopeN,
-            _initParams.slopeD
+            _initParams.slope
         );
         registerInterface(type(IRewardMultiplierFacet).interfaceId);
     }
@@ -117,15 +115,13 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _slopeN,
-        uint _slopeD
+        uint _slope
     ) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
         _setMultiplierTypeLinear(
             _name,
             _startBlock,
             _initialAmount,
-            _slopeN,
-            _slopeD
+            _slope
         );
     }
 
@@ -134,15 +130,13 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _baseN,
-        uint _baseD
+        uint _base
     ) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
         _setMultiplierTypeExponential(
             _name,
             _startBlock,
             _initialAmount,
-            _baseN,
-            _baseD
+            _base
         );
     }
 
@@ -164,8 +158,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _slopeN,
-        uint _slopeD
+        uint _slope
     ) internal {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
@@ -174,20 +167,16 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.LINEAR
         );
-        bytes16 _slope = ABDKMathQuad.div(
-            ABDKMathQuad.fromUInt(_slopeN),
-            ABDKMathQuad.fromUInt(_slopeD)
-        );
+        bytes16 _slopeQuad = LibABDKHelper.from18DecimalsQuad(_slope);
 
-        s.linearParams[_name] = LinearParams(_slope);
+        s.linearParams[_name] = LinearParams(_slopeQuad);
     }
 
     function _setMultiplierTypeExponential(
         string memory _name,
         uint _startBlock,
         uint _initialAmount,
-        uint _baseN,
-        uint _baseD
+        uint _base
     ) internal {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
@@ -197,10 +186,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             MultiplierType.EXPONENTIAL
         );
 
-        bytes16 _base = ABDKMathQuad.div(
-            ABDKMathQuad.fromUInt(_baseN),
-            ABDKMathQuad.fromUInt(_baseD)
-        );
-        s.exponentialParams[_name] = ExponentialParams(_base);
+        bytes16 _baseQuad = LibABDKHelper.from18DecimalsQuad(_base);
+        s.exponentialParams[_name] = ExponentialParams(_baseQuad);
     }
 }
