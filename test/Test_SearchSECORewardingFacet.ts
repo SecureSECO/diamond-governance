@@ -61,7 +61,7 @@ async function getClient() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: HASH_COST,
-    queryTreasuryRatio: TREASURY_RATIO,
+    queryMiningRewardPoolRatio: TREASURY_RATIO,
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: monetaryToken,

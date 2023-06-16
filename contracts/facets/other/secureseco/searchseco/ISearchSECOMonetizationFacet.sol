@@ -27,9 +27,9 @@ interface ISearchSECOMonetizationFacet {
 
     /// @notice Retrieve the current treasury ratio. This is the percentage of the hashcost that goes to the treasury.
     /// @return uint32 The current treasury ratio
-    function getQueryTreasuryRatio() external view returns (uint32);
+    function getQueryMiningRewardPoolRatio() external view returns (uint32);
 
     /// @notice Updates the treasury ratio
-    /// @param _queryTreasuryRatio The new treasury ratio
-    function setQueryTreasuryRatio(uint32 _queryTreasuryRatio) external;
+    /// @param _queryMiningRewardPoolRatio The new treasury ratio
+    function setQueryMiningRewardPoolRatio(uint32 _queryMiningRewardPoolRatio) external;
 }

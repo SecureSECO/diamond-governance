@@ -31,7 +31,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
 
     struct SearchSECOMonetizationFacetInitParams {
         uint256 hashCost;
-        uint32 queryTreasuryRatio; // ppm
+        uint32 queryMiningRewardPoolRatio; // ppm
     }
 
     /// @inheritdoc IFacet
@@ -45,7 +45,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         SearchSECOMonetizationFacetInitParams memory _params
     ) public virtual {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _params.hashCost;
-        LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio = _params.queryTreasuryRatio;
+        LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio = _params.queryMiningRewardPoolRatio;
         
         registerInterface(type(ISearchSECOMonetizationFacet).interfaceId);
     }
@@ -73,7 +73,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         );
 
         // Calculate the amount of tokens that go to the treasury and the mining reward pool
-        uint ratio = s.queryTreasuryRatio;
+        uint ratio = s.queryMiningRewardPoolRatio;
 
         uint totalPayout = s.hashCost * _amount;
         uint toMiningRewardPool = _applyRatioCeiled(totalPayout, ratio);
@@ -102,12 +102,12 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     }
 
     /// @inheritdoc ISearchSECOMonetizationFacet
-    function getQueryTreasuryRatio() external view virtual override returns (uint32) {
-        return LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio;
+    function getQueryMiningRewardPoolRatio() external view virtual override returns (uint32) {
+        return LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio;
     }
 
     /// @inheritdoc ISearchSECOMonetizationFacet
-    function setQueryTreasuryRatio(uint32 _queryTreasuryRatio) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
-        LibSearchSECOMonetizationStorage.getStorage().queryTreasuryRatio = _queryTreasuryRatio;
+    function setQueryMiningRewardPoolRatio(uint32 _queryMiningRewardPoolRatio) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
+        LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio = _queryMiningRewardPoolRatio;
     }
 }
