@@ -14,8 +14,6 @@ import {ABDKMathQuad} from "../../libraries/abdk-math/ABDKMathQuad.sol";
 import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 import {LibCalculateGrowth} from "./LibCalculateGrowth.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title RewardMultiplierFacet
  * @author Utrecht University
@@ -78,7 +76,6 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         MultiplierInfo memory _info = s.rewardMultiplier[_name];
 
         uint _daysPassed = (block.timestamp - _info.startTimestamp) / 1 days;
-        console.log(_daysPassed);
 
         // If the multiplier has not started yet, return 0
         if (_info.multiplierType == MultiplierType.CONSTANT) {
