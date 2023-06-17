@@ -33,12 +33,12 @@ async function main() {
     curveParameters: {
       theta: 0.05 * 10**6, // 5%
       friction: 0.01 * 10**6, // 1%
-      reserveRatio: 0.2 * 10**6, // 20%
+      reserveRatio: 0.5 * 10**6, // 50%
     },
     hatchParameters: {
-      initialPrice: wei.mul(1),
-      minimumRaise: wei.mul(1),
-      maximumRaise: wei.mul(1),
+      initialPrice: to18Decimal("10000"),
+      minimumRaise: ether.mul(10),
+      maximumRaise: ether.mul(20),
       hatchDeadline: now() + 24 * hours,
     },
     vestingSchedule: {
@@ -126,7 +126,7 @@ async function main() {
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: now(),
     initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
     slope: 0,
   };

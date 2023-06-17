@@ -26,7 +26,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
     struct RewardMultiplierFacetInitParams {
         string name;
-        uint startBlock;
+        uint startTimestamp;
         uint initialAmount;
         uint slope; // 18dec
     }
@@ -40,7 +40,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     function __RewardMultiplierFacet_init(RewardMultiplierFacetInitParams memory _initParams) public virtual {
         _setMultiplierTypeLinear(
             _initParams.name,
-            _initParams.startBlock,
+            _initParams.startTimestamp,
             _initParams.initialAmount,
             _initParams.slope
         );
@@ -59,6 +59,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         uint _amount
     ) public view virtual override returns (uint) {
         bytes16 multiplier = getMultiplierQuad(_name);
+
         return
             ABDKMathQuad.toUInt(
                 ABDKMathQuad.mul(multiplier, ABDKMathQuad.fromUInt(_amount))
@@ -74,7 +75,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
         MultiplierInfo memory _info = s.rewardMultiplier[_name];
 
-        uint _numBlocksPassed = block.number - _info.startBlock;
+        uint _daysPassed = (block.timestamp - _info.startTimestamp) / 1 days;
 
         // If the multiplier has not started yet, return 0
         if (_info.multiplierType == MultiplierType.CONSTANT) {
@@ -85,7 +86,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             return
                 LibCalculateGrowth.calculateLinearGrowth(
                     _info.initialAmount,
-                    _numBlocksPassed,
+                    _daysPassed,
                     params.slope
                 );
         } else if (_info.multiplierType == MultiplierType.EXPONENTIAL) {
@@ -93,7 +94,7 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
             return
                 LibCalculateGrowth.calculateExponentialGrowth(
                     _info.initialAmount,
-                    _numBlocksPassed,
+                    _daysPassed,
                     params.base
                 );
         }
@@ -104,22 +105,22 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     /// @inheritdoc IRewardMultiplierFacet
     function setMultiplierTypeConstant(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount
     ) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
-        _setMultiplierTypeConstant(_name, _startBlock, _initialAmount);
+        _setMultiplierTypeConstant(_name, _startTimestamp, _initialAmount);
     }
 
     /// @inheritdoc IRewardMultiplierFacet
     function setMultiplierTypeLinear(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _slope
     ) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
         _setMultiplierTypeLinear(
             _name,
-            _startBlock,
+            _startTimestamp,
             _initialAmount,
             _slope
         );
@@ -128,13 +129,13 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     /// @inheritdoc IRewardMultiplierFacet
     function setMultiplierTypeExponential(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _base
     ) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
         _setMultiplierTypeExponential(
             _name,
-            _startBlock,
+            _startTimestamp,
             _initialAmount,
             _base
         );
@@ -142,13 +143,13 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
     function _setMultiplierTypeConstant(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount
     ) internal {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
-            _startBlock,
+            _startTimestamp,
             LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.CONSTANT
         );
@@ -156,14 +157,14 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
     function _setMultiplierTypeLinear(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _slope
     ) internal {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
-            _startBlock,
+            _startTimestamp,
             LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.LINEAR
         );
@@ -174,14 +175,14 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
 
     function _setMultiplierTypeExponential(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _base
     ) internal {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier[_name] = MultiplierInfo(
-            _startBlock,
+            _startTimestamp,
             LibABDKHelper.from18DecimalsQuad(_initialAmount),
             MultiplierType.EXPONENTIAL
         );
