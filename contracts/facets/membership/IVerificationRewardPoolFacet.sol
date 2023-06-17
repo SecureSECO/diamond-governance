@@ -16,5 +16,7 @@ interface IVerificationRewardPoolFacet {
 
     function decreaseVerificationRewardPool(uint _amount) external;
 
+    function donateToVerificationRewardPool(uint _amount) external;
+
     function rewardCoinsToVerifyer(address _miner, uint _amount) external;
 }

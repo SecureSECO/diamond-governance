@@ -148,7 +148,7 @@ describe("VerificationRewardPool", async function () {
 
     await approveEverything(client, ERC20MonetaryToken, owner);
 
-    await IVerificationRewardPoolFacet.increaseVerificationRewardPool(ether.mul(1e6));
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(1e6));
 
     const IVerificationFacet = await client.pure.IVerificationFacet();
     const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();

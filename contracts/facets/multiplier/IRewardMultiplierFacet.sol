@@ -25,7 +25,7 @@ abstract contract IRewardMultiplierFacet {
     /* ========== STRUCTS ========== */
     /* The following structs are used to store the multiplier information for each reward multiplier. */
     struct MultiplierInfo {
-        uint startBlock;
+        uint startTimestamp;
         bytes16 initialAmount;
         MultiplierType multiplierType;
     }
@@ -69,26 +69,26 @@ abstract contract IRewardMultiplierFacet {
      * The functions follow the same pattern:
      * @dev Sets the multiplier type to constant
      * @param _name The name of the multiplier
-     * @param _startBlock The block number at which the multiplier starts
+     * @param _startTimestamp The timestamp at which the multiplier starts
      * @param _initialAmount The initial amount of the multiplier
      * + any additional parameters for the specific multiplier type
      */
     function setMultiplierTypeConstant(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount
     ) external virtual;
 
     function setMultiplierTypeLinear(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _slope // 18 dec
     ) external virtual;
 
     function setMultiplierTypeExponential(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
         uint _base // 18 dec
     ) external virtual;
