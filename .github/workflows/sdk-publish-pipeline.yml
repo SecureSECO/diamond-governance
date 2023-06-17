@@ -1,8 +1,8 @@
 name: Diamond Governance SDK publish
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ "main" ]
 
 defaults:
   run:
@@ -10,7 +10,6 @@ defaults:
 
 env:
   NODE_VERSION: 18.x
-  npm-publish: ${{ github.event.inputs.js || true }}
 
 jobs:
   install-dependencies:
