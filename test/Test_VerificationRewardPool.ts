@@ -90,6 +90,14 @@ const getERC20MonetaryTokenContract = async (
     tokenAddress,
     owner
   );
+  return ERC20MonetaryToken;
+};
+
+const getERC20MonetaryTokenContractAndInit = async (
+  client: DiamondGovernanceClient
+) => {
+  const [owner] = await ethers.getSigners();
+  const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
   await ERC20MonetaryToken.init(owner.address, ether.mul(INITIAL_MINT_AMOUNT));
 
   return ERC20MonetaryToken;
@@ -121,7 +129,7 @@ const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryT
 describe("VerificationRewardPool", async function () {
   it("increase reward pool", async function () {
     const client = await loadFixture(getClient);
-    const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
+    const ERC20MonetaryToken = await getERC20MonetaryTokenContractAndInit(client);
     const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
     const [owner] = await ethers.getSigners();
 
@@ -134,13 +142,13 @@ describe("VerificationRewardPool", async function () {
 
   it("reward verifyers", async function () {
     const client = await loadFixture(getClient);
-    const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
+    const ERC20MonetaryToken = await getERC20MonetaryTokenContractAndInit(client);
     const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
     const [owner] = await ethers.getSigners();
 
     await approveEverything(client, ERC20MonetaryToken, owner);
 
-    await IVerificationRewardPoolFacet.increaseVerificationRewardPool(ether.mul(1e6));
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(1e6));
 
     const IVerificationFacet = await client.pure.IVerificationFacet();
     const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
@@ -180,5 +188,40 @@ describe("VerificationRewardPool", async function () {
     const toClaim = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll();
     expect(toClaim[0]).to.be.equal(0);
     expect(toClaim[1]).to.be.equal(0);
+  });
+  it("cap secoin reward at verification reward pool balance", async function () {
+    const client = await loadFixture(getClient);
+    const ERC20MonetaryToken = await getERC20MonetaryTokenContract(client);
+    const [owner] = await ethers.getSigners();
+
+    await approveEverything(client, ERC20MonetaryToken, owner);
+
+    const IVerificationFacet = await client.pure.IVerificationFacet();
+    const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
+    // const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
+    const standaloneVerificationContract = await GetTypedContractAt<SignVerification>("SignVerification", verificationContractAddress, owner);
+
+    // Verify "owner"
+    const timestamp = now();
+    const userHash =
+      "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
+    const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
+
+    // Throws if verification fails
+    await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
+    await time.increase(1 * days); // To avoid time inconsistencies between blockchain and local machine
+
+    const IERC20OneTimeVerificationRewardFacet = await client.pure.IERC20OneTimeVerificationRewardFacet();
+
+    // There's currently no coins in the verification reward pool
+    await IERC20OneTimeVerificationRewardFacet.claimVerificationRewardAll();
+
+    // These two requests can be parallellized
+    const repInterface = await client.pure.IERC20();
+    // Rep is minted to our account
+    expect(await repInterface.balanceOf(owner.address)).to.be.equal(ether.mul(30));
+
+    // Our account should have 0 coins
+    expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(0);
   });
 });

@@ -21,14 +21,15 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
 import { createSignatureRewarding } from "../utils/signatureHelper";
 import { DiamondGovernanceClient } from "../sdk/index";
 import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
 import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
+import { now } from "../utils/timeUnits";
 
 // Types
+import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 
 // Other
 
@@ -61,7 +62,7 @@ async function getClient() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: HASH_COST,
-    treasuryRatio: TREASURY_RATIO,
+    queryMiningRewardPoolRatio: TREASURY_RATIO,
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: monetaryToken,
@@ -78,7 +79,7 @@ async function getClient() {
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: 0,
     initialAmount: DECIMALS_18,
     slope: 0,
   };
