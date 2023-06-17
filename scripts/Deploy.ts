@@ -113,7 +113,7 @@ async function main() {
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: gwei.mul(1),
-    treasuryRatio: 0.2 * 10**6, // 20%
+    queryMiningRewardPoolRatio: 0.2 * 10**6, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
