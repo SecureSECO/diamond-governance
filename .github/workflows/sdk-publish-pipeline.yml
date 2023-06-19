@@ -24,8 +24,12 @@ jobs:
         run: npm ci
       - name: Install typescript
         run: npm i typescript -g
+      - name: Generate sdk
+        run: npm run generate-sdk
+      - name: Compile sdk
+        run: tsc --project ./sdk/tsconfig.json --declaration
       - name: Publish sdk
-        run: npm run publish-sdk
+        run: npm publish ./sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
