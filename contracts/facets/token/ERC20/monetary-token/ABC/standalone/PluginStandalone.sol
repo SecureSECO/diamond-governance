@@ -7,6 +7,11 @@ pragma solidity ^0.8.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @title PluginStandalone
+ * @author Utrecht University
+ * @notice This interface allows an Aragon plugin to be deployed as a standalone contract.
+ */
 abstract contract PluginStandalone is Ownable {
     address private dao_;
     mapping(bytes32 => mapping(address => bool)) private permissions_;

@@ -6,6 +6,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IGithubPullRequestFacet
+ * @author Utrecht University
+ * @notice This interface defines the merge method and event which can be caught off-chain to merge a git pull request. 
+ */
 interface IGithubPullRequestFacet {
     /// @notice Emitted when a pull request needs to be merged as a result of a proposal action
     /// @param owner Owner of the repository

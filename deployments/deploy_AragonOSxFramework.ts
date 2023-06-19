@@ -19,6 +19,8 @@ import { ENSFrameworkContracts, AragonOSxFrameworkContracts } from "./deployment
 // Other
 import { deployENS, deployResolver } from "./deploy_ENS";
 
+/// This deployer deploys the AragonOSx framework, so it can be deployed to any network (including hardhats network for testing).
+
 async function setupENS() : Promise<ENSFrameworkContracts> {
     const ens = await deployENS();
     const [owner] = await ethers.getSigners();

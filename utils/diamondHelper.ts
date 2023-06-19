@@ -16,6 +16,8 @@ import { IDiamondLoupe } from "../typechain-types";
 
 // Other
 
+/// Helper for generic diamond operations (such as cutting and retrieving selectors).
+
 enum FacetCutAction { Add, Replace, Remove, AddWithInit, RemoveWithDeinit }
 
 class Selectors {

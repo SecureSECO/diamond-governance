@@ -8,6 +8,12 @@ pragma solidity ^0.8.0;
 
 import {LibABDKHelper} from "../../libraries/abdk-math/LibABDKHelper.sol";
 
+/**
+ * @title IRewardMultiplierFacet
+ * @author Utrecht University
+ * @notice This interface defines the tracking of variables with a certain grow.
+ * It also has helper functions to apply the variable to a certain value.
+ */
 abstract contract IRewardMultiplierFacet {
     enum MultiplierType {
         NONE,
@@ -19,17 +25,17 @@ abstract contract IRewardMultiplierFacet {
     /* ========== STRUCTS ========== */
     /* The following structs are used to store the multiplier information for each reward multiplier. */
     struct MultiplierInfo {
-        uint startBlock;
+        uint startTimestamp;
         bytes16 initialAmount;
         MultiplierType multiplierType;
     }
 
     struct LinearParams {
-        bytes16 slope;
+        bytes16 slope; // 18 dec
     }
 
     struct ExponentialParams {
-        bytes16 base;
+        bytes16 base; // 18 dec
     }
 
     /// @notice This function applies a multiplier to a number while keeping the most precision
@@ -63,29 +69,27 @@ abstract contract IRewardMultiplierFacet {
      * The functions follow the same pattern:
      * @dev Sets the multiplier type to constant
      * @param _name The name of the multiplier
-     * @param _startBlock The block number at which the multiplier starts
+     * @param _startTimestamp The timestamp at which the multiplier starts
      * @param _initialAmount The initial amount of the multiplier
      * + any additional parameters for the specific multiplier type
      */
     function setMultiplierTypeConstant(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount
     ) external virtual;
 
     function setMultiplierTypeLinear(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
-        uint _slopeN,
-        uint _slopeD
+        uint _slope // 18 dec
     ) external virtual;
 
     function setMultiplierTypeExponential(
         string memory _name,
-        uint _startBlock,
+        uint _startTimestamp,
         uint _initialAmount,
-        uint _baseN,
-        uint _baseD
+        uint _base // 18 dec
     ) external virtual;
 }

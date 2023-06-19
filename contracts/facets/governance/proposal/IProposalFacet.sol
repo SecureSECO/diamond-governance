@@ -14,9 +14,11 @@ import { IFacet } from "../../IFacet.sol";
 
 import { LibProposalStorage } from "../../../libraries/storage/LibProposalStorage.sol";
 
-/// @title Proposal
-/// @author Aragon Association - 2022-2023
-/// @notice An abstract contract containing the traits and internal functionality to create and execute proposals that can be inherited by non-upgradeable DAO plugins.
+/**
+ * @title IProposalFacet
+ * @author Utrecht University
+ * @notice This facet keeps track of proposal count and provides the base to create and execute proposals.
+ */
 abstract contract IProposalFacet is IProposal, IFacet {
     using Counters for Counters.Counter;
 

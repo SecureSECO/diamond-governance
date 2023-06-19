@@ -1,5 +1,7 @@
 import { Signer } from "@ethersproject/abstract-signer";
 
+/// Various utility functions used in the SDK.
+
 /**
  * @param arr Array to filter on
  * @param predicate Function to filter with

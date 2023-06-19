@@ -16,6 +16,8 @@ import { PublicResolver } from "../typechain-types";
 
 //Other
 
+/// Helper for performing ENS queries and doing ENS encoding.
+
 /**
  * Encodes the node string according to ENS spec
  * (ethers.utils.namehash)

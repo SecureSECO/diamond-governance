@@ -18,6 +18,11 @@ import { IFacet } from "../../../../IFacet.sol";
 
 import { LibERC20OneTimeRewardStorage } from "../../../../../libraries/storage/LibERC20OneTimeRewardStorage.sol";
 
+/**
+ * @title ERC20OneTimeRewardFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20OneTimeRewardFacet.
+ */
 contract ERC20OneTimeRewardFacet is IERC20OneTimeRewardFacet, IERC20ClaimableFacet, AuthConsumer {
     /// @notice The permission to update claim reward
     bytes32 public constant UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION_ID = keccak256("UPDATE_ONE_TIME_REWARD_SETTINGS_PERMISSION");

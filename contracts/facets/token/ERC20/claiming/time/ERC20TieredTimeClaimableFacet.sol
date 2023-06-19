@@ -16,6 +16,11 @@ import { ITieredMembershipStructure } from "../../../../../facets/governance/str
 import { LibERC20TieredTimeClaimableStorage } from "../../../../../libraries/storage/LibERC20TieredTimeClaimableStorage.sol";
 import { IFacet } from "../../../../../facets/IFacet.sol";
 
+/**
+ * @title ERC20TieredTimeClaimableFacet
+ * @author Utrecht University
+ * @notice Implementation of IERC20TieredTimeClaimableFacet.
+ */
 contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20TimeClaimableFacet {
     struct ERC20TieredTimeClaimableFacetInitParams {
         uint256[] tiers;

@@ -12,6 +12,8 @@ import { ethers } from "hardhat";
 import { getSelectors } from "../utils/diamondHelper";
 import { FunctionSelectorsJson, VariableSelectorsJson } from "../utils/jsonTypes";
 
+/// Script to generate the SDK client (pure).
+
 const insertInterfaces = "/* interfaces */";
 const insertMethods = "/* interface methods */";
 const templateFile = "./generated/client-template.ts";

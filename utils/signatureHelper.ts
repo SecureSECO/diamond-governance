@@ -10,6 +10,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "ethers";
 
+/// Helper to sign messsages with proof that an offchain action was performed.
+
 /**
  *
  * @param {number} timestamp Timestamp at which the proof is made
@@ -27,7 +29,7 @@ export const createSignature = async (timestamp: number, toVerify: string, userH
   return owner.signMessage(ethers.utils.arrayify(hashPackedMessage));
 };
 
-export const createSignature2 = async (toReward: string, hashCount: number, nonce: number, owner:SignerWithAddress) => {
+export const createSignatureRewarding = async (toReward: string, hashCount: number, nonce: number, owner: SignerWithAddress) => {
   const packedMessage = ethers.utils.solidityPack(
     ["address", "uint256", "uint256"], [toReward, hashCount, nonce]
   );

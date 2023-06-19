@@ -21,14 +21,15 @@ import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
 import { GetTypedContractAt } from "../utils/contractHelper";
-import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 import { ether } from "../utils/etherUnits";
-import { createSignature2 } from "../utils/signatureHelper";
+import { createSignatureRewarding } from "../utils/signatureHelper";
 import { DiamondGovernanceClient } from "../sdk/index";
 import { DECIMALS_18, to18Decimal } from "../utils/decimals18Helper";
 import { FixedSupplyDeployer } from "../deployments/deploy_MonetaryToken";
+import { now } from "../utils/timeUnits";
 
 // Types
+import { ERC20MonetaryToken, ExecuteAnythingFacet } from "../typechain-types";
 
 // Other
 
@@ -44,6 +45,9 @@ const NUM_HASHES_MINED = 100;
 const NUM_HASHES_QUERY = 100;
 const HASH_DEVALUATION_FACTOR = 8;
 
+const HASH_COST = 1;
+const HASH_REWARD = 1;
+
 async function getClient() {
   await loadFixture(deployTestNetwork);
   const [owner] = await ethers.getSigners();
@@ -54,10 +58,11 @@ async function getClient() {
     signer: owner.address,
     miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18,
     hashDevaluationFactor: HASH_DEVALUATION_FACTOR,
+    hashReward: HASH_REWARD,
   };
   const SearchSECOMonetizationFacetSettings = {
-    hashCost: 1,
-    treasuryRatio: TREASURY_RATIO,
+    hashCost: HASH_COST,
+    queryMiningRewardPoolRatio: TREASURY_RATIO,
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: monetaryToken,
@@ -74,10 +79,9 @@ async function getClient() {
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: 0,
     initialAmount: DECIMALS_18,
-    slopeN: 0,
-    slopeD: 1,
+    slope: 0,
   };
   const cut: DiamondCut[] = [
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [
@@ -109,7 +113,7 @@ const getERC20MonetaryTokenContract = async (
 ) => {
   const [owner] = await ethers.getSigners();
   const tokenAddress = await (
-    await client.pure.IChangeableTokenContract()
+    await client.pure.IMonetaryTokenFacet()
   ).getTokenContractAddress();
   const ERC20MonetaryToken = await GetTypedContractAt<ERC20MonetaryToken>(
     "ERC20MonetaryToken",
@@ -196,7 +200,7 @@ describe("SearchSECORewarding", function () {
     ]);
 
     // Create signature for proof
-    const dataHexString = await createSignature2(
+    const dataHexString = await createSignatureRewarding(
       owner.address,
       NUM_HASHES_MINED,
       0,
@@ -212,6 +216,7 @@ describe("SearchSECORewarding", function () {
 
     // Get all relevant (updated) balances
     const newBalanceMe = await ERC20MonetaryToken.balanceOf(owner.address);
+    const newBalanceRepMe = await (await client.pure.IERC20()).balanceOf(owner.address);
     const newBalanceTreasury = await ERC20MonetaryToken.balanceOf(daoAddress);
     const newBalanceMiningRewardPool =
       await IMiningRewardPoolFacet.getMiningRewardPool();
@@ -235,10 +240,12 @@ describe("SearchSECORewarding", function () {
       .mul(miningRewardPoolBeforeReward)
       .div(decimals18PowHashes);
     const expectedReward = payout;
+    const expectedRepReward = Math.round(HASH_REWARD * NUM_HASHES_MINED * REP_FRAC / 1_000_000);
 
     expect(newBalanceMe).to.be.equal(
       ether.mul(INITIAL_MINT_AMOUNT).sub(costWei).add(expectedReward)
     );
+    expect(newBalanceRepMe).to.be.approximately(expectedRepReward, 1);
     expect(newBalanceTreasury).to.be.equal(costWei.sub(expectedReward));
     expect(newBalanceMiningRewardPool).to.be.equal(
       miningRewardPoolBeforeReward.sub(expectedReward)
@@ -250,7 +257,7 @@ describe("SearchSECORewarding", function () {
     const NEW_HASHES_MINED = 50000;
 
     // Create signature for proof
-    const dataHexString2 = await createSignature2(
+    const dataHexString2 = await createSignatureRewarding(
       owner.address,
       NUM_HASHES_MINED + NEW_HASHES_MINED,
       NUM_HASHES_MINED,

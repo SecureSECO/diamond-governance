@@ -12,6 +12,8 @@ import { Action, DiamondGovernanceClient, ProposalMetadata } from "../sdk/index"
 import { days, now } from "../utils/timeUnits";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 
+/// Script to create a proposal with a diamond cut action.
+
 const diamondGovernanceAddress = "";
 const proposalMetadata : ProposalMetadata = {
   title: "Diamond cut proposal",

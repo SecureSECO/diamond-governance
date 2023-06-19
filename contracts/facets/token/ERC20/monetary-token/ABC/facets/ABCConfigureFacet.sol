@@ -14,6 +14,11 @@ import { IMarketMaker } from "../interfaces/IMarketMaker.sol";
 import { IBondingCurve } from "../interfaces/IBondingCurve.sol";
 import { LibABCConfigureStorage } from "../../../../../../libraries/storage/LibABCConfigureStorage.sol";
 
+/**
+ * @title ABCConfigureFacet
+ * @author Utrecht University
+ * @notice Implementation of IABCConfigureFacet.
+ */
 contract ABCConfigureFacet is IABCConfigureFacet, AuthConsumer, IFacet {
     /// @notice The permission identifier to merge pull requests.
     bytes32 public constant CONFIGURE_ABC_PERMISSION_ID = keccak256("CONFIGURE_ABC_PERMISSION");

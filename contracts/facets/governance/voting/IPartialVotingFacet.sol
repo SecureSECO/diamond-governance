@@ -4,15 +4,15 @@
   * © Copyright Utrecht University (Department of Information and Computing Sciences)
   */
 
-
 pragma solidity ^0.8.0;
 
 import { IDAO } from "@aragon/osx/core/dao/IDAO.sol";
 
-/// @title IPartialVoting
-/// @author Utrecht University - 2023
-/// @notice The interface of partial voting (voting) plugin.
-/// @dev This contract implements the `IPartialVotingFacet` interface.
+/**
+ * @title IPartialVotingFacet
+ * @author Utrecht University
+ * @notice This facet allows partially voting on proposals. 
+ */
 interface IPartialVotingFacet {
     /// @notice Vote options that a voter can chose from.
     /// @param Abstain This option does not influence the support but counts towards participation.

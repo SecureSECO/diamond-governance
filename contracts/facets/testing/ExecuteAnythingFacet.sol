@@ -10,6 +10,11 @@ import { IProposal, IDAO } from "@aragon/osx/core/plugin/proposal/IProposal.sol"
 import { IFacet } from "../IFacet.sol";
 import { IDAOReferenceFacet } from "../aragon/IDAOReferenceFacet.sol";
 
+/**
+ * @title ExecuteAnythingFacet
+ * @author Utrecht University
+ * @notice This facet is to execute actions as the DAO.
+ */
 contract ExecuteAnythingFacet is IFacet {
     function executeAnything(IDAO.Action[] memory _actions) external {
         IDAOReferenceFacet dao = IDAOReferenceFacet(address(this));

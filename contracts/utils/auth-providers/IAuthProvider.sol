@@ -9,6 +9,11 @@
  
 pragma solidity ^0.8.0;
 
+/**
+ * @title IAuthProvider
+ * @author Utrecht University
+ * @notice This interface defines a AuthProvider, to allow for easy swapping of auth function across all facets.
+ */
 interface IAuthProvider {
     function auth(bytes32 _permissionId, address _account) external view;
 }

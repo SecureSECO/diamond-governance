@@ -17,7 +17,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { createTestingDao, deployTestNetwork } from "./utils/testDeployer";
 import { DiamondCut } from "../utils/diamondGovernanceHelper";
-import { days } from "../utils/timeUnits";
+import { days, now } from "../utils/timeUnits";
 import { DECIMALS_18 } from "../utils/decimals18Helper";
 
 // Types
@@ -44,10 +44,9 @@ async function getClient() {
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: 0,
     initialAmount: DECIMALS_18,
-    slopeN: 0,
-    slopeD: 1,
+    slope: 0,
   };
   const cut : DiamondCut[] = [
       await DiamondCut.All(diamondGovernance.GovernanceERC20Facet, [GovernanceERC20FacetSettings]),

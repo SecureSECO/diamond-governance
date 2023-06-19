@@ -8,6 +8,11 @@ pragma solidity ^0.8.0;
 
 import { IGovernanceStructure } from "./IGovernanceStructure.sol";
 
+/**
+ * @title IBurnableGovernanceStructure
+ * @author Utrecht University
+ * @notice This interface allows burning of voting power.
+ */
 interface IBurnableGovernanceStructure is IGovernanceStructure {
     /// @notice Burns an amount of voting power from a wallet.
     /// @param _from The wallet to burn from.

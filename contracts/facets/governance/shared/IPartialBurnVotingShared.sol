@@ -6,5 +6,6 @@
 
 pragma solidity ^0.8.0;
 
+// Shared permission between PartialBurnVotingProposalFacet and PartialBurnVotingFacet.
 bytes32 constant PROPOSAL_BURN_TYPE =
     keccak256("burn.proposal.type.dg");

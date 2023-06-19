@@ -1,8 +1,8 @@
 name: Diamond Governance SDK publish
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ "main" ]
 
 defaults:
   run:
@@ -10,7 +10,6 @@ defaults:
 
 env:
   NODE_VERSION: 18.x
-  npm-publish: ${{ github.event.inputs.js || true }}
 
 jobs:
   install-dependencies:
@@ -49,17 +48,8 @@ jobs:
         run: npm install
       - name: Install typescript
         run: npm i typescript -g
-      - name: Generate sdk
-        run: npm run generate-sdk
-      - name: Enter sdk directory
-        run: cd sdk
-      # Incrementing version should be done in a GitHub commit, otherwise the the package.json in GitHub will not be up to date
-      # - name: Increment npm package version
-      #   run: npm version minor --no-git-tag-version
-      - name: Compile package
-        run: tsc --declaration
-      - name: Publish
-        run: npm publish
+      - name: Publish sdk
+        run: npm run publish-sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

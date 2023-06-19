@@ -15,6 +15,8 @@ import { GetTypedContractAt } from "../../utils/contractHelper";
 export * from "./sugar/data"; 
 export * from "./sugar/proposal";
 
+/// Wrapped methods that makes interacting with certain components of the Diamond Governacne smart contracts easier.
+
 export class DiamondGovernanceSugar { 
     private pure: DiamondGovernancePure;
     private proposalCache: ProposalCache | undefined;

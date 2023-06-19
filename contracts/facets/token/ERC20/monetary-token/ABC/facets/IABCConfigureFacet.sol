@@ -6,6 +6,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IABCConfigureFacet
+ * @author Utrecht University
+ * @notice This interface defines what variables can be changed of the ABC.
+ */
 interface IABCConfigureFacet {
     function getMarketMaker() external view returns (address);
     function setMarketMaker(address _marketMaker) external;

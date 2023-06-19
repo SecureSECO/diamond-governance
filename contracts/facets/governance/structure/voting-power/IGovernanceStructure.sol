@@ -6,6 +6,11 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title IGovernanceStructure
+ * @author Utrecht University
+ * @notice This interface allows queries on voting power.
+ */
 interface IGovernanceStructure {
     /// @notice Returns the total voting power checkpointed for a specific block number.
     /// @param _blockNumber The block number.

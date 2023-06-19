@@ -9,16 +9,26 @@
  
 pragma solidity ^0.8.0;
 
+/**
+ * @title IERC20OneTimeRewardFacet
+ * @author Utrecht University
+ * @notice This interface allows you to claim an one time reward for every verification stamp an address has recieved.
+ */
 interface IERC20OneTimeVerificationRewardFacet {
-    function tokensClaimableVerificationRewardAll() external view returns (uint256 amount);
+    struct OneTimeVerificationReward {
+        uint256 repReward;
+        uint256 coinReward;
+    }
+
+    function tokensClaimableVerificationRewardAll() external view returns (OneTimeVerificationReward memory);
 
     function claimVerificationRewardAll() external;
 
-    function tokensClaimableVerificationRewardStamp(uint256 _stampIndex) external view returns (uint256 amount);
+    function tokensClaimableVerificationRewardStamp(uint256 _stampIndex) external view returns (OneTimeVerificationReward memory);
 
     function claimVerificationRewardStamp(uint256 _stampIndex) external;
 
-    function getProviderReward(string calldata _provider) external view returns (uint256);
+    function getProviderReward(string calldata _provider) external view returns (OneTimeVerificationReward memory);
 
-    function setProviderReward(string calldata _provider, uint256 _reward) external;
+    function setProviderReward(string calldata _provider, OneTimeVerificationReward memory _reward) external;
 }

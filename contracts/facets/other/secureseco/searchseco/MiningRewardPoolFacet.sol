@@ -10,13 +10,17 @@ import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {IFacet} from "../../../IFacet.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 import {LibMiningRewardStorage} from "../../../../libraries/storage/LibMiningRewardStorage.sol";
-import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
+import {IMonetaryTokenFacet} from "../../../token/ERC20/monetary-token/IMonetaryTokenFacet.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 
+/**
+ * @title MiningRewardPoolFacet
+ * @author Utrecht University
+ * @notice Implementation of IMiningRewardPoolFacet.
+ */
 contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
-    // Permission used by the updateTierMapping function
     bytes32 public constant UPDATE_MINING_REWARD_POOL_PERMISSION_ID =
         keccak256("UPDATE_MINING_REWARD_POOL_PERMISSION");
 
@@ -38,6 +42,16 @@ contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
     }
 
     /// @inheritdoc IMiningRewardPoolFacet
+    function donateToMiningRewardPool(uint _amount) external override {
+        LibMiningRewardStorage.getStorage().miningRewardPool += _amount;
+        IERC20(IMonetaryTokenFacet(address(this)).getTokenContractAddress()).transferFrom(
+            msg.sender,
+            address(IDAOReferenceFacet(address(this)).dao()),
+            _amount
+        );
+    }
+
+    /// @inheritdoc IMiningRewardPoolFacet
     function increaseMiningRewardPool(uint _amount) external override auth(UPDATE_MINING_REWARD_POOL_PERMISSION_ID) {
         LibMiningRewardStorage.getStorage().miningRewardPool += _amount;
     }
@@ -49,7 +63,7 @@ contract MiningRewardPoolFacet is IMiningRewardPoolFacet, AuthConsumer, IFacet {
 
     /// @inheritdoc IMiningRewardPoolFacet
     function rewardCoinsToMiner(address _miner, uint _amount) external override auth(UPDATE_MINING_REWARD_POOL_PERMISSION_ID) {
-        IERC20(IChangeableTokenContract(address(this)).getTokenContractAddress()).transferFrom(
+        IERC20(IMonetaryTokenFacet(address(this)).getTokenContractAddress()).transferFrom(
             address(IDAOReferenceFacet(address(this)).dao()),
             _miner,
             _amount

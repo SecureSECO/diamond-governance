@@ -8,6 +8,11 @@ pragma solidity ^0.8.0;
 
 import { IGovernanceStructure } from "./IGovernanceStructure.sol";
 
+/**
+ * @title IMintableGovernanceStructure
+ * @author Utrecht University
+ * @notice This interface allows minting of voting power.
+ */
 interface IMintableGovernanceStructure is IGovernanceStructure {
     /// @notice Mints an amount of specific tokens to a wallet.
     /// @param _to The wallet to mint to.

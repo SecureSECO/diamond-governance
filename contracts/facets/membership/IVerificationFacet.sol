@@ -9,9 +9,11 @@ pragma solidity ^0.8.0;
 
 import { SignVerification } from "../../other/verification/SignVerification.sol";
 
-/// @title IVerificationFacet
-/// @author Utrecht University - 2023
-/// @notice The interface of the verification plugin.
+/**
+ * @title IVerificationFacet
+ * @author Utrecht University
+ * @notice This interface defines verification stamps that wallets can have.
+ */
 interface IVerificationFacet {
     /// @notice Returns all stamps of an account.
     /// @param _address The address to get stamps from.

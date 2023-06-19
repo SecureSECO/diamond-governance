@@ -11,11 +11,14 @@ import { createDiamondGovernanceRepoIfNotExists, deployDiamondGovernance } from 
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
 import { DiamondCut, DAOCreationSettings, CreateDAO } from "../utils/diamondGovernanceHelper";
 import { days, hours, now } from "../utils/timeUnits";
-import { ether, wei } from "../utils/etherUnits";
+import { ether } from "../utils/etherUnits";
 import { ethers, network } from "hardhat";
 import { MonetaryTokenDeployer, ABCDeployer, ABCDeployerSettings } from "../deployments/deploy_MonetaryToken";
 import { to18Decimal } from "../utils/decimals18Helper";
 import { BigNumber } from "ethers";
+
+/// This scripts deploys the Diamond Governance (what has not been deployed yet) and creates a DAO with it.
+/// Configure the settings of the DAO here.
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -29,13 +32,13 @@ async function main() {
   const ABCDeployerSettings : ABCDeployerSettings = {
     curveParameters: {
       theta: 0.05 * 10**6, // 5%
-      friction: 0.01 * 10**6, // 1%
-      reserveRatio: 0.2 * 10**6, // 20%
+      friction: 0.05 * 10**6, // 5%
+      reserveRatio: 0.5 * 10**6, // 50%
     },
     hatchParameters: {
-      initialPrice: wei.mul(1),
-      minimumRaise: wei.mul(1),
-      maximumRaise: wei.mul(1),
+      initialPrice: to18Decimal("10000"), // 1 external token => 10k monetary token
+      minimumRaise: ether.mul(1),
+      maximumRaise: ether.mul(1),
       hatchDeadline: now() + 24 * hours,
     },
     vestingSchedule: {
@@ -105,26 +108,27 @@ async function main() {
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {
     providers: ["github", "proofofhumanity"], //string[]
-    rewards: [ether.mul(30), ether.mul(100)], //uint256[]
+    repRewards: [ether.mul(30), ether.mul(100)], //uint256[]
+    coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
-    hashCost: 1,
-    treasuryRatio: 0.2 * 10**6, // 20%
+    hashCost: to18Decimal("0.01"), // 1 SECOIN per 100 hashes
+    queryMiningRewardPoolRatio: 0.2 * 10**6, // 20%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
-    miningRewardPoolPayoutRatio: to18Decimal(0.01.toString()), // 1%
+    miningRewardPoolPayoutRatio: to18Decimal("0.01"), // 1%
     hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
+    hashReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
   };
   const RewardMultiplierSettings = {
     name: "inflation",
-    startBlock: await owner.provider?.getBlockNumber(),
+    startTimestamp: now(),
     initialAmount: BigNumber.from(10).pow(18), // dec18 = 1
-    slopeN: 1,
-    slopeD: 1,
+    slope: 0,
   };
   const ABCConfigureFacetSettings = {
     marketMaker: monetaryTokenDeployer.deployedContracts.MarketMaker,
@@ -149,6 +153,7 @@ async function main() {
     await DiamondCut.All(diamondGovernance.SearchSECOMonetizationFacet, [SearchSECOMonetizationFacetSettings]),
     await DiamondCut.All(diamondGovernance.SearchSECORewardingFacet, [SearchSECORewardingFacetSettings]),
     await DiamondCut.All(diamondGovernance.MiningRewardPoolFacet),
+    await DiamondCut.All(diamondGovernance.VerificationRewardPoolFacet),
     await DiamondCut.All(diamondGovernance.MonetaryTokenFacet, [MonetaryTokenFacetSettings]),
     await DiamondCut.All(diamondGovernance.ERC20PartialBurnVotingProposalRefundFacet),
     await DiamondCut.All(diamondGovernance.RewardMultiplierFacet, [RewardMultiplierSettings]),

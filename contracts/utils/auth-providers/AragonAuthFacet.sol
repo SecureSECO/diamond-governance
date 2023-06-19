@@ -15,6 +15,11 @@ import { IAuthProvider } from "./IAuthProvider.sol";
 import { DAOReferenceFacet } from "../../facets/aragon/DAOReferenceFacet.sol";
 import { IFacet } from "../../facets/IFacet.sol";
 
+/**
+ * @title AragonAuthFacet
+ * @author Utrecht University
+ * @notice This AuthProvider uses AragonOSx as auth.
+ */
 contract AragonAuthFacet is IAuthProvider, IFacet {
     /// @inheritdoc IFacet
     function init(bytes memory/* _initParams*/) public virtual override {

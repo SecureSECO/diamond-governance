@@ -9,6 +9,8 @@
 import fs from "fs";
 import hre from "hardhat";
 
+/// Script to copy hardhat artifacts to abis.json, so ethers contracts can be made based on contract name without needing hardhat.
+
 const outputFile = "./generated/abis.json";
 
 async function main() {

@@ -10,16 +10,18 @@ import {IDAO} from "@aragon/osx/core/plugin/Plugin.sol";
 import {LibSearchSECOMonetizationStorage} from "../../../../libraries/storage/LibSearchSECOMonetizationStorage.sol";
 import {ISearchSECOMonetizationFacet} from "./ISearchSECOMonetizationFacet.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IChangeableTokenContract} from "../../../token/ERC20/monetary-token/IChangeableTokenContract.sol";
+import {IMonetaryTokenFacet} from "../../../token/ERC20/monetary-token/IMonetaryTokenFacet.sol";
 import {IFacet} from "../../../IFacet.sol";
 import {IDAOReferenceFacet} from "../../../aragon/IDAOReferenceFacet.sol";
 import {AuthConsumer} from "../../../../utils/AuthConsumer.sol";
 import {IMiningRewardPoolFacet} from "./IMiningRewardPoolFacet.sol";
 import "../../../../utils/Ratio.sol";
 
-/// @title SearchSECO monetization facet for the Diamond Governance Plugin
-/// @author J.S.C.L. & T.Y.M.W. @ UU
-/// @notice This integrates the SearchSECO project into the DAO by monetizing queries and rewarding spiders
+/**
+ * @title SearchSECOMonetizationFacet
+ * @author Utrecht University
+ * @notice Implementation of ISearchSECOMonetizationFacet.
+ */
 contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFacet, IFacet {
     event PaymentProcessed(address sender, uint amount, string uniqueId);
 
@@ -29,7 +31,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
 
     struct SearchSECOMonetizationFacetInitParams {
         uint256 hashCost;
-        uint32 treasuryRatio;
+        uint32 queryMiningRewardPoolRatio; // ppm
     }
 
     /// @inheritdoc IFacet
@@ -43,7 +45,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         SearchSECOMonetizationFacetInitParams memory _params
     ) public virtual {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _params.hashCost;
-        LibSearchSECOMonetizationStorage.getStorage().treasuryRatio = _params.treasuryRatio;
+        LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio = _params.queryMiningRewardPoolRatio;
         
         registerInterface(type(ISearchSECOMonetizationFacet).interfaceId);
     }
@@ -59,7 +61,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         LibSearchSECOMonetizationStorage.Storage
             storage s = LibSearchSECOMonetizationStorage.getStorage();
         IMiningRewardPoolFacet miningRewardFacet = IMiningRewardPoolFacet(address(this));
-        IChangeableTokenContract monetaryTokenFacet = IChangeableTokenContract(address(this));
+        IMonetaryTokenFacet monetaryTokenFacet = IMonetaryTokenFacet(address(this));
         IERC20 tokenContract = IERC20(monetaryTokenFacet.getTokenContractAddress());
 
 
@@ -71,7 +73,7 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
         );
 
         // Calculate the amount of tokens that go to the treasury and the mining reward pool
-        uint ratio = s.treasuryRatio;
+        uint ratio = s.queryMiningRewardPoolRatio;
 
         uint totalPayout = s.hashCost * _amount;
         uint toMiningRewardPool = _applyRatioCeiled(totalPayout, ratio);
@@ -97,5 +99,15 @@ contract SearchSECOMonetizationFacet is AuthConsumer, ISearchSECOMonetizationFac
     /// @inheritdoc ISearchSECOMonetizationFacet
     function setHashCost(uint _hashCost) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
         LibSearchSECOMonetizationStorage.getStorage().hashCost = _hashCost;
+    }
+
+    /// @inheritdoc ISearchSECOMonetizationFacet
+    function getQueryMiningRewardPoolRatio() external view virtual override returns (uint32) {
+        return LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio;
+    }
+
+    /// @inheritdoc ISearchSECOMonetizationFacet
+    function setQueryMiningRewardPoolRatio(uint32 _queryMiningRewardPoolRatio) external virtual override auth(UPDATE_HASH_COST_MAPPING_PERMISSION_ID) {
+        LibSearchSECOMonetizationStorage.getStorage().queryMiningRewardPoolRatio = _queryMiningRewardPoolRatio;
     }
 }

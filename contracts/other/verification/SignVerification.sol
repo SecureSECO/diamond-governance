@@ -9,9 +9,11 @@ pragma solidity ^0.8.0;
 import {GenericSignatureHelper} from "../../utils/GenericSignatureHelper.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title A contract to verify addresses
-/// @author Utrecht University
-/// @notice You can use this contract to verify addresses
+/**
+ * @title SignVerification
+ * @author Utrecht University
+ * @notice This contracat requires a signer to provide proof of verification with a certain offchain service (example: GitHub) and assigns the respecitve stamp to the address.
+ */
 contract SignVerification is GenericSignatureHelper, Ownable {
     // Map from user to their stamps
     mapping(address => Stamp[]) internal stamps;

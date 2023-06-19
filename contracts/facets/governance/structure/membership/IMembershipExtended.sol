@@ -8,6 +8,13 @@ pragma solidity ^0.8.0;
 
 import { IMembership } from "@aragon/osx/core/plugin/membership/IMembership.sol";
 
+/**
+ * @title IDAOReferenceFacet
+ * @author Utrecht University
+ * @notice This interface is an extension upon Aragons IMembership.
+ * It allows to query is a wallet was a member at a certain timestamp.
+ * It allows to get a list of all wallets that were a member at some point.
+ */
 interface IMembershipExtended is IMembership {
     /// @inheritdoc IMembership
     function isMember(address _account) external view override returns (bool);

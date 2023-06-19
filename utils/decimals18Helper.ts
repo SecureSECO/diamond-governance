@@ -1,5 +1,7 @@
 import { BigNumber } from "ethers";
 
+/// Helper to create 18 decimal number from a decimal number string.
+
 /**
  * Convert any (decimal) number to 18 decimals
  * @remarks This function can only take numbers in the format of "123.456" (note the dot and no spaces).
