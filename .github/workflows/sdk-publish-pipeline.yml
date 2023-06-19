@@ -10,27 +10,46 @@ defaults:
 
 env:
   NODE_VERSION: 18.x
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 jobs:
-  npm-publish:
+  install-dependencies:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+    
+  npm-publish:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: restore-node_modules
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
-        run: npm ci
+        if: steps.restore-node_modules.outputs.cache-hit != 'true'
+        run: npm install
       - name: Install typescript
         run: npm i typescript -g
-      - name: Generate sdk
-        run: npm run generate-sdk
-      - name: Compile sdk
-        run: tsc --project ./sdk/tsconfig.json --declaration
+      - name: Add npm auth token
+        run: npm set //registry.npmjs.org/:_authToken ${{ env.NODE_AUTH_TOKEN }}
       - name: Publish sdk
-        run: npm publish ./sdk
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  
+        run: npm run publish-sdk
