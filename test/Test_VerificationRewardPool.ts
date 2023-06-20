@@ -186,8 +186,9 @@ describe("VerificationRewardPool", async function () {
     expect(ERC20MonetaryToken.balanceOf(daoAddress));
 
     const toClaim = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardAll();
-    expect(toClaim[0]).to.be.equal(0);
-    expect(toClaim[1]).to.be.equal(0);
+    expect(toClaim[0][0]).to.be.equal(0);
+    expect(toClaim[0][1]).to.be.equal(0);
+    expect(toClaim[0]).to.be.deep.equal(toClaim[1][0]);
   });
   it("cap secoin reward at verification reward pool balance", async function () {
     const client = await loadFixture(getClient);
