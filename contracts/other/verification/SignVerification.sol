@@ -72,7 +72,7 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         );
 
         require(
-            verify(owner(), keccak256(abi.encodePacked(_toVerify, _userHash, uint(_timestamp))), _proofSignature),
+            verify(owner(), keccak256(abi.encodePacked(_toVerify, _userHash, uint(_timestamp), _providerId)), _proofSignature),
             "Proof is not valid"
         );
 

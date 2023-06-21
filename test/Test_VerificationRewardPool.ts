@@ -106,7 +106,7 @@ const getERC20MonetaryTokenContractAndInit = async (
 // Approves the diamond to handle the treasury
 const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryToken: ERC20MonetaryToken, owner: Signer) => {
   // (us) Approve plugin to spend (our) tokens: this is needed for the plugin to transfer tokens from our account
-  await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(1e6));
+  await ERC20MonetaryToken.approve(client.pure.pluginAddress, ether.mul(INITIAL_MINT_AMOUNT));
   // (DAO) Approve plugin to spend tokens: this is needed for the plugin to transfer tokens from the DAO
   await (
     await GetTypedContractAt<ExecuteAnythingFacet>(
@@ -120,7 +120,7 @@ const approveEverything = async (client: DiamondGovernanceClient, ERC20MonetaryT
       value: 0,
       data: ERC20MonetaryToken.interface.encodeFunctionData("approve", [
         client.pure.pluginAddress,
-        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        ethers.constants.MaxUint256,
       ]),
     },
   ]);
@@ -135,9 +135,9 @@ describe("VerificationRewardPool", async function () {
 
     await approveEverything(client, ERC20MonetaryToken, owner);
 
-    await IVerificationRewardPoolFacet.increaseVerificationRewardPool(ether.mul(1e6));
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(INITIAL_MINT_AMOUNT));
     const verificationRewardPool = await IVerificationRewardPoolFacet.getVerificationRewardPool();
-    expect(verificationRewardPool).to.equal(ether.mul(1e6));
+    expect(verificationRewardPool).to.equal(ether.mul(INITIAL_MINT_AMOUNT));
   });
 
   it("reward verifyers", async function () {
@@ -148,7 +148,7 @@ describe("VerificationRewardPool", async function () {
 
     await approveEverything(client, ERC20MonetaryToken, owner);
 
-    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(1e6));
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(INITIAL_MINT_AMOUNT));
 
     const IVerificationFacet = await client.pure.IVerificationFacet();
     const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
@@ -178,7 +178,7 @@ describe("VerificationRewardPool", async function () {
     expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(ether.mul(1));
 
     // Check that the verification pool now has 1 big coin less
-    expect(await IVerificationRewardPoolFacet.getVerificationRewardPool()).to.be.equal(ether.mul(1e6).sub(ether.mul(1)));
+    expect(await IVerificationRewardPoolFacet.getVerificationRewardPool()).to.be.equal(ether.mul(INITIAL_MINT_AMOUNT).sub(ether.mul(1)));
 
     // Check that the treasury has 1 big coin less
     const IDAOReferenceFacet = await client.pure.IDAOReferenceFacet();
@@ -224,5 +224,58 @@ describe("VerificationRewardPool", async function () {
 
     // Our account should have 0 coins
     expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(0);
+  });
+  it.only("cap secoin reward at verification reward pool balance 2", async function () {
+    const client = await loadFixture(getClient);
+    const ERC20MonetaryToken = await getERC20MonetaryTokenContractAndInit(client);
+    const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
+    const [owner] = await ethers.getSigners();
+
+    await approveEverything(client, ERC20MonetaryToken, owner);
+
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(41));
+
+    const IVerificationFacet = await client.pure.IVerificationFacet();
+    const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
+    // const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
+    const standaloneVerificationContract = await GetTypedContractAt<SignVerification>("SignVerification", verificationContractAddress, owner);
+
+    // Verify "owner"
+    const timestamp = now();
+    const userHash =
+      "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
+    const userHash2 = "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff9";
+    const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
+    const dataHexString2 = await createSignature(timestamp, owner.address, userHash2, owner, "proofofhumanity");
+
+    // Throws if verification fails
+    await standaloneVerificationContract.verifyAddress(owner.address, userHash, timestamp, "github", dataHexString);
+    await standaloneVerificationContract.verifyAddress(owner.address, userHash2, timestamp, "proofofhumanity", dataHexString2);
+    await time.increase(1 * days); // To avoid time inconsistencies between blockchain and local machine
+
+    const IERC20OneTimeVerificationRewardFacet = await client.pure.IERC20OneTimeVerificationRewardFacet();
+
+    // There's currently no coins in the verification reward pool
+    await IERC20OneTimeVerificationRewardFacet.claimVerificationRewardAll();
+
+    // These two requests can be parallellized
+    const repInterface = await client.pure.IERC20();
+    // Rep is minted to our account
+    expect(await repInterface.balanceOf(owner.address)).to.be.equal(ether.mul(30 + 100));
+
+    // Our account should have all our initial coins back
+    expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(ether.mul(INITIAL_MINT_AMOUNT));
+    expect(await IVerificationRewardPoolFacet.getVerificationRewardPool()).to.be.equal(0); // The pool should be empty
+    const tokensClaimableGH = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardStamp(0);
+    const tokensClaimablePOH = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardStamp(1);
+    console.log(tokensClaimableGH, tokensClaimablePOH);
+    expect(tokensClaimableGH[0]).to.be.equal(0); // Nothing left to claim for gh rep
+    expect(tokensClaimableGH[1]).to.be.equal(0); // Nothing left to claim for gh coin
+    expect(tokensClaimablePOH[0]).to.be.equal(0); // Nothing left to claim for poh rep 
+    expect(tokensClaimablePOH[1]).to.be.equal(0); // 60 left to claim for poh coin but nothing in treasury
+
+    // Now we donate 61 big coin to the pool
+    await IVerificationRewardPoolFacet.donateToVerificationRewardPool(ether.mul(61));
+    expect(await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardStamp(1)).to.be.deep.equal([0, ether.mul(60)]); // 60 left to claim for poh coin while 61 in treasury
   });
 });
