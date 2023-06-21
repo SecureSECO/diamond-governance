@@ -272,6 +272,7 @@ contract ERC20OneTimeVerificationRewardFacet is
             if (rewardClaimable.coinReward != 0) {
                 reward.coinReward += rewardClaimable.coinReward;
                 eachReward[i].coinReward += rewardClaimable.coinReward;
+                verificationRewardPoolBalance -= rewardClaimable.coinReward;
             }
 
             unchecked {
