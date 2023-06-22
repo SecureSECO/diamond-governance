@@ -91,8 +91,12 @@ contract ERC20OneTimeVerificationRewardFacet is
     /// @inheritdoc IERC20OneTimeVerificationRewardFacet
     function claimVerificationRewardAll() external virtual {
         // _claim(msg.sender);
-        IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
-            memory reward = _tokensClaimable(msg.sender);
+        (
+            IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
+                memory reward,
+            IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward[]
+                memory eachReward
+        ) = _tokensClaimable(msg.sender);
         IMintableGovernanceStructure(address(this)).mintVotingPower(
             msg.sender,
             0,
@@ -102,7 +106,7 @@ contract ERC20OneTimeVerificationRewardFacet is
             msg.sender,
             reward.coinReward
         );
-        _afterClaim(msg.sender);
+        _afterClaim(msg.sender, eachReward);
     }
 
     /// @inheritdoc IERC20OneTimeVerificationRewardFacet
@@ -135,7 +139,8 @@ contract ERC20OneTimeVerificationRewardFacet is
         _afterClaimStamp(
             msg.sender,
             stampsAt[_stampIndex].providerId,
-            stampsAt[_stampIndex].userHash
+            stampsAt[_stampIndex].userHash,
+            reward
         );
     }
 
@@ -181,6 +186,8 @@ contract ERC20OneTimeVerificationRewardFacet is
         virtual
         returns (
             IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
+                memory,
+            IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward[]
                 memory
         )
     {
@@ -203,11 +210,15 @@ contract ERC20OneTimeVerificationRewardFacet is
             address(this)
         ).getStampsAt(msg.sender, block.timestamp);
         require(_stampIndex < stampsAt.length, "Stamp index out of bound");
+        uint verificationRewardPoolBalance = IVerificationRewardPoolFacet(
+            address(this)
+        ).getVerificationRewardPool();
         return
             _tokensClaimableStamp(
                 msg.sender,
                 stampsAt[_stampIndex].providerId,
-                stampsAt[_stampIndex].userHash
+                stampsAt[_stampIndex].userHash,
+                verificationRewardPoolBalance
             );
     }
 
@@ -223,7 +234,9 @@ contract ERC20OneTimeVerificationRewardFacet is
         virtual
         returns (
             IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
-                memory reward
+                memory reward,
+            IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward[]
+                memory eachReward
         )
     {
         // Get data from storage
@@ -236,18 +249,30 @@ contract ERC20OneTimeVerificationRewardFacet is
                 0
             );
 
+        eachReward = new IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward[](
+                stampsAt.length
+            );
+
+        uint verificationRewardPoolBalance = IVerificationRewardPoolFacet(
+            address(this)
+        ).getVerificationRewardPool();
+
         for (uint i; i < stampsAt.length; ) {
             IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
                 memory rewardClaimable = _tokensClaimableStamp(
                     _claimer,
                     stampsAt[i].providerId,
-                    stampsAt[i].userHash
+                    stampsAt[i].userHash,
+                    verificationRewardPoolBalance
                 );
             if (rewardClaimable.repReward != 0) {
                 reward.repReward += rewardClaimable.repReward;
+                eachReward[i].repReward += rewardClaimable.repReward;
             }
             if (rewardClaimable.coinReward != 0) {
                 reward.coinReward += rewardClaimable.coinReward;
+                eachReward[i].coinReward += rewardClaimable.coinReward;
+                verificationRewardPoolBalance -= rewardClaimable.coinReward;
             }
 
             unchecked {
@@ -264,7 +289,8 @@ contract ERC20OneTimeVerificationRewardFacet is
     function _tokensClaimableStamp(
         address _claimer,
         string memory _provider,
-        string memory _stamp
+        string memory _stamp,
+        uint verificationRewardPoolBalance
     )
         internal
         view
@@ -290,9 +316,6 @@ contract ERC20OneTimeVerificationRewardFacet is
         // Amount already claimed for a unique stamp
         IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
             memory amountClaimedForStamp = s.amountClaimedForStamp[_stamp];
-        uint verificationRewardPoolBalance = IVerificationRewardPoolFacet(
-            address(this)
-        ).getVerificationRewardPool();
 
         return
             IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward(
@@ -315,7 +338,11 @@ contract ERC20OneTimeVerificationRewardFacet is
     // Copied from IERC20ClaimableFacet.sol
     /// @notice Set the amount of tokens claimed for all stamps.
     /// @param _claimer The address to check.
-    function _afterClaim(address _claimer) internal virtual {
+    function _afterClaim(
+        address _claimer,
+        IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward[]
+            memory eachReward
+    ) internal virtual {
         // Get data from storage
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(
             address(this)
@@ -325,7 +352,8 @@ contract ERC20OneTimeVerificationRewardFacet is
             _afterClaimStamp(
                 _claimer,
                 stampsAt[i].providerId,
-                stampsAt[i].userHash
+                stampsAt[i].userHash,
+                eachReward[i]
             );
 
             unchecked {
@@ -341,12 +369,13 @@ contract ERC20OneTimeVerificationRewardFacet is
     function _afterClaimStamp(
         address _claimer,
         string memory _provider,
-        string memory _stamp
+        string memory _stamp,
+        IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
+            memory reward
     ) internal virtual {
         LibERC20OneTimeVerificationRewardStorage.Storage
             storage s = LibERC20OneTimeVerificationRewardStorage.getStorage();
-        s.amountClaimedByAddressForProvider[_claimer][_provider] = s
-            .providerReward[_provider];
-        s.amountClaimedForStamp[_stamp] = s.providerReward[_provider];
+        s.amountClaimedByAddressForProvider[_claimer][_provider] = reward;
+        s.amountClaimedForStamp[_stamp] = reward;
     }
 }

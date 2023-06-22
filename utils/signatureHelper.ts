@@ -19,9 +19,9 @@ import { ethers } from "ethers";
  * @param {string} ownerPrivKey Private key of the signer
  * @returns
  */
-export const createSignature = async (timestamp: number, toVerify: string, userHash: string, owner: SignerWithAddress) => {
+export const createSignature = async (timestamp: number, toVerify: string, userHash: string, owner: SignerWithAddress, providerId = "github") => {
   const packedMessage = ethers.utils.solidityPack(
-    ["address", "string", "uint256"], [toVerify, userHash, timestamp]
+    ["address", "string", "uint256", "string"], [toVerify, userHash, timestamp, providerId]
   );
 
   const hashPackedMessage = ethers.utils.keccak256(packedMessage);
