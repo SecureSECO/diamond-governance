@@ -57,6 +57,16 @@ export async function ToAction(contracts : any, pluginAddress : string, action :
         data: data
       };
     }
+    else if (action.method == "ApproveERC20") {
+      const IERC20 = new ethers.utils.Interface(GetAbi("IERC20"));
+      const data = await IERC20.encodeFunctionData("approve", [action.params.spender, action.params.amount]);
+
+      return {
+        to: action.params._contractAddress,
+        value: 0,
+        data: data
+      };
+    }
     else if (action.method == "WithdrawERC721") {
       const IERC721 = new ethers.utils.Interface(GetAbi("IERC721"));
       return {
@@ -172,6 +182,18 @@ export async function ParseAction(contracts : any, pluginAddress : string, actio
             _to: paramData[1],
             _tokenId: paramData[2],
             _amount: paramData[3],
+            _contractAddress: await action.to
+          }
+        };
+      } else if (funcSelector == "0x095ea7b3") { //approve
+        const IERC20 = new ethers.utils.Interface(GetAbi("IERC20"));
+        const paramData = IERC20.decodeFunctionData("approve(address,uint256)", await action.data);
+        return {
+          interface: "DAO",
+          method: "ApproveERC20",
+          params: {
+            spender: paramData[0],
+            amount: paramData[1],
             _contractAddress: await action.to
           }
         };
