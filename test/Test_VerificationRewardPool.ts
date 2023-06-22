@@ -225,7 +225,7 @@ describe("VerificationRewardPool", async function () {
     // Our account should have 0 coins
     expect(await ERC20MonetaryToken.balanceOf(owner.address)).to.be.equal(0);
   });
-  it.only("cap secoin reward at verification reward pool balance 2", async function () {
+  it("cap secoin reward at verification reward pool balance 2", async function () {
     const client = await loadFixture(getClient);
     const ERC20MonetaryToken = await getERC20MonetaryTokenContractAndInit(client);
     const IVerificationRewardPoolFacet = await client.pure.IVerificationRewardPoolFacet();
