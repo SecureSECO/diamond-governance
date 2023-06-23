@@ -15,7 +15,7 @@ library LibSearchSECORewardingStorage {
         mapping(address => uint) hashCount;
         address signer;
         /// @notice The reward that is given to a user for submitting a new hash
-        uint hashReward;
+        uint hashRepReward;
 
         /// @notice Defines the percentage of the pool that is paid out to the miner.
         bytes16 miningRewardPoolPayoutRatio; // quad float
