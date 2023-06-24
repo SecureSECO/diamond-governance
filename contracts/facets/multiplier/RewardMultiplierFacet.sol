@@ -141,6 +141,20 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
         );
     }
 
+    /// @inheritdoc IRewardMultiplierFacet
+    function setInflationTimestamp(uint _inflationTimestamp) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+        s.rewardMultiplier["inflation"].startTimestamp = _inflationTimestamp;
+    }
+
+    /// @inheritdoc IRewardMultiplierFacet
+    function getInflationTimestamp() external view override returns (uint) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+        return s.rewardMultiplier["inflation"].startTimestamp;
+    }
+
     function _setMultiplierTypeConstant(
         string memory _name,
         uint _startTimestamp,
