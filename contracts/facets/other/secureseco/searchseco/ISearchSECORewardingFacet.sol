@@ -39,11 +39,11 @@ interface ISearchSECORewardingFacet {
 
     /// @notice Returns the hash reward (REP), in 18 decimals precision
     /// @return The hash reward
-    function getHashReward() external view returns (uint);
+    function getHashRepReward() external view returns (uint);
 
     /// @notice Sets the hash reward (REP)
-    /// @param _hashReward The new hash reward
-    function setHashReward(uint _hashReward) external;
+    /// @param _hashRepReward The new hash reward
+    function setHashRepReward(uint _hashRepReward) external;
 
     /// @notice Returns the signer used for signature verification
     /// @return address signer
