@@ -243,8 +243,8 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     }
 
     /// @inheritdoc IVerificationFacet
-    function setReverifyThreshold(uint64 _reverifyDayThreshold) external auth(UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID) {
+    function setReverifyThreshold(uint64 _reverifyThreshold) external auth(UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID) {
         SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
-        verificationContract.setReverifyThreshold(_reverifyDayThreshold);
+        verificationContract.setReverifyThreshold(_reverifyThreshold);
     }
 }
