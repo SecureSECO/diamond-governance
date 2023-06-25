@@ -64,4 +64,14 @@ describe("SignVerification", () => {
     const stamps = await standaloneVerificationContract.getStamps(owner.address);
     expect(stamps.length).to.equal(1);
   });
+  it("should get/set correctly", async () => {
+    const client = await loadFixture(getClient);
+    const IVerificationFacet = await client.pure.IVerificationFacet();
+    
+    await IVerificationFacet.setReverifyThreshold(1);
+    expect(await IVerificationFacet.getReverifyThreshold()).to.equal(1);
+
+    await IVerificationFacet.setVerifyDayThreshold(1);
+    expect(await IVerificationFacet.getVerifyDayThreshold()).to.equal(1);
+  });
 });
