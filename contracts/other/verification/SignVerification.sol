@@ -27,7 +27,7 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     Threshold[] thresholdHistory;
 
     /// @notice The reverifyThreshold determines how long a user has to wait before they can re-verify their address, in days
-    uint64 public reverifyThreshold;
+    uint64 reverifyThreshold;
 
     /// @notice A stamp defines proof of verification for a user on a specific platform at a specific date
     struct Stamp {
@@ -254,6 +254,22 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         return stampsAtTrimmed;
     }
 
+    function getAllMembers() external view returns (address[] memory) {
+        return allMembers;
+    }
+
+    /// @notice Returns whether or not the caller is or was a member at any time
+    /// @dev Loop through the array of all members and return true if the caller is found
+    /// @return bool Whether or not the caller is or was a member at any time
+    function isOrWasMember(address _toCheck) external view returns (bool) {
+        return isMember[_toCheck];
+    }
+
+    /// @notice Returns latest verifyDayThreshold
+    function getVerifyDayThreshold() external view returns (uint64) {
+        return thresholdHistory[thresholdHistory.length - 1].threshold;
+    }
+
     /// @notice This function can only be called by the owner to set the verifyDayThreshold
     /// @dev Sets the verifyDayThreshold
     /// @param _days The number of days to set the verifyDayThreshold to
@@ -269,21 +285,9 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         thresholdHistory.push(Threshold(uint64(block.timestamp), _days));
     }
 
-    /// @notice Returns the full threshold history
-    /// @return An array of Threshold structs
-    function getThresholdHistory() external view returns (Threshold[] memory) {
-        return thresholdHistory;
-    }
-
-    function getAllMembers() external view returns (address[] memory) {
-        return allMembers;
-    }
-
-    /// @notice Returns whether or not the caller is or was a member at any time
-    /// @dev Loop through the array of all members and return true if the caller is found
-    /// @return bool Whether or not the caller is or was a member at any time
-    function isOrWasMember(address _toCheck) external view returns (bool) {
-        return isMember[_toCheck];
+    /// @notice Returns the reverifyThreshold
+    function getReverifyThreshold() external view returns (uint64) {
+        return reverifyThreshold;
     }
 
     /// @notice This function can only be called by the owner to set the reverifyThreshold
@@ -292,4 +296,11 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     function setReverifyThreshold(uint64 _days) external onlyOwner {
         reverifyThreshold = _days;
     }
+
+    /// @notice Returns the full threshold history
+    /// @return An array of Threshold structs
+    function getThresholdHistory() external view returns (Threshold[] memory) {
+        return thresholdHistory;
+    }
+
 }

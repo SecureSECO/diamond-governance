@@ -24,6 +24,12 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     bytes32 public constant UPDATE_TIER_MAPPING_PERMISSION_ID = keccak256("UPDATE_TIER_MAPPING_PERMISSION");
     // Permission used by the whitelist function
     bytes32 public constant WHITELIST_MEMBER_PERMISSION_ID = keccak256("WHITELIST_MEMBER_PERMISSION");
+    // Permission used to update the verification contract address
+    bytes32 public constant UPDATE_VERIFICATION_CONTRACT_PERMISSION_ID = keccak256("UPDATE_VERIFICATION_CONTRACT_PERMISSION");
+    // Permission used to update the verification day threshold
+    bytes32 public constant UPDATE_VERIFY_DAY_THRESHOLD_PERMISSION_ID = keccak256("UPDATE_VERIFY_DAY_THRESHOLD_PERMISSION");
+    // Permission used to update the reverification day threshold
+    bytes32 public constant UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID = keccak256("UPDATE_REVERIFICATION_THRESHOLD_PERMISSION");
 
     struct VerificationFacetInitParams {
         address verificationContractAddress;
@@ -211,5 +217,34 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     /// @inheritdoc IVerificationFacet
     function getVerificationContractAddress() external view virtual override returns (address) {
         return LibVerificationStorage.getStorage().verificationContractAddress;
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function setVerificationContractAddress(address _verificationContractAddress) external virtual override auth(UPDATE_VERIFICATION_CONTRACT_PERMISSION_ID) {
+        LibVerificationStorage.getStorage().verificationContractAddress = _verificationContractAddress; 
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function getVerifyDayThreshold() external view returns (uint64) {
+        SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
+        return verificationContract.getVerifyDayThreshold();
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function setVerifyDayThreshold(uint64 _verifyDayThreshold) external auth(UPDATE_VERIFY_DAY_THRESHOLD_PERMISSION_ID) {
+        SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
+        verificationContract.setVerifyDayThreshold(_verifyDayThreshold);
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function getReverifyThreshold() external view returns (uint64) {
+        SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
+        return verificationContract.getReverifyThreshold();
+    }
+
+    /// @inheritdoc IVerificationFacet
+    function setReverifyThreshold(uint64 _reverifyThreshold) external auth(UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID) {
+        SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
+        verificationContract.setReverifyThreshold(_reverifyThreshold);
     }
 }
