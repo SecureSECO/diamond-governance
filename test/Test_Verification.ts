@@ -67,7 +67,11 @@ describe("SignVerification", () => {
   it("should get/set correctly", async () => {
     const client = await loadFixture(getClient);
     const IVerificationFacet = await client.pure.IVerificationFacet();
-    
+    const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
+    const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
+
+    await standaloneVerificationContract.transferOwnership(client.pure.pluginAddress); // Transfer to diamond governance
+
     await IVerificationFacet.setReverifyThreshold(1);
     expect(await IVerificationFacet.getReverifyThreshold()).to.equal(1);
 

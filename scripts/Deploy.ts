@@ -183,6 +183,7 @@ async function main() {
   console.log("Diamond Governance:", dao.diamondGovernance.address);
   
   await monetaryTokenDeployer.afterDAODeploy(dao.dao.address, dao.diamondGovernance.address);
+  await diamondGovernance.SignVerification.transferOwnership(dao.diamondGovernance.address); // Transfer to diamond governance
 
   console.log("Deploy finished!");
 }

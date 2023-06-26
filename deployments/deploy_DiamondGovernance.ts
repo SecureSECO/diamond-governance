@@ -32,7 +32,7 @@ const additionalContracts : string[] = [
 ];
 
 const alwaysRedeploy : string[] = [
-
+  "SignVerification",
 ];
 
 const specialDeployment : { [contractName : string]: () => Promise<string> } = 
