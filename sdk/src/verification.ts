@@ -87,9 +87,9 @@ export class VerificationSugar {
       ? stamp[2][stamp[2].length - 1]
       : BigNumber.from(0);
 
-    // Retrieve the threshold history, and the threshold for the current timestamp
+    // Retrieve the threshold history, and the threshold for the current blockNumber
     const thresholdHistory = await this.GetThresholdHistory();
-    const threshold = this.getThresholdForTimestamp(
+    const threshold = this.getThresholdForBlockNumber(
       lastVerifiedAt.toNumber(),
       thresholdHistory
     );
@@ -166,12 +166,12 @@ export class VerificationSugar {
   }
 
   /**
-   * Gets the threshold for a given timestamp
-   * @param blockNumber The timestamp in seconds
+   * Gets the threshold for a given block number
+   * @param blockNumber The block number in seconds
    * @param thresholdHistory The threshold history
-   * @returns The threshold at the given timestamp
+   * @returns The threshold at the given block number
    */
-  private getThresholdForTimestamp(
+  private getThresholdForBlockNumber(
     blockNumber: number,
     thresholdHistory: VerificationThreshold[]
   ) {
