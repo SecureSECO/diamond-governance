@@ -76,7 +76,7 @@ async function main() {
         supportThreshold: 0.5 * 10**6, //uint32
         minParticipation: 0.2 * 10**6, //uint32
         maxSingleWalletPower: 0.1 * 10**6, //uint32
-        minDuration: 1 * days, //uint64
+        minDuration: 7 * days, //uint64
         minProposerVotingPower: ether.mul(1), //uint256
       },
     }
@@ -100,7 +100,7 @@ async function main() {
   };
   const ERC20TieredTimeClaimableFacetSettings = {
     tiers: [3, 10, 9999], //uint256[]
-    rewards: [ether.mul(1), ether.mul(3), ether.mul(3)], //uint256[]
+    rewards: [ether.mul(1), ether.mul(2), ether.mul(2)], //uint256[]
     _ERC20TimeClaimableFacetInitParams: {
       timeTillReward: 1 * days, //uint256
       maxTimeRewarded: 10 * days, //uint256
@@ -108,12 +108,12 @@ async function main() {
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {
     providers: ["github", "proofofhumanity"], //string[]
-    repRewards: [ether.mul(30), ether.mul(100)], //uint256[]
-    coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
+    repRewards: [ether.mul(10), ether.mul(10)], //uint256[]
+    coinRewards: [ether.mul(1), ether.mul(1)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: to18Decimal("0.01"), // 1 SECOIN per 100 hashes
-    queryMiningRewardPoolRatio: 0.2 * 10**6, // 20%
+    queryMiningRewardPoolRatio: 0.5 * 10**6, // 50%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
