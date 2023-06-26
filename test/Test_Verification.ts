@@ -75,7 +75,7 @@ describe("SignVerification", () => {
     await IVerificationFacet.setReverifyThreshold(1);
     expect(await IVerificationFacet.getReverifyThreshold()).to.equal(1);
 
-    await IVerificationFacet.setVerifyDayThreshold(1);
-    expect(await IVerificationFacet.getVerifyDayThreshold()).to.equal(1);
+    await IVerificationFacet.setVerifyThreshold(1);
+    expect(await IVerificationFacet.getVerifyThreshold()).to.equal(1);
   });
 });

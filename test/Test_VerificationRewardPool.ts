@@ -152,7 +152,6 @@ describe("VerificationRewardPool", async function () {
 
     const IVerificationFacet = await client.pure.IVerificationFacet();
     const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
-    // const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
     const standaloneVerificationContract = await GetTypedContractAt<SignVerification>("SignVerification", verificationContractAddress, owner);
 
     // Verify "owner"
@@ -268,7 +267,6 @@ describe("VerificationRewardPool", async function () {
     expect(await IVerificationRewardPoolFacet.getVerificationRewardPool()).to.be.equal(0); // The pool should be empty
     const tokensClaimableGH = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardStamp(0);
     const tokensClaimablePOH = await IERC20OneTimeVerificationRewardFacet.tokensClaimableVerificationRewardStamp(1);
-    console.log(tokensClaimableGH, tokensClaimablePOH);
     expect(tokensClaimableGH[0]).to.be.equal(0); // Nothing left to claim for gh rep
     expect(tokensClaimableGH[1]).to.be.equal(0); // Nothing left to claim for gh coin
     expect(tokensClaimablePOH[0]).to.be.equal(0); // Nothing left to claim for poh rep 

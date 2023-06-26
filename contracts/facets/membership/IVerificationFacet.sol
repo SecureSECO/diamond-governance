@@ -22,9 +22,9 @@ interface IVerificationFacet {
 
     /// @notice Returns stamps of an account at a given timestamp
     /// @param _address The address to get stamps from
-    /// @param _timestamp The timestamp to get stamps at
+    /// @param _blockNumber The block number to get stamps at
     /// @return stamps The stamps of the account.
-    function getStampsAt(address _address, uint _timestamp) external view returns (SignVerification.Stamp[] memory);
+    function getStampsAt(address _address, uint _blockNumber) external view returns (SignVerification.Stamp[] memory);
 
     /// @notice Returns the current verification contract address
     /// @return address of the verification contract
@@ -44,19 +44,19 @@ interface IVerificationFacet {
 
     /// @notice Returns the amount of days that a stamp is valid for (latest value)
     /// @dev This function interacts with the verification contract to get the day threshold
-    function getVerifyDayThreshold() external view returns (uint64);
+    function getVerifyThreshold() external view returns (uint);
 
     /// @notice Updates the amount of days that a stamp is valid for
     /// @dev This function interacts with the verification contract to update the day threshold
-    /// @param _verifyDayThreshold The new amount of days that a stamp is valid for
-    function setVerifyDayThreshold(uint64 _verifyDayThreshold) external;
+    /// @param _verifyThreshold The new amount of days that a stamp is valid for
+    function setVerifyThreshold(uint _verifyThreshold) external;
 
     /// @notice Returns the amount of days that a stamp is valid for
     /// @dev This function interacts with the verification contract to get the reverification threshold
-    function getReverifyThreshold() external view returns (uint64);
+    function getReverifyThreshold() external view returns (uint);
 
     /// @notice Updates the amount of days that a stamp is valid for
     /// @dev This function interacts with the verification contract to update the reverification threshold
-    /// @param _reverifyDayThreshold The new amount of days that a stamp is valid for
-    function setReverifyThreshold(uint64 _reverifyDayThreshold) external;
+    /// @param _reverifyThreshold The new amount of days that a stamp is valid for
+    function setReverifyThreshold(uint _reverifyThreshold) external;
 }
