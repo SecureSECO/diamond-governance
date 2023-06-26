@@ -30,7 +30,7 @@ contract SearchSECORewardingFacet is
     ISearchSECORewardingFacet,
     IFacet
 {
-    // Permission used by the setHashReward function
+    // Permission used by the setHashRepReward function
     bytes32 public constant UPDATE_HASH_REWARD_PERMISSION_ID =
         keccak256("UPDATE_HASH_REWARD_PERMISSION_ID");
 
@@ -42,7 +42,7 @@ contract SearchSECORewardingFacet is
         address signer;
         uint miningRewardPoolPayoutRatio;
         uint hashDevaluationFactor;
-        uint hashReward;
+        uint hashRepReward;
     }
 
     /// @inheritdoc IFacet
@@ -61,7 +61,7 @@ contract SearchSECORewardingFacet is
         LibSearchSECORewardingStorage.Storage
             storage s = LibSearchSECORewardingStorage.getStorage();
         s.signer = _params.signer;
-        s.hashReward = _params.hashReward;
+        s.hashRepReward = _params.hashRepReward;
         _setMiningRewardPoolPayoutRatio(_params.miningRewardPoolPayoutRatio);
         _setHashDevaluationFactor(_params.hashDevaluationFactor);
 
@@ -107,7 +107,7 @@ contract SearchSECORewardingFacet is
         //    for the REP reward (calculated in step 1) to the hash reward (from storage)
         bytes16 repReward = ABDKMathQuad.mul(
             numHashDivided,
-            ABDKMathQuad.fromUInt(s.hashReward)
+            ABDKMathQuad.fromUInt(s.hashRepReward)
         );
         // Multiply for inflation
         repReward = ABDKMathQuad.mul(
@@ -228,15 +228,15 @@ contract SearchSECORewardingFacet is
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function getHashReward() external view virtual override returns (uint) {
-        return LibSearchSECORewardingStorage.getStorage().hashReward;
+    function getHashRepReward() external view virtual override returns (uint) {
+        return LibSearchSECORewardingStorage.getStorage().hashRepReward;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet
-    function setHashReward(
-        uint _hashReward
+    function setHashRepReward(
+        uint _hashRepReward
     ) public virtual override auth(UPDATE_HASH_REWARD_PERMISSION_ID) {
-        LibSearchSECORewardingStorage.getStorage().hashReward = _hashReward;
+        LibSearchSECORewardingStorage.getStorage().hashRepReward = _hashRepReward;
     }
 
     /// @inheritdoc ISearchSECORewardingFacet

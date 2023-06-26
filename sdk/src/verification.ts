@@ -157,7 +157,7 @@ export class VerificationSugar {
 
   public async GetReverifyThreshold(): Promise<BigNumber> {
     const verificationContract = await this.GetVerificationContract();
-    return await verificationContract.reverifyThreshold();
+    return await verificationContract.getReverifyThreshold();
   }
 
   /**

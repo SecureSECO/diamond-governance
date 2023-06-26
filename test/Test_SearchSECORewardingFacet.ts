@@ -58,7 +58,7 @@ async function getClient() {
     signer: owner.address,
     miningRewardPoolPayoutRatio: MINING_REWARD_POOL_PAYOUT_RATIO_18,
     hashDevaluationFactor: HASH_DEVALUATION_FACTOR,
-    hashReward: HASH_REWARD,
+    hashRepReward: HASH_REWARD,
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: HASH_COST,

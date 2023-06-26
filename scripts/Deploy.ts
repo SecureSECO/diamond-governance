@@ -119,7 +119,7 @@ async function main() {
     signer: owner.address,
     miningRewardPoolPayoutRatio: to18Decimal("0.01"), // 1%
     hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
-    hashReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
+    hashRepReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
