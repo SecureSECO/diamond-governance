@@ -20,7 +20,7 @@ interface IVerificationFacet {
     /// @return stamps The stamps of the account.
     function getStamps(address _address) external view returns (SignVerification.Stamp[] memory);
 
-    /// @notice Returns stamps of an account at a given timestamp
+    /// @notice Returns stamps of an account at a given block number
     /// @param _address The address to get stamps from
     /// @param _blockNumber The block number to get stamps at
     /// @return stamps The stamps of the account.
