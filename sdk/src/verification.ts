@@ -73,10 +73,15 @@ export class VerificationSugar {
   public async GetExpiration(stamp: Stamp): Promise<{
     verified: boolean;
     expired: boolean;
-    timeLeftUntilExpiration: number | null;
+    blocksLeftUntilExpiration: number | null;
     threshold: BigNumber;
   }> {
-    const currentTimestamp = Math.round(Date.now() / 1000);
+    const provider = this.signer.provider;
+    if (provider == null) {
+      throw new Error("No provider found");
+    }
+
+    const currentBlockNumber = await provider.getBlockNumber();
 
     const lastVerifiedAt = stamp
       ? stamp[2][stamp[2].length - 1]
@@ -97,25 +102,25 @@ export class VerificationSugar {
       thresholdHistory != null &&
       thresholdHistory.length > 0; 
 
-    const expirationDate = lastVerifiedAt
-      .add(threshold.mul(24 * 60 * 60))
+    const expirationBlock = lastVerifiedAt
+      .add(threshold)
       .toNumber();
 
     const verified =
-      preCondition && stamp != null && currentTimestamp < expirationDate;
+      preCondition && stamp != null && currentBlockNumber < expirationBlock;
 
     const expired =
-      preCondition && stamp != null && currentTimestamp > expirationDate;
+      preCondition && stamp != null && currentBlockNumber > expirationBlock;
 
-    let timeLeftUntilExpiration = null;
+    let blocksLeftUntilExpiration = null;
     if (verified) {
-      timeLeftUntilExpiration = expirationDate - currentTimestamp;
+      blocksLeftUntilExpiration = expirationBlock - currentBlockNumber;
     }
 
     return {
       verified,
       expired,
-      timeLeftUntilExpiration,
+      blocksLeftUntilExpiration,
       threshold,
     };
   }
@@ -162,16 +167,16 @@ export class VerificationSugar {
 
   /**
    * Gets the threshold for a given timestamp
-   * @param timestamp The timestamp in seconds
+   * @param blockNumber The timestamp in seconds
    * @param thresholdHistory The threshold history
    * @returns The threshold at the given timestamp
    */
   private getThresholdForTimestamp(
-    timestamp: number,
+    blockNumber: number,
     thresholdHistory: VerificationThreshold[]
   ) {
     let threshold = thresholdHistory.reverse().find((threshold) => {
-      return timestamp >= threshold[0].toNumber();
+      return blockNumber >= threshold[0].toNumber();
     });
 
     return threshold ? threshold[1] : BigNumber.from(0);
