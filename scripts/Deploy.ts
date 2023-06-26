@@ -102,8 +102,8 @@ async function main() {
     tiers: [3, 10, 9999], //uint256[]
     rewards: [ether.mul(1), ether.mul(3), ether.mul(3)], //uint256[]
     _ERC20TimeClaimableFacetInitParams: {
-      timeTillReward: 1 * days, //uint256
-      maxTimeRewarded: 10 * days, //uint256
+      timeTillReward: 1 * days / 2, //uint256
+      maxTimeRewarded: 10 * days / 2, //uint256
     },
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {

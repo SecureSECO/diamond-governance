@@ -19,6 +19,7 @@ import { createDiamondGovernanceRepo } from "../utils/diamondGovernanceHelper";
 // Other
 import deployedDiamondGovernanceJson from "../generated/deployed_DiamondGovernance.json";
 import diamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
+import { days } from "../utils/timeUnits";
 
 /// This deployer deploys (and verifies) the Diamond Governance contracts and facets, it will only deploy the not already deployed contracts on the network.
 /// In case contracts get changed (in deployment bytes), they will get redeployed.
@@ -39,7 +40,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
 { 
   SignVerification: async () => { 
     const SignVerificationContract = await ethers.getContractFactory("SignVerification");
-    const SignVerification = await SignVerificationContract.deploy(60, 30);
+    const SignVerification = await SignVerificationContract.deploy(60 * days / 2, 30 * days / 2);
     await SignVerification.deployed();
 
     if (!testing()) {
@@ -48,7 +49,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
       await new Promise(f => setTimeout(f, 10 * 1000));
       await hre.run("verify:verify", {
         address: SignVerification.address,
-        constructorArguments: [60, 30],
+        constructorArguments: [60 * days / 2, 30 * days / 2],
       });
     }
 
