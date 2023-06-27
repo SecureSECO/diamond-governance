@@ -102,8 +102,8 @@ async function main() {
     tiers: [3, 10, 9999], //uint256[]
     rewards: [ether.mul(1), ether.mul(3), ether.mul(3)], //uint256[]
     _ERC20TimeClaimableFacetInitParams: {
-      timeTillReward: 1 * days, //uint256
-      maxTimeRewarded: 10 * days, //uint256
+      timeTillReward: 1 * days / 2, //uint256
+      maxTimeRewarded: 10 * days / 2, //uint256
     },
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {
@@ -183,6 +183,7 @@ async function main() {
   console.log("Diamond Governance:", dao.diamondGovernance.address);
   
   await monetaryTokenDeployer.afterDAODeploy(dao.dao.address, dao.diamondGovernance.address);
+  await diamondGovernance.SignVerification.transferOwnership(dao.diamondGovernance.address); // Transfer to diamond governance
 
   console.log("Deploy finished!");
 }

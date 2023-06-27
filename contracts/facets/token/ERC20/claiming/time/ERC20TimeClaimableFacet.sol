@@ -64,12 +64,12 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
 
     /// @inheritdoc IERC20ClaimableFacet
     function _tokensClaimable(address _claimer) internal view virtual override returns (uint256 amount) {
-        return _tokensClaimableAt(_claimer, block.timestamp);
+        return _tokensClaimableAt(_claimer, block.number);
     }
 
     /// @inheritdoc IERC20ClaimableFacet
     function _afterClaim(address _claimer) internal virtual override {
-        LibERC20TimeClaimableStorage.getStorage().lastClaim[_claimer] = block.timestamp;
+        LibERC20TimeClaimableStorage.getStorage().lastClaim[_claimer] = block.number;
     }
 
     /// @inheritdoc IERC20TimeClaimableFacet
@@ -92,13 +92,13 @@ contract ERC20TimeClaimableFacet is IERC20TimeClaimableFacet, IERC20ClaimableFac
         LibERC20TimeClaimableStorage.getStorage().maxTimeRewarded = _claimPeriodMax;
     }
 
-    function _tokensClaimableAt(address _claimer, uint256 _timeStamp) internal view virtual returns (uint256 amount) {
+    function _tokensClaimableAt(address _claimer, uint256 _blockNumber) internal view virtual returns (uint256 amount) {
         LibERC20TimeClaimableStorage.Storage storage s = LibERC20TimeClaimableStorage.getStorage();
         // uint256 timePassed = _timeStamp - s.lastClaim[_claimer];
         // uint256 timeRewarded = Math.min(s.maxTimeRewarded, timePassed);
         // return timeRewarded / s.timeTillReward;
 
         // Apply (inflation) multiplier to the amount of tokens claimable (based on time passed since last claim)
-        return IRewardMultiplierFacet(address(this)).applyMultiplier("inflation", Math.min(s.maxTimeRewarded, _timeStamp - s.lastClaim[_claimer]) / s.timeTillReward);
+        return IRewardMultiplierFacet(address(this)).applyMultiplier("inflation", Math.min(s.maxTimeRewarded, _blockNumber - s.lastClaim[_claimer]) / s.timeTillReward);
     }
 }

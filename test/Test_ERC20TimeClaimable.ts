@@ -11,7 +11,7 @@ import { ethers } from "hardhat";
 
 // Tests
 import { expect } from "chai";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { getDeployedDiamondGovernance } from "../utils/deployedContracts";
@@ -39,8 +39,8 @@ async function getClient() {
       }
   };
   const ERC20TimeClaimableFacetSettings = {
-      timeTillReward: 1 * days,
-      maxTimeRewarded: 10 * days,
+      timeTillReward: 1 * days / 2,
+      maxTimeRewarded: 10 * days / 2,
   };
   const RewardMultiplierSettings = {
     name: "inflation",
@@ -62,6 +62,8 @@ describe("ERC20TimeClaimable", function () {
     const IERC20TimeClaimableFacet = await client.pure.IERC20TimeClaimableFacet();
     const IERC20Facet = await client.pure.IERC20();
     const [owner] = await ethers.getSigners();
+
+    await mine(10 * days / 2);
 
     const balanceBefore = await IERC20Facet.balanceOf(owner.address);
     await IERC20TimeClaimableFacet.claimTime();
@@ -92,7 +94,7 @@ describe("ERC20TimeClaimable", function () {
 
     await IERC20TimeClaimableFacet.claimTime();
     const balanceBefore = await IERC20Facet.balanceOf(owner.address);
-    await time.increase(1 * days);
+    await mine(1 * days / 2);
     await IERC20TimeClaimableFacet.claimTime();
     const balanceAfter = await IERC20Facet.balanceOf(owner.address);
 
