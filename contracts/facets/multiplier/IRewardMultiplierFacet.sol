@@ -95,7 +95,15 @@ abstract contract IRewardMultiplierFacet {
 
 
     // Specific get/set functions for the "inflation" multiplier, this is useful for the auto expose
-    function setInflationTimestamp(uint _inflationTimestamp) external virtual;
+    function setInflationStartTimestamp(uint _inflationStartTimestamp) external virtual;
 
-    function getInflationTimestamp() external view virtual returns (uint);
+    function getInflationStartTimestamp() external view virtual returns (uint);
+
+    function setInflationBase(uint _inflationBase) external virtual;
+
+    function getInflationBase() external view virtual returns (uint);
+
+    function setInflationInitialAmount(uint _inflationInitialAmount) external virtual;
+
+    function getInflationInitialAmount() external view virtual returns (uint);
 }

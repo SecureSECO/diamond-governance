@@ -169,6 +169,22 @@ describe("RewardMultiplier", function () {
     const wrongMultiplier = calculateExponentialAppliedMultiplier(DAYS_PASSED + 1);
     expect(multipliedReward).to.be.not.approximately(wrongMultiplier, 1); // For rounding errors
   });
+  it("get/set tests", async function () {
+    const client = await loadFixture(getClient);
+    const IRewardMultiplierFacet = await client.pure.IRewardMultiplierFacet();
+
+    // test start timestamp
+    await IRewardMultiplierFacet.setInflationStartTimestamp(1234);
+    expect(await IRewardMultiplierFacet.getInflationStartTimestamp()).to.be.equal(1234);
+
+    // test initial amount
+    await IRewardMultiplierFacet.setInflationInitialAmount(1234);
+    expect(await IRewardMultiplierFacet.getInflationInitialAmount()).to.be.approximately(1234, 1);
+
+    // test base
+    await IRewardMultiplierFacet.setInflationBase(1234);
+    expect(await IRewardMultiplierFacet.getInflationBase()).to.be.approximately(1234, 1);
+  })
 });
 
 const calculateLinearGrowth = (blocksPassed: number): BigNumber => {
