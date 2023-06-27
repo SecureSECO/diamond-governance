@@ -115,7 +115,7 @@ contract ERC20OneTimeVerificationRewardFacet is
     ) external virtual {
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(
             address(this)
-        ).getStampsAt(msg.sender, block.timestamp);
+        ).getStampsAt(msg.sender, block.number);
         require(_stampIndex < stampsAt.length, "Stamp index out of bound");
 
         IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward
@@ -208,7 +208,7 @@ contract ERC20OneTimeVerificationRewardFacet is
     {
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(
             address(this)
-        ).getStampsAt(msg.sender, block.timestamp);
+        ).getStampsAt(msg.sender, block.number);
         require(_stampIndex < stampsAt.length, "Stamp index out of bound");
         uint verificationRewardPoolBalance = IVerificationRewardPoolFacet(
             address(this)
@@ -242,7 +242,7 @@ contract ERC20OneTimeVerificationRewardFacet is
         // Get data from storage
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(
             address(this)
-        ).getStampsAt(_claimer, block.timestamp);
+        ).getStampsAt(_claimer, block.number);
 
         reward = IERC20OneTimeVerificationRewardFacet.OneTimeVerificationReward(
                 0,
@@ -346,7 +346,7 @@ contract ERC20OneTimeVerificationRewardFacet is
         // Get data from storage
         SignVerification.Stamp[] memory stampsAt = VerificationFacet(
             address(this)
-        ).getStampsAt(_claimer, block.timestamp);
+        ).getStampsAt(_claimer, block.number);
 
         for (uint i; i < stampsAt.length; ) {
             _afterClaimStamp(
