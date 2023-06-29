@@ -74,6 +74,7 @@ async function getClient() {
 async function createProposal() {
   const client = await loadFixture(getClient);
   await getVotingPower(client);
+  await (await client.pure.IMembershipWhitelisting()).whitelist(await client.pure.signer.getAddress());
   return createProposalWithClient(client);
 }
 

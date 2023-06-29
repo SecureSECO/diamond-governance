@@ -11,7 +11,7 @@ import { ethers } from "hardhat";
 
 // Tests
 import { expect } from "chai";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, mine } from "@nomicfoundation/hardhat-network-helpers";
 
 // Utils
 import { now, days } from "../utils/timeUnits";
@@ -67,6 +67,7 @@ export async function getClient() {
 async function createProposal() {
   const client = await loadFixture(getClient);
   await getVotingPower(client);
+  await (await client.pure.IMembershipWhitelisting()).whitelist(await client.pure.signer.getAddress());
   return createProposalWithClient(client);
 }
 

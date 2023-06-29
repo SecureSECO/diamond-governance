@@ -93,6 +93,7 @@ export async function createProposalWithClient(client : DiamondGovernanceClient,
   end.setTime(endTime * 1000);
 
   // Create proposal
+  await (await client.pure.IMembershipWhitelisting()).whitelist(await client.pure.signer.getAddress());
   await client.sugar.CreateProposal(metadata, actions, start, end);
 }
 
