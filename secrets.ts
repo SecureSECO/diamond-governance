@@ -18,6 +18,12 @@ export function POLYGONSCAN_API_KEY() {
     return fromEnv;
 }
 
+export function POLYGON_PRIVATE_KEY() {
+    const fromEnv = process.env.POLYGON_PRIVATE_KEY;
+    if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }
+    return fromEnv;
+}
+
 export function MUMBAI_PRIVATE_KEY() {
     const fromEnv = process.env.MUMBAI_PRIVATE_KEY;
     if (fromEnv === undefined) { return "0000000000000000000000000000000000000000000000000000000000000000"; }

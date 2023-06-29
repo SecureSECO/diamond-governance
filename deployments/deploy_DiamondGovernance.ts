@@ -26,6 +26,7 @@ import { days } from "../utils/timeUnits";
 
 const deployJsonFile = "./generated/deployed_DiamondGovernance.json";
 const repoJsonFile = "./generated/diamondGovernanceRepo.json";
+const randomSubdomain = false;
 
 const additionalContracts : string[] = [
   "DiamondGovernanceSetup",
@@ -115,7 +116,7 @@ export async function createDiamondGovernanceRepoIfNotExists() {
   if (existingRepos.hasOwnProperty(network.name)) { return; }
 
   const [owner] = await ethers.getSigners();
-  const repo = await createDiamondGovernanceRepo("plugin" + Math.round(Math.random() * 100000), owner);
+  const repo = await createDiamondGovernanceRepo(randomSubdomain ? "plugin" + Math.round(Math.random() * 100000) : "diamond-governance", owner);
   existingRepos[network.name] = { repo: repo };
   fs.writeFileSync(repoJsonFile, JSON.stringify(existingRepos));
 }

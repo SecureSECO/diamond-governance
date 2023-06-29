@@ -1,6 +1,6 @@
 {
-  "name": "@plopmenz/diamond-governance-sdk",
-  "version": "1.0.1",
+  "name": "@secureseco-dao/diamond-governance-sdk",
+  "version": "1.0.0",
   "description": "SDK for Diamond Governance, a ERC-2535 DAO bridge.",
   "main": "dist/sdk/index.js",
   "typings": "dist/sdk/index.d.ts",

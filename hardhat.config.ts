@@ -15,7 +15,7 @@ import '@nomiclabs/hardhat-ethers'
 
 //.env secrets
 import { config as dotEnvConfig } from "dotenv";
-import { ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, MUMBAI_PRIVATE_KEY } from './secrets';
+import { ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, MUMBAI_PRIVATE_KEY, POLYGON_PRIVATE_KEY } from './secrets';
 dotEnvConfig();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -35,6 +35,11 @@ module.exports = {
     mumbai: {
       url: "https://polygon-mumbai.g.alchemy.com/v2/GFsknWbazmwCAkh0yVuOs_PrhfXo_DsT",
       accounts: [MUMBAI_PRIVATE_KEY()],
+      allowUnlimitedContractSize: true
+    },
+    polygon: {
+      url: "https://polygon-mainnet.g.alchemy.com/v2/VuDN-SejBHv31HJNNFLvY9fTXYA-7-rO",
+      accounts: [POLYGON_PRIVATE_KEY()],
       allowUnlimitedContractSize: true
     }
   },
