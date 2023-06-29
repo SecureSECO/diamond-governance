@@ -66,7 +66,7 @@ contract ERC20TieredTimeClaimableFacet is IERC20TieredTimeClaimableFacet, ERC20T
     }
 
     /// @inheritdoc ERC20TimeClaimableFacet
-    function _tokensClaimableAt(address _claimer, uint256 _timeStamp) internal view virtual override returns (uint256 amount) {
-        return super._tokensClaimableAt(_claimer, _timeStamp) * LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[ITieredMembershipStructure(address(this)).getTierAt(_claimer, _timeStamp)];
+    function _tokensClaimableAt(address _claimer, uint256 _blockNumber) internal view virtual override returns (uint256 amount) {
+        return super._tokensClaimableAt(_claimer, _blockNumber) * LibERC20TieredTimeClaimableStorage.getStorage().rewardForTier[ITieredMembershipStructure(address(this)).getTierAt(_claimer, _blockNumber)];
     }
 }

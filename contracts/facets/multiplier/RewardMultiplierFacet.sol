@@ -142,17 +142,47 @@ contract RewardMultiplierFacet is AuthConsumer, IRewardMultiplierFacet, IFacet {
     }
 
     /// @inheritdoc IRewardMultiplierFacet
-    function setInflationTimestamp(uint _inflationTimestamp) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
+    function setInflationStartTimestamp(uint _inflationTimestamp) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
         s.rewardMultiplier["inflation"].startTimestamp = _inflationTimestamp;
     }
 
     /// @inheritdoc IRewardMultiplierFacet
-    function getInflationTimestamp() external view override returns (uint) {
+    function getInflationStartTimestamp() external view override returns (uint) {
         LibRewardMultiplierStorage.Storage
             storage s = LibRewardMultiplierStorage.getStorage();
         return s.rewardMultiplier["inflation"].startTimestamp;
+    }
+
+    /// @inheritdoc IRewardMultiplierFacet
+    function setInflationBase(uint _inflationBase) external override auth(UPDATE_MULTIPLIER_TYPE_MEMBER_PERMISSION_ID) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+
+        bytes16 _baseQuad = LibABDKHelper.from18DecimalsQuad(_inflationBase);
+        s.exponentialParams["inflation"] = ExponentialParams(_baseQuad);
+    }
+
+    /// @inheritdoc IRewardMultiplierFacet
+    function getInflationBase() external view override returns (uint) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+        return LibABDKHelper.to18DecimalsQuad(s.exponentialParams["inflation"].base);
+    }
+
+    /// @inheritdoc IRewardMultiplierFacet
+    function setInflationInitialAmount(uint _inflationInitialAmount) external override {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+        s.rewardMultiplier["inflation"].initialAmount = LibABDKHelper.from18DecimalsQuad(_inflationInitialAmount);
+    }
+
+    /// @inheritdoc IRewardMultiplierFacet
+    function getInflationInitialAmount() external view override returns (uint) {
+        LibRewardMultiplierStorage.Storage
+            storage s = LibRewardMultiplierStorage.getStorage();
+        return LibABDKHelper.to18DecimalsQuad(s.rewardMultiplier["inflation"].initialAmount);
     }
 
     function _setMultiplierTypeConstant(

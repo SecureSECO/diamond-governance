@@ -67,11 +67,30 @@ describe("SignVerification", () => {
   it("should get/set correctly", async () => {
     const client = await loadFixture(getClient);
     const IVerificationFacet = await client.pure.IVerificationFacet();
-    
+    const verificationContractAddress = await IVerificationFacet.getVerificationContractAddress();
+    const standaloneVerificationContract = await ethers.getContractAt("SignVerification", verificationContractAddress);
+
+    await standaloneVerificationContract.transferOwnership(client.pure.pluginAddress); // Transfer to diamond governance
+
     await IVerificationFacet.setReverifyThreshold(1);
     expect(await IVerificationFacet.getReverifyThreshold()).to.equal(1);
 
-    await IVerificationFacet.setVerifyDayThreshold(1);
-    expect(await IVerificationFacet.getVerifyDayThreshold()).to.equal(1);
+    await IVerificationFacet.setVerifyThreshold(1);
+    expect(await IVerificationFacet.getVerifyThreshold()).to.equal(1);
+  });
+  // This doesn't actually assert anything, just tests if the functions don't throw
+  it("sdk verification sugar tests", async () => {
+    const client = await loadFixture(getClient);
+    const [owner] = await ethers.getSigners();
+
+    // Manually verify owner with github
+    const timestamp = now();
+    const userHash =
+      "090d4910f4b4038000f6ea86644d55cb5261a1dc1f006d928dcc049b157daff8";
+    const dataHexString = await createSignature(timestamp, owner.address, userHash, owner);
+    await client.verification.Verify(owner.address, userHash, timestamp, "github", dataHexString);
+
+    await client.verification.GetThresholdHistory();
+    await client.verification.GetStamps(owner.address);
   });
 });

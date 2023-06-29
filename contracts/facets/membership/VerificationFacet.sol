@@ -78,7 +78,7 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     /// @notice Whitelist a given account
     /// @inheritdoc IMembershipWhitelisting
     function whitelist(address _address) external virtual override auth(WHITELIST_MEMBER_PERMISSION_ID) {
-        LibVerificationStorage.getStorage().whitelistTimestamps[_address] = uint64(block.timestamp);
+        LibVerificationStorage.getStorage().whitelistBlockNumbers[_address] = block.number;
     }
 
     /// @notice Returns the given address as a string
@@ -106,26 +106,26 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     /// @inheritdoc IVerificationFacet
     function getStampsAt(
         address _address,
-        uint _timestamp
+        uint _blockNumber
     ) public view virtual override returns (SignVerification.Stamp[] memory) {
         LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
         SignVerification verificationContract = SignVerification(ds.verificationContractAddress);
         SignVerification.Stamp[] memory stamps = verificationContract.getStampsAt(
             _address,
-            _timestamp
+            _blockNumber
         );
 
         // Check if this account was whitelisted and add a "whitelist" stamp if applicable
-        uint64 whitelistTimestamp = ds.whitelistTimestamps[_address];
-        if (whitelistTimestamp == 0) {
+        uint whitelistBlockNumber = ds.whitelistBlockNumbers[_address];
+        if (whitelistBlockNumber == 0) {
             return stamps;
         } else {
             SignVerification.Stamp[] memory stamps2 = new SignVerification.Stamp[](
                 stamps.length + 1
             );
 
-            uint64[] memory verifiedAt = new uint64[](1);
-            verifiedAt[0] = whitelistTimestamp;
+            uint[] memory verifiedAt = new uint[](1);
+            verifiedAt[0] = whitelistBlockNumber;
 
             SignVerification.Stamp memory stamp = SignVerification.Stamp(
                 "whitelist",
@@ -150,16 +150,16 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
         SignVerification.Stamp[] memory stamps = verificationContract.getStamps(_address);
 
         // Check if this account was whitelisted and add a "whitelist" stamp if applicable
-        uint64 whitelistTimestamp = ds.whitelistTimestamps[_address];
-        if (whitelistTimestamp == 0) {
+        uint whitelistBlockNumber = ds.whitelistBlockNumbers[_address];
+        if (whitelistBlockNumber == 0) {
             return stamps;
         } else {
             SignVerification.Stamp[] memory stamps2 = new SignVerification.Stamp[](
                 stamps.length + 1
             );
 
-            uint64[] memory verifiedAt = new uint64[](1);
-            verifiedAt[0] = whitelistTimestamp;
+            uint[] memory verifiedAt = new uint[](1);
+            verifiedAt[0] = whitelistBlockNumber;
 
             SignVerification.Stamp memory stamp = SignVerification.Stamp(
                 "whitelist",
@@ -186,8 +186,8 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
 
     /// @inheritdoc ITieredMembershipStructure
     /// @notice Returns the highest tier included in the stamps of a given account
-    function getTierAt(address _account, uint256 _timestamp) public view virtual override returns (uint256) {
-        SignVerification.Stamp[] memory stampsAt = getStampsAt(_account, _timestamp);
+    function getTierAt(address _account, uint256 _blockNumber) public view virtual override returns (uint256) {
+        SignVerification.Stamp[] memory stampsAt = getStampsAt(_account, _blockNumber);
 
         LibVerificationStorage.Storage storage ds = LibVerificationStorage.getStorage();
         mapping (string => uint256) storage tierMapping = ds.tierMapping;
@@ -225,25 +225,25 @@ contract VerificationFacet is ITieredMembershipStructure, IMembershipWhitelistin
     }
 
     /// @inheritdoc IVerificationFacet
-    function getVerifyDayThreshold() external view returns (uint64) {
+    function getVerifyThreshold() external view returns (uint) {
         SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
-        return verificationContract.getVerifyDayThreshold();
+        return verificationContract.getVerifyThreshold();
     }
 
     /// @inheritdoc IVerificationFacet
-    function setVerifyDayThreshold(uint64 _verifyDayThreshold) external auth(UPDATE_VERIFY_DAY_THRESHOLD_PERMISSION_ID) {
+    function setVerifyThreshold(uint _verifyThreshold) external auth(UPDATE_VERIFY_DAY_THRESHOLD_PERMISSION_ID) {
         SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
-        verificationContract.setVerifyDayThreshold(_verifyDayThreshold);
+        verificationContract.setVerifyThreshold(_verifyThreshold);
     }
 
     /// @inheritdoc IVerificationFacet
-    function getReverifyThreshold() external view returns (uint64) {
+    function getReverifyThreshold() external view returns (uint) {
         SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
         return verificationContract.getReverifyThreshold();
     }
 
     /// @inheritdoc IVerificationFacet
-    function setReverifyThreshold(uint64 _reverifyThreshold) external auth(UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID) {
+    function setReverifyThreshold(uint _reverifyThreshold) external auth(UPDATE_REVERIFICATION_THRESHOLD_PERMISSION_ID) {
         SignVerification verificationContract = SignVerification(LibVerificationStorage.getStorage().verificationContractAddress);
         verificationContract.setReverifyThreshold(_reverifyThreshold);
     }
