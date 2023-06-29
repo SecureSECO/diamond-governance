@@ -41,7 +41,8 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
 { 
   SignVerification: async () => { 
     const SignVerificationContract = await ethers.getContractFactory("SignVerification");
-    const SignVerification = await SignVerificationContract.deploy(60 * days / 2, 30 * days / 2);
+    const [owner] = await ethers.getSigners();
+    const SignVerification = await SignVerificationContract.deploy(60 * days / 2, 30 * days / 2, owner.address);
     await SignVerification.deployed();
 
     if (!testing()) {
@@ -50,7 +51,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
       await new Promise(f => setTimeout(f, 10 * 1000));
       await hre.run("verify:verify", {
         address: SignVerification.address,
-        constructorArguments: [60 * days / 2, 30 * days / 2],
+        constructorArguments: [60 * days / 2, 30 * days / 2, owner.address],
       });
     }
 

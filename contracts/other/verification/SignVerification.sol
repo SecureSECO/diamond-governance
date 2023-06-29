@@ -29,6 +29,9 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     /// @notice The reverifyThreshold determines how long a user has to wait before they can re-verify their address, in days
     uint reverifyThreshold;
 
+    /// @notice The signer is the address that can sign proofs of verification
+    address _signer;
+
     /// @notice A stamp defines proof of verification for a user on a specific platform at a specific date
     struct Stamp {
         string providerId; // Unique id for the provider (github, proofofhumanity, etc.)
@@ -43,9 +46,10 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     }
 
     /// @notice Initializes the owner of the contract
-    constructor(uint _threshold, uint _reverifyThreshold) {
+    constructor(uint _threshold, uint _reverifyThreshold, address signer_) {
         thresholdHistory.push(Threshold(block.number, _threshold));
         reverifyThreshold = _reverifyThreshold;
+        _signer = signer_;
     }
 
     /// @notice This function can only be called by the owner, and it verifies an address. It's not possible to re-verify an address before half the verifyThreshold has passed.
@@ -75,7 +79,7 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         );
 
         require(
-            verify(owner(), keccak256(abi.encodePacked(_toVerify, _userHash, _timestamp, _providerId)), _proofSignature),
+            verify(_signer, keccak256(abi.encodePacked(_toVerify, _userHash, _timestamp, _providerId)), _proofSignature),
             "Proof is not valid"
         );
 
@@ -304,6 +308,18 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     /// @return An array of Threshold structs
     function getThresholdHistory() external view returns (Threshold[] memory) {
         return thresholdHistory;
+    }
+
+    /// @notice Sets the signer address
+    /// @param signer_ new signer address
+    function setSigner(address signer_) external onlyOwner {
+        _signer = signer_;
+    }
+
+    /// @notice Returns the signer address
+    /// @return Signer address
+    function getSigner() external view returns (address) {
+        return _signer;
     }
 
 }
