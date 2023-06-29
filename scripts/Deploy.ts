@@ -19,6 +19,7 @@ import { BigNumber } from "ethers";
 
 /// This scripts deploys the Diamond Governance (what has not been deployed yet) and creates a DAO with it.
 /// Configure the settings of the DAO here.
+const randomSubdomain = false;
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -162,13 +163,16 @@ async function main() {
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
     daoURI: "https://dao.secureseco.org/",
-    subdomain: "dao" + Math.round(Math.random() * 100000),
+    subdomain: randomSubdomain ? "dao" + Math.round(Math.random() * 100000) : "secureseco",
     metadata: {
       name: "SecureSECO DAO",
-      description: "DAO for the SecureSECO project.",
+      description: "Decentralized Autonomous Organization for the SecureSECO project.",
       links: [{
         name: "SecureSECO",
         url: "https://secureseco.org/",
+      }, {
+        name: "Documentation",
+        url: "https://docs.secureseco.org/",
       }, {
         name: "GitHub",
         url: "https://github.com/SecureSECODAO",
