@@ -1,8 +1,9 @@
 import { SignVerification } from "../../typechain-types";
 import { DiamondGovernanceSugar, Stamp, VerificationThreshold } from "./sugar";
-import { ContractTransaction, BigNumber } from "ethers";
+import { ContractTransaction, BigNumber, ethers, providers } from "ethers";
 import { Signer } from "@ethersproject/abstract-signer";
 import { GetTypedContractAt } from "../../utils/contractHelper";
+import { asyncMap } from "./utils";
 
 /**
  * VerificationSugar is a class that provides methods for interacting with the verification contract.
@@ -49,7 +50,22 @@ export class VerificationSugar {
    */
   public async GetStamps(address: string): Promise<Stamp[]> {
     const verificationContract = await this.GetVerificationContract();
-    return verificationContract.getStamps(address);
+    // return verificationContract.getStamps(address);
+    const provider = this.signer.provider;
+    if (provider == null) {
+      throw new Error("No provider found");
+    }
+    // Convert every block number to a timestamp
+
+    const stamps = await verificationContract.getStamps(address);
+
+    return asyncMap(stamps, async (stamp) => [
+      stamp[0],
+      stamp[1],
+      await asyncMap(stamp[2], async (blockNumber) => {
+        return await this.blockNumberToTimestamp(provider, blockNumber);
+      }),
+    ]);
   }
 
   /**
@@ -59,8 +75,16 @@ export class VerificationSugar {
   public async GetThresholdHistory(): Promise<VerificationThreshold[]> {
     if (this.cache.thresholdHistory == null) {
       const verificationContract = await this.GetVerificationContract();
-      this.cache.thresholdHistory =
-        await verificationContract.getThresholdHistory();
+      const thresholdHistory = await verificationContract.getThresholdHistory();
+
+      const provider = this.signer.provider;
+      if (provider == null) {
+        throw new Error("No provider found");
+      }
+      this.cache.thresholdHistory = await asyncMap(thresholdHistory, async (threshold) => [
+        await this.blockNumberToTimestamp(provider, threshold[0]),
+        threshold[1],
+      ]);
     }
     return this.cache.thresholdHistory;
   }
@@ -160,6 +184,10 @@ export class VerificationSugar {
     return await verificationContract.unverify(providerId);
   }
 
+  /**
+   * Gets the reverify threshold (number of blocks until a user can reverify)
+   * @returns The reverify threshold in blocks
+   */
   public async GetReverifyThreshold(): Promise<BigNumber> {
     const verificationContract = await this.GetVerificationContract();
     return await verificationContract.getReverifyThreshold();
@@ -174,12 +202,19 @@ export class VerificationSugar {
   private getThresholdForBlockNumber(
     blockNumber: number,
     thresholdHistory: VerificationThreshold[]
-  ) {
+  ) : BigNumber {
     let threshold = thresholdHistory.reverse().find((threshold) => {
       return blockNumber >= threshold[0].toNumber();
     });
 
     return threshold ? threshold[1] : BigNumber.from(0);
+  }
+
+  private async blockNumberToTimestamp(
+    provider: providers.Provider,
+    blockNumber: BigNumber
+  ) : Promise<BigNumber> {
+    return BigNumber.from((await provider.getBlock(blockNumber.toNumber())).timestamp);
   }
 
 }
