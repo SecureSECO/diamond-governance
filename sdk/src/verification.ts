@@ -59,12 +59,13 @@ export class VerificationSugar {
 
     const stamps = await verificationContract.getStamps(address);
 
-    return asyncMap(stamps, async (stamp) => {
-      stamp[2] = await asyncMap(stamp[2], async (blockNumber) => {
+    return asyncMap(stamps, async (stamp) => [
+      stamp[0],
+      stamp[1],
+      await asyncMap(stamp[2], async (blockNumber) => {
         return await this.blockNumberToTimestamp(provider, blockNumber);
-      });
-      return stamp;
-    });
+      }),
+    ]);
   }
 
   /**
@@ -80,10 +81,10 @@ export class VerificationSugar {
       if (provider == null) {
         throw new Error("No provider found");
       }
-      this.cache.thresholdHistory = await asyncMap(thresholdHistory, async (threshold) => {
-        threshold[0] = await this.blockNumberToTimestamp(provider, threshold[1]);
-        return threshold;
-      });
+      this.cache.thresholdHistory = await asyncMap(thresholdHistory, async (threshold) => [
+        await this.blockNumberToTimestamp(provider, threshold[0]),
+        threshold[1],
+      ]);
     }
     return this.cache.thresholdHistory;
   }
