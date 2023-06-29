@@ -48,7 +48,7 @@ async function main() {
       duration: 1 * hours,
       revocable: false,
     },
-    externalERC20: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889", // Uniswap WMATIC
+    externalERC20: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", // DAI on polygon
   };
   const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
   monetaryTokenDeployer.runVerification = true;
@@ -163,7 +163,7 @@ async function main() {
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
     daoURI: "https://dao.secureseco.org/",
-    subdomain: randomSubdomain ? "dao" + Math.round(Math.random() * 100000) : "secureseco",
+    subdomain: randomSubdomain ? "dao" + Math.round(Math.random() * 100000) : "test-secureseco",
     metadata: {
       name: "SecureSECO DAO",
       description: "Decentralized Autonomous Organization for the SecureSECO project.",
