@@ -20,7 +20,7 @@ interface IERC20OneTimeVerificationRewardFacet {
         uint256 coinReward;
     }
 
-    function tokensClaimableVerificationRewardAll() external view returns (OneTimeVerificationReward memory);
+    function tokensClaimableVerificationRewardAll() external view returns (OneTimeVerificationReward memory, OneTimeVerificationReward[] memory);
 
     function claimVerificationRewardAll() external;
 

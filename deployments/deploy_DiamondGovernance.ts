@@ -19,12 +19,14 @@ import { createDiamondGovernanceRepo } from "../utils/diamondGovernanceHelper";
 // Other
 import deployedDiamondGovernanceJson from "../generated/deployed_DiamondGovernance.json";
 import diamondGovernanceRepoJson from "../generated/diamondGovernanceRepo.json";
+import { days } from "../utils/timeUnits";
 
 /// This deployer deploys (and verifies) the Diamond Governance contracts and facets, it will only deploy the not already deployed contracts on the network.
 /// In case contracts get changed (in deployment bytes), they will get redeployed.
 
 const deployJsonFile = "./generated/deployed_DiamondGovernance.json";
 const repoJsonFile = "./generated/diamondGovernanceRepo.json";
+const randomSubdomain = false;
 
 const additionalContracts : string[] = [
   "DiamondGovernanceSetup",
@@ -32,14 +34,15 @@ const additionalContracts : string[] = [
 ];
 
 const alwaysRedeploy : string[] = [
-
+  "SignVerification",
 ];
 
 const specialDeployment : { [contractName : string]: () => Promise<string> } = 
 { 
   SignVerification: async () => { 
     const SignVerificationContract = await ethers.getContractFactory("SignVerification");
-    const SignVerification = await SignVerificationContract.deploy(60, 30);
+    const [owner] = await ethers.getSigners();
+    const SignVerification = await SignVerificationContract.deploy(60 * days / 2, 30 * days / 2, owner.address);
     await SignVerification.deployed();
 
     if (!testing()) {
@@ -48,7 +51,7 @@ const specialDeployment : { [contractName : string]: () => Promise<string> } =
       await new Promise(f => setTimeout(f, 10 * 1000));
       await hre.run("verify:verify", {
         address: SignVerification.address,
-        constructorArguments: [60, 30],
+        constructorArguments: [60 * days / 2, 30 * days / 2, owner.address],
       });
     }
 
@@ -113,7 +116,7 @@ export async function createDiamondGovernanceRepoIfNotExists() {
   if (existingRepos.hasOwnProperty(network.name)) { return; }
 
   const [owner] = await ethers.getSigners();
-  const repo = await createDiamondGovernanceRepo("plugin" + Math.round(Math.random() * 100000), owner);
+  const repo = await createDiamondGovernanceRepo(randomSubdomain ? "plugin" + Math.round(Math.random() * 100000) : "diamond-governance", owner);
   existingRepos[network.name] = { repo: repo };
   fs.writeFileSync(repoJsonFile, JSON.stringify(existingRepos));
 }

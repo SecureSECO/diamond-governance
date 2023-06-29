@@ -23,39 +23,46 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     mapping(address => bool) internal isMember;
     address[] allMembers;
 
-    /// @notice The thresholdHistory array stores the history of the verifyDayThreshold variable. This is needed because we might want to check if some stamps were valid in the past.
+    /// @notice The thresholdHistory array stores the history of the verifyThreshold variable. This is needed because we might want to check if some stamps were valid in the past.
     Threshold[] thresholdHistory;
 
     /// @notice The reverifyThreshold determines how long a user has to wait before they can re-verify their address, in days
-    uint64 public reverifyThreshold;
+    uint reverifyThreshold;
+
+    /// @notice The signer is the address that can sign proofs of verification
+    address _signer;
 
     /// @notice A stamp defines proof of verification for a user on a specific platform at a specific date
     struct Stamp {
         string providerId; // Unique id for the provider (github, proofofhumanity, etc.)
         string userHash; // Hash of some unique user data of the provider (username, email, etc.)
-        uint64[] verifiedAt; // Timestamps at which the user has verified
+        uint[] verifiedAt; // Block number at which the user has verified
     }
 
     /// @notice A threshold defines the number of days for which a stamp is valid
     struct Threshold {
-        uint64 timestamp; // Timestamp at which the threshold was set
-        uint64 threshold; // Number of days for which a stamp is valid
+        uint blockNumber; // Block number at which the threshold was set
+        uint threshold; // Number of blocks for which a stamp is valid
     }
 
     /// @notice Initializes the owner of the contract
-    constructor(uint64 _threshold, uint64 _reverifyThreshold) {
-        thresholdHistory.push(Threshold(uint64(block.timestamp), _threshold));
+    constructor(uint _threshold, uint _reverifyThreshold, address signer_) {
+        thresholdHistory.push(Threshold(block.number, _threshold));
         reverifyThreshold = _reverifyThreshold;
+        _signer = signer_;
     }
 
-    /// @notice This function can only be called by the owner, and it verifies an address. It's not possible to re-verify an address before half the verifyDayThreshold has passed.
+    /// @notice This function can only be called by the owner, and it verifies an address. It's not possible to re-verify an address before half the verifyThreshold has passed.
     /// @dev Verifies an address
     /// @param _toVerify The address to verify
-    /// @param _timestamp in seconds
+    /// @param _userHash The hash of the user's unique data on the provider (username, email, etc.)
+    /// @param _timestamp The block number at which the proof was generated
+    /// @param _providerId Unique id for the provider (github, proofofhumanity, etc.)
+    /// @param _proofSignature The proof signed by the server
     function verifyAddress(
         address _toVerify,
         string calldata _userHash,
-        uint64 _timestamp,
+        uint _timestamp,
         string calldata _providerId,
         bytes calldata _proofSignature
     ) external {
@@ -72,7 +79,7 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         );
 
         require(
-            verify(owner(), keccak256(abi.encodePacked(_toVerify, _userHash, uint(_timestamp))), _proofSignature),
+            verify(_signer, keccak256(abi.encodePacked(_toVerify, _userHash, _timestamp, _providerId)), _proofSignature),
             "Proof is not valid"
         );
 
@@ -104,7 +111,7 @@ contract SignVerification is GenericSignatureHelper, Ownable {
 
             // Create new stamp if user does not already have a stamp for this providerId
             stamps[_toVerify].push(
-                createStamp(_providerId, _userHash, _timestamp)
+                createStamp(_providerId, _userHash, block.number)
             );
 
             // This only needs to happens once (namely the first time an account verifies)
@@ -112,19 +119,19 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         } else {
             // If user already has a stamp for this providerId
             // Check how long it has been since the last verification
-            uint64[] storage verifiedAt = stamps[_toVerify][foundIndex]
+            uint[] storage verifiedAt = stamps[_toVerify][foundIndex]
                 .verifiedAt;
-            uint64 timeSinceLastVerification = uint64(block.timestamp) -
+            uint blocksSinceLastVerification = block.number -
                 verifiedAt[verifiedAt.length - 1];
 
             // If it has been more than reverifyThreshold days, update the stamp
-            if (timeSinceLastVerification > reverifyThreshold) {
+            if (blocksSinceLastVerification > reverifyThreshold) {
                 // Overwrite the userHash (in case the user changed their username or used another account to reverify)
                 stamps[_toVerify][foundIndex].userHash = _userHash;
-                verifiedAt.push(_timestamp);
+                verifiedAt.push(block.number);
             } else {
                 revert(
-                    "Address already verified; cannot re-verify yet, wait at least half the verifyDayThreshold"
+                    "Address already verified; cannot re-verify yet, wait at least half the verifyThreshold"
                 );
             }
         }
@@ -171,15 +178,15 @@ contract SignVerification is GenericSignatureHelper, Ownable {
     /// @notice Creates a stamp for a user
     /// @param _providerId Unique id for the provider (github, proofofhumanity, etc.)
     /// @param _userHash Unique user hash on the platform of the stamp (GH, PoH, etc.)
-    /// @param _timestamp Timestamp at which the proof was generated
+    /// @param _blockNumber Block number at which the proof was submitted
     /// @return Stamp Returns the created stamp
     function createStamp(
         string memory _providerId,
         string memory _userHash,
-        uint64 _timestamp
+        uint _blockNumber
     ) internal returns (Stamp memory) {
-        uint64[] memory verifiedAt = new uint64[](1);
-        verifiedAt[0] = _timestamp;
+        uint[] memory verifiedAt = new uint[](1);
+        verifiedAt[0] = _blockNumber;
         Stamp memory stamp = Stamp(_providerId, _userHash, verifiedAt);
         stampHashMap[_userHash] = msg.sender;
         return stamp;
@@ -194,47 +201,47 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         return stamps[_toCheck];
     }
 
-    /// @notice Returns the *valid* stamps of an address at a specific timestamp
+    /// @notice Returns the *valid* stamps of an address at a specific block number
     /// @param _toCheck The address to check
-    /// @param _timestamp The timestamp to check (seconds)
+    /// @param _blockNumber The block number to check
     function getStampsAt(
         address _toCheck,
-        uint _timestamp
+        uint _blockNumber
     ) external view returns (Stamp[] memory) {
         Stamp[] memory stampsAt = new Stamp[](stamps[_toCheck].length);
         uint count; // = 0;
 
         // Loop through all the user's stamps
         for (uint i; i < stamps[_toCheck].length; ) {
-            // Get the list of all verification timestamps
-            uint64[] storage verifiedAt = stamps[_toCheck][i].verifiedAt;
+            // Get the list of all verification block numbers
+            uint[] storage verifiedAt = stamps[_toCheck][i].verifiedAt;
 
-            // Get the threshold at _timestamp
-            uint currentTimestampIndex = thresholdHistory.length - 1;
+            // Get the threshold at _blockNumber
+            uint currentBlockNumberIndex = thresholdHistory.length - 1;
             while (
-                currentTimestampIndex > 0 &&
-                thresholdHistory[currentTimestampIndex].timestamp > _timestamp
+                currentBlockNumberIndex > 0 &&
+                thresholdHistory[currentBlockNumberIndex].blockNumber > _blockNumber
             ) {
-                currentTimestampIndex--;
+                currentBlockNumberIndex--;
             }
 
-            uint64 verifyDayThreshold = thresholdHistory[currentTimestampIndex]
+            uint verifyThreshold = thresholdHistory[currentBlockNumberIndex]
                 .threshold;
 
             // Reverse for loop, because more recent dates are at the end of the array
             for (uint j = verifiedAt.length; j > 0; j--) {
-                // If the stamp is valid at _timestamp, add it to the stampsAt array
+                // If the stamp is valid at _blockNumber, add it to the stampsAt array
                 if (
-                    verifiedAt[j - 1] + (verifyDayThreshold * 1 days) >
-                    _timestamp &&
-                    verifiedAt[j - 1] < _timestamp
+                    verifiedAt[j - 1] + verifyThreshold >
+                    _blockNumber &&
+                    verifiedAt[j - 1] < _blockNumber
                 ) {
                     stampsAt[count] = stamps[_toCheck][i];
                     count++;
                     break;
                 } else if (
-                    verifiedAt[j - 1] + (verifyDayThreshold * 1 days) <
-                    _timestamp
+                    verifiedAt[j - 1] + verifyThreshold <
+                    _blockNumber
                 ) {
                     break;
                 }
@@ -254,27 +261,6 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         return stampsAtTrimmed;
     }
 
-    /// @notice This function can only be called by the owner to set the verifyDayThreshold
-    /// @dev Sets the verifyDayThreshold
-    /// @param _days The number of days to set the verifyDayThreshold to
-    function setVerifyDayThreshold(uint64 _days) external onlyOwner {
-        Threshold memory lastThreshold = thresholdHistory[
-            thresholdHistory.length - 1
-        ];
-        require(
-            lastThreshold.threshold != _days,
-            "Threshold already set to this value"
-        );
-
-        thresholdHistory.push(Threshold(uint64(block.timestamp), _days));
-    }
-
-    /// @notice Returns the full threshold history
-    /// @return An array of Threshold structs
-    function getThresholdHistory() external view returns (Threshold[] memory) {
-        return thresholdHistory;
-    }
-
     function getAllMembers() external view returns (address[] memory) {
         return allMembers;
     }
@@ -286,10 +272,54 @@ contract SignVerification is GenericSignatureHelper, Ownable {
         return isMember[_toCheck];
     }
 
+    /// @notice Returns latest verifyThreshold
+    function getVerifyThreshold() external view returns (uint) {
+        return thresholdHistory[thresholdHistory.length - 1].threshold;
+    }
+
+    /// @notice This function can only be called by the owner to set the verifyThreshold
+    /// @dev Sets the verifyThreshold
+    /// @param _blocks The number of blocks to set the verifyThreshold to
+    function setVerifyThreshold(uint _blocks) external onlyOwner {
+        Threshold memory lastThreshold = thresholdHistory[
+            thresholdHistory.length - 1
+        ];
+        require(
+            lastThreshold.threshold != _blocks,
+            "Threshold already set to this value"
+        );
+
+        thresholdHistory.push(Threshold(block.number, _blocks));
+    }
+
+    /// @notice Returns the reverifyThreshold
+    function getReverifyThreshold() external view returns (uint) {
+        return reverifyThreshold;
+    }
+
     /// @notice This function can only be called by the owner to set the reverifyThreshold
     /// @dev Sets the reverifyThreshold
     /// @param _days The number of days to set the reverifyThreshold to
-    function setReverifyThreshold(uint64 _days) external onlyOwner {
+    function setReverifyThreshold(uint _days) external onlyOwner {
         reverifyThreshold = _days;
     }
+
+    /// @notice Returns the full threshold history
+    /// @return An array of Threshold structs
+    function getThresholdHistory() external view returns (Threshold[] memory) {
+        return thresholdHistory;
+    }
+
+    /// @notice Sets the signer address
+    /// @param signer_ new signer address
+    function setSigner(address signer_) external onlyOwner {
+        _signer = signer_;
+    }
+
+    /// @notice Returns the signer address
+    /// @return Signer address
+    function getSigner() external view returns (address) {
+        return _signer;
+    }
+
 }

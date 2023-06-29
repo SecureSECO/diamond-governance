@@ -19,6 +19,7 @@ import { BigNumber } from "ethers";
 
 /// This scripts deploys the Diamond Governance (what has not been deployed yet) and creates a DAO with it.
 /// Configure the settings of the DAO here.
+const randomSubdomain = false;
 
 async function main() {
   console.log("Deploying to", network.name);
@@ -47,7 +48,7 @@ async function main() {
       duration: 1 * hours,
       revocable: false,
     },
-    externalERC20: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889", // Uniswap WMATIC
+    externalERC20: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", // DAI on polygon
   };
   const monetaryTokenDeployer : MonetaryTokenDeployer = new ABCDeployer(ABCDeployerSettings);
   monetaryTokenDeployer.runVerification = true;
@@ -76,7 +77,7 @@ async function main() {
         supportThreshold: 0.5 * 10**6, //uint32
         minParticipation: 0.2 * 10**6, //uint32
         maxSingleWalletPower: 0.1 * 10**6, //uint32
-        minDuration: 1 * days, //uint64
+        minDuration: 7 * days, //uint64
         minProposerVotingPower: ether.mul(1), //uint256
       },
     }
@@ -100,26 +101,26 @@ async function main() {
   };
   const ERC20TieredTimeClaimableFacetSettings = {
     tiers: [3, 10, 9999], //uint256[]
-    rewards: [ether.mul(1), ether.mul(3), ether.mul(3)], //uint256[]
+    rewards: [ether.mul(1), ether.mul(2), ether.mul(2)], //uint256[]
     _ERC20TimeClaimableFacetInitParams: {
-      timeTillReward: 1 * days, //uint256
-      maxTimeRewarded: 10 * days, //uint256
+      timeTillReward: 1 * days / 2, //uint256
+      maxTimeRewarded: 10 * days / 2, //uint256
     },
   };
   const ERC20OneTimeVerificationRewardFacetSettings = {
     providers: ["github", "proofofhumanity"], //string[]
-    repRewards: [ether.mul(30), ether.mul(100)], //uint256[]
-    coinRewards: [ether.mul(1), ether.mul(100)], //uint256[]
+    repRewards: [ether.mul(10), ether.mul(10)], //uint256[]
+    coinRewards: [ether.mul(1), ether.mul(1)], //uint256[]
   };
   const SearchSECOMonetizationFacetSettings = {
     hashCost: to18Decimal("0.01"), // 1 SECOIN per 100 hashes
-    queryMiningRewardPoolRatio: 0.2 * 10**6, // 20%
+    queryMiningRewardPoolRatio: 0.5 * 10**6, // 50%
   };
   const SearchSECORewardingFacetSettings = {
     signer: owner.address,
     miningRewardPoolPayoutRatio: to18Decimal("0.01"), // 1%
     hashDevaluationFactor: 10000, // 10000 hashes for 1% of mining reward pool
-    hashReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
+    hashRepReward: to18Decimal("0.01"), // 1 SECOREP per 100 hashes
   };
   const MonetaryTokenFacetSettings = {
     monetaryTokenContractAddress: MonetaryToken,
@@ -162,13 +163,16 @@ async function main() {
   const settings : DAOCreationSettings = {
     trustedForwarder: ethers.constants.AddressZero,
     daoURI: "https://dao.secureseco.org/",
-    subdomain: "dao" + Math.round(Math.random() * 100000),
+    subdomain: randomSubdomain ? "dao" + Math.round(Math.random() * 100000) : "test-secureseco",
     metadata: {
       name: "SecureSECO DAO",
-      description: "DAO for the SecureSECO project.",
+      description: "Decentralized Autonomous Organization for the SecureSECO project.",
       links: [{
         name: "SecureSECO",
         url: "https://secureseco.org/",
+      }, {
+        name: "Documentation",
+        url: "https://docs.secureseco.org/",
       }, {
         name: "GitHub",
         url: "https://github.com/SecureSECODAO",
@@ -183,6 +187,7 @@ async function main() {
   console.log("Diamond Governance:", dao.diamondGovernance.address);
   
   await monetaryTokenDeployer.afterDAODeploy(dao.dao.address, dao.diamondGovernance.address);
+  await diamondGovernance.SignVerification.transferOwnership(dao.diamondGovernance.address); // Transfer to diamond governance
 
   console.log("Deploy finished!");
 }

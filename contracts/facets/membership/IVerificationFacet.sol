@@ -20,20 +20,43 @@ interface IVerificationFacet {
     /// @return stamps The stamps of the account.
     function getStamps(address _address) external view returns (SignVerification.Stamp[] memory);
 
-    /// @notice Returns stamps of an account at a given timestamp
+    /// @notice Returns stamps of an account at a given block number
     /// @param _address The address to get stamps from
-    /// @param _timestamp The timestamp to get stamps at
+    /// @param _blockNumber The block number to get stamps at
     /// @return stamps The stamps of the account.
-    function getStampsAt(address _address, uint _timestamp) external view returns (SignVerification.Stamp[] memory);
+    function getStampsAt(address _address, uint _blockNumber) external view returns (SignVerification.Stamp[] memory);
 
     /// @notice Returns the current verification contract address
     /// @return address of the verification contract
     function getVerificationContractAddress() external view returns (address);
 
+    /// @notice Updates the verification contract address
+    /// @param _verificationContractAddress The new verification contract address
+    function setVerificationContractAddress(address _verificationContractAddress) external;
+
+    /// @notice Returns the current verification contract address
     function getTierMapping(string calldata _providerId) external view returns (uint256);
 
     /// @notice Updates a "tier" score for a given provider. This can be used to either score new providers or update
     /// scores of already scored providers
     /// @dev This maps a providerId to a uint256 tier
     function setTierMapping(string calldata _providerId, uint256 _tier) external;
+
+    /// @notice Returns the amount of days that a stamp is valid for (latest value)
+    /// @dev This function interacts with the verification contract to get the day threshold
+    function getVerifyThreshold() external view returns (uint);
+
+    /// @notice Updates the amount of days that a stamp is valid for
+    /// @dev This function interacts with the verification contract to update the day threshold
+    /// @param _verifyThreshold The new amount of days that a stamp is valid for
+    function setVerifyThreshold(uint _verifyThreshold) external;
+
+    /// @notice Returns the amount of days that a stamp is valid for
+    /// @dev This function interacts with the verification contract to get the reverification threshold
+    function getReverifyThreshold() external view returns (uint);
+
+    /// @notice Updates the amount of days that a stamp is valid for
+    /// @dev This function interacts with the verification contract to update the reverification threshold
+    /// @param _reverifyThreshold The new amount of days that a stamp is valid for
+    function setReverifyThreshold(uint _reverifyThreshold) external;
 }

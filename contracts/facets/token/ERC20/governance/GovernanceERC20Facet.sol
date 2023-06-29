@@ -8,6 +8,7 @@ pragma solidity ^0.8.0;
 
 import { ERC20VotesFacet, ERC20PermitFacet, ERC20Facet } from "../core/ERC20VotesFacet.sol";
 import { IMintableGovernanceStructure, IGovernanceStructure } from "../../../governance/structure/voting-power/IMintableGovernanceStructure.sol";
+import { ITieredMembershipStructure } from "../../../governance/structure/membership/ITieredMembershipStructure.sol";
 import { AuthConsumer } from "../../../../utils/AuthConsumer.sol";
 import { IFacet } from "../../../../facets/IFacet.sol";
 
@@ -45,14 +46,30 @@ contract GovernanceERC20Facet is ERC20VotesFacet, AuthConsumer, IMintableGoverna
     }
 
     /// @inheritdoc IGovernanceStructure
-    function totalVotingPower(uint256 _blockNumber) external view returns (uint256) {
-        return getPastTotalSupply(_blockNumber);
+    function totalVotingPower(uint256 _blockNumber) external view returns (uint256 totPower) {
+        ITieredMembershipStructure tieredMembershipStructure = ITieredMembershipStructure(address(this));
+        address[] memory allMembers = tieredMembershipStructure.getMembers(); // All possible "members"
+
+        // Loop through all members and add their voting power to the total
+        for (uint i; i < allMembers.length; ) {
+            // If an address was verified at the time of proposal creation, add their voting power to the total
+            if (tieredMembershipStructure.isMemberAt(allMembers[i], _blockNumber)) {
+                totPower += getPastVotes(allMembers[i], _blockNumber);
+            }
+
+            unchecked {
+                i++;
+            }
+        }
     }
     
 
     /// @inheritdoc IGovernanceStructure
     function walletVotingPower(address _wallet, uint256 _blockNumber) external view returns (uint256) {
-        return getPastVotes(_wallet, _blockNumber);
+        if (ITieredMembershipStructure(address(this)).isMemberAt(_wallet, _blockNumber)) {
+            return getPastVotes(_wallet, _blockNumber);
+        }
+        return 0;
     }
 
     /// @inheritdoc IMintableGovernanceStructure

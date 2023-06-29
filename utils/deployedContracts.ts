@@ -45,6 +45,8 @@ function networkName(providerName : string) : string {
     switch (providerName) {
         case "maticmum":
             return "mumbai";
+        case "matic":
+            return "polygon";
         case "unknown":
             // Questionnable
             return "hardhat";
