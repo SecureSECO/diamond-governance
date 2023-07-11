@@ -11,7 +11,7 @@ import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
 import { asyncMap, FromBlockchainDate, FromBlocknumber, ToBlockchainDate } from "../utils";
 import { DiamondGovernancePure, IPartialVotingFacet, IPartialVotingProposalFacet } from "../../../generated/client";
-import type { ContractTransaction, BigNumber } from "ethers";
+import { ContractTransaction, BigNumber } from "ethers";
 
 /**
  * Proposal is a class that represents a proposal on the blockchain.
@@ -84,11 +84,11 @@ export class Proposal {
     private getStatus() : ProposalStatus {
       if (this.data.executed.gt(0)) return ProposalStatus.Executed;
       if (this.data.open) return ProposalStatus.Active;
-      if (this.data.parameters.startDate.toNumber() < ToBlockchainDate(new Date())) return ProposalStatus.Pending;
+      if (this.data.parameters.startDate.toNumber() > ToBlockchainDate(new Date())) return ProposalStatus.Pending;
 
-      if (this.data.tally.yes.div(this.data.tally.yes.add(this.data.tally.no)).toNumber() > this.data.parameters.supportThreshold
-        && this.data.tally.yes.add(this.data.tally.no) > this.data.parameters.minParticipationThresholdPower)
-        return ProposalStatus.Succeeded;
+      const supportThresholdReached = this.data.tally.yes.mul(10**6 - this.data.parameters.supportThreshold) > this.data.tally.no.mul(this.data.parameters.supportThreshold);
+      const participationThresholdReached =  this.data.tally.yes.add(this.data.tally.no).add(this.data.tally.abstain) >= this.data.parameters.minParticipationThresholdPower;
+      if (supportThresholdReached && participationThresholdReached) return ProposalStatus.Succeeded;
 
       return ProposalStatus.Defeated;
     }
