@@ -9,7 +9,7 @@
 import { ProposalData, ProposalStatus, Action, ProposalMetadata, VoteOption, AddressVotes } from "./data";
 import { DecodeMetadata } from "./proposal-metadata";
 import { ParseAction } from "./actions";
-import { asyncMap, FromBlockchainDate, FromBlocknumber } from "../utils";
+import { asyncMap, FromBlockchainDate, FromBlocknumber, ToBlockchainDate } from "../utils";
 import { DiamondGovernancePure, IPartialVotingFacet, IPartialVotingProposalFacet } from "../../../generated/client";
 import type { ContractTransaction, BigNumber } from "ethers";
 
@@ -84,7 +84,7 @@ export class Proposal {
     private getStatus() : ProposalStatus {
       if (this.data.executed.gt(0)) return ProposalStatus.Executed;
       if (this.data.open) return ProposalStatus.Active;
-      if (this.data.parameters.startDate.toNumber() < Date.now()) return ProposalStatus.Pending;
+      if (this.data.parameters.startDate.toNumber() < ToBlockchainDate(new Date())) return ProposalStatus.Pending;
 
       if (this.data.tally.yes.div(this.data.tally.yes.add(this.data.tally.no)).toNumber() > this.data.parameters.supportThreshold
         && this.data.tally.yes.add(this.data.tally.no) > this.data.parameters.minParticipationThresholdPower)
