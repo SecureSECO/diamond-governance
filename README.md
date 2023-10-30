@@ -29,7 +29,7 @@
 Diamond Governance is a very flexible plugin for AragonOSx. It acts as a bridge between the Aragon framework and [ERC-2535 facets](https://eips.ethereum.org/EIPS/eip-2535). Multiple facets to customize the plugin are included in the project. Currently, the plugin is only available on Mumbai, but it will launch on Polygon before the end of June. 
 
 # SDK
-A typescript sdk is available for this plugin, allowing developers to easily communicate with the plugin in their projects. It can be found on [npm](https://www.npmjs.com/package/@plopmenz/diamond-governance-sdk?activeTab=readme).
+A typescript sdk is available for this plugin, allowing developers to easily communicate with the plugin in their projects. It can be found on [npm](https://www.npmjs.com/package/@secureseco-dao/diamond-governance-sdk).
 
 # Facets
 ## Governance

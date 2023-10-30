@@ -33,7 +33,7 @@ export async function addToIpfs(json: string): Promise<string> {
 
     const config = {
       method: "POST",
-      url: "https://ipfs-0.aragon.network/api/v0/add",
+      url: "https://prod.ipfs.aragon.network/api/v0/add",
       headers: {
         "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
       },
@@ -51,7 +51,7 @@ export async function getFromIpfs(hash: string): Promise<any> {
   
   const config = {
     method: "POST",
-    url: "https://ipfs-0.aragon.network/api/v0/cat?arg=" + hash,
+    url: "https://prod.ipfs.aragon.network/api/v0/cat?arg=" + hash,
     headers: {
       "X-API-KEY": "b477RhECf8s8sdM7XrkLBs2wHc4kCMwpbcFC55Kt" // Publicly known Aragon IPFS node API key
     },
